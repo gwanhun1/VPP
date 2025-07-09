@@ -1,5 +1,13 @@
 {
   "name": "@vpp/mobile",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "nativewind": "^4.0.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.6",
+    "postcss": "^8.4.32",
+    "autoprefixer": "^10.4.16"
+  }
 }
