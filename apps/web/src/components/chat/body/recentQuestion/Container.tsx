@@ -1,0 +1,41 @@
+import { Text } from '@vpp/shared-ui';
+import RecentQuestionBadge from './Badge';
+
+const RecentQuestionContainer = () => {
+  return (
+    <div className="flex flex-col gap-2 p-8 border-b border-gray-300">
+      <div className="flex gap-2 items-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          className="w-6 h-6 text-neutral-600"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+          />
+        </svg>
+        <Text variant="h6" className="text-neutral-600">
+          최근 질문
+        </Text>
+      </div>
+      <div className="flex overflow-x-auto gap-2">
+        {MOCK.map((question) => (
+          <RecentQuestionBadge key={question} question={question} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default RecentQuestionContainer;
+
+const MOCK = [
+  '전력시장에 대해 궁금한 것을 자유롭게 물어보세요',
+  '전력시장에 대해 궁금한 것을 자유롭게 물어보세요',
+  '전력시장에 대해 궁금한 것을 자유롭게 물어보세요',
+];
