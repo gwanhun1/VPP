@@ -1,3 +1,4 @@
+// @ts-check
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
@@ -20,14 +21,16 @@ const extensions = [
 
 const rollupPlugin = (matchers: RegExp[]) => ({
   name: 'js-in-jsx',
-  load(id: string) {
+  async load(id: string) {
     if (matchers.some((matcher) => matcher.test(id)) && id.endsWith('.js')) {
       const file = readFileSync(id, { encoding: 'utf-8' });
       return esbuild.transformSync(file, { loader: 'jsx', jsx: 'automatic' });
     }
+    return null;
   },
 });
 
+// Using dynamic import for ESM compatibility
 export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/mobile',
