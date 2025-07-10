@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+      sans-serif;
+  }
+
+  #root {
+    @apply max-w-[430px] mx-auto min-h-screen bg-white;
+  }
+}
+
+@layer components {
+  /* 데스크톱에서 모바일 사이즈 유지 */
+  @media (min-width: 431px) {
+    body {
+      @apply bg-gray-100;
+    }
+
+    #root {
+      @apply shadow-xl;
+    }
+  }
+}
