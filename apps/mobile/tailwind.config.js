@@ -1,4 +1,3 @@
-// apps/mobile/tailwind.config.js
 const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
 const { join } = require('path');
 const sharedConfig = require('../../tailwind-config/src/tailwind.config.js');
