@@ -2,7 +2,7 @@ import React from 'react';
 import { isWeb, cn } from '../../utils/platform';
 
 // 웹 환경에서 사용할 뱃지 컴포넌트
-const WebBadge: React.FC<BadgeProps> = ({
+const WebBadge = ({
   variant = 'default',
   size = 'md',
   rounded = 'default',
@@ -10,9 +10,9 @@ const WebBadge: React.FC<BadgeProps> = ({
   className = '',
   children,
   ...props
-}) => {
+}: BadgeProps) => {
   const baseClasses = 'inline-flex items-center font-medium';
-  
+
   const variantClasses = {
     default: 'bg-neutral-100 text-neutral-800',
     primary: 'bg-primary-100 text-primary-800',
@@ -57,7 +57,7 @@ const WebBadge: React.FC<BadgeProps> = ({
 };
 
 // 네이티브 환경에서 사용할 뱃지 컴포넌트
-const NativeBadge: React.FC<BadgeProps> = ({
+const NativeBadge = ({
   variant = 'default',
   size = 'md',
   rounded = 'default',
@@ -65,10 +65,10 @@ const NativeBadge: React.FC<BadgeProps> = ({
   className = '',
   children,
   ...props
-}) => {
+}: BadgeProps) => {
   // React Native에서는 View 컴포넌트를 사용하므로, 실제 구현은 사용 시 다르게 처리
   // 여기서는 플랫폼 코드 분기점만 제공
-  
+
   // 실제 사용 시 View 관련 로직으로 대체됨
   return null;
 };
@@ -78,30 +78,38 @@ export interface BadgeProps {
    * 뱃지 변형
    * @default 'default'
    */
-  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'outline';
-  
+  variant?:
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'info'
+    | 'outline';
+
   /**
    * 뱃지 크기
    * @default 'md'
    */
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  
+
   /**
    * 뱃지 모서리 둥글기
    * @default 'default'
    */
   rounded?: 'none' | 'sm' | 'default' | 'md' | 'lg' | 'full';
-  
+
   /**
    * 아이콘
    */
   icon?: React.ReactNode;
-  
+
   /**
    * 추가 클래스명
    */
   className?: string;
-  
+
   /**
    * 자식 요소
    */

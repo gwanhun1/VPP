@@ -23,7 +23,7 @@
     }
 
     #root {
-      @apply shadow-xl;
+      @apply shadow-md;
     }
   }
 }

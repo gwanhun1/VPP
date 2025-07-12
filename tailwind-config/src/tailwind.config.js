@@ -12,7 +12,7 @@ module.exports = {
           200: '#a4b0dd',
           300: '#8292d0',
           400: '#5d73c3',
-          500: '#3c55b6',
+          500: '#1A3297',
           600: '#2e4395',
           700: '#14287f',
           800: '#0f1f64',
@@ -97,14 +97,13 @@ module.exports = {
       },
       // 그림자 설정
       boxShadow: {
-        sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        DEFAULT:
-          '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-        md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-        xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+        sm: '0 1px 2px rgba(0, 0, 0, 0.06)',
+        DEFAULT: '0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)',
+        md: '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08)',
+        lg: '0 10px 20px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.08)',
+        xl: '0 20px 30px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.07)',
         elevated:
-          '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          '0 12px 40px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.06)',
       },
       // 테두리 반경 설정
       borderRadius: {
@@ -115,6 +114,8 @@ module.exports = {
         lg: '0.5rem', // 8px
         xl: '0.75rem', // 12px
         '2xl': '1rem', // 16px
+        '3xl': '1.5rem', // 24px
+        '4xl': '2rem', // 32px
         full: '9999px',
       },
       // 미디어 쿼리 브레이크포인트

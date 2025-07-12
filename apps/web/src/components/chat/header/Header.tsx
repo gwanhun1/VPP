@@ -1,9 +1,9 @@
-import { Text } from '@vpp/shared-ui';
+import { Button, Text } from '@vpp/shared-ui/components';
 import ChattingHeaderPrompt from './HeaderPrompt';
 
 const ChattingHeader = () => {
   return (
-    <header className="flex overflow-hidden relative flex-col justify-end p-8 h-48 bg-primary">
+    <header className="flex overflow-hidden relative flex-col justify-end p-6 h-48 bg-primary">
       <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/2 -translate-y-1/2 bg-white/5"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#f6a20b]/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
@@ -38,9 +38,7 @@ const ChattingHeader = () => {
         </div>
 
         {/* 더보기 섹션 */}
-        <div className="inline-flex relative justify-center items-center group">
-          <div className="absolute inset-0 rounded-lg opacity-0 backdrop-blur-sm transition-opacity pointer-events-none bg-white/20 group-hover:opacity-100" />
-
+        <Button size="sm" isIconOnly rounded="full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -54,7 +52,7 @@ const ChattingHeader = () => {
               clipRule="evenodd"
             />
           </svg>
-        </div>
+        </Button>
       </div>
 
       <ChattingHeaderPrompt />

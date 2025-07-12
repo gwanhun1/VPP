@@ -1,4 +1,4 @@
-import { Button, Text } from '@vpp/shared-ui';
+import { Button, Text } from '@vpp/shared-ui/components';
 
 type RecentQuestionBadgeProps = {
   question: string;

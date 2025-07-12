@@ -1,31 +1,7 @@
-import { Button } from '@vpp/shared-ui';
-import { useState } from 'react';
-
-interface ChatMessage {
-  id: number;
-  text: string;
-  isUser: boolean;
-  timestamp: Date;
-}
+import ChattingInputBox from './inputBox/InputBox';
+import { ChatInputProvider } from '../../../utils/inputProvider';
 
 const ChattingContainer = () => {
-  const [inputText, setInputText] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-
-  const handleSendMessage = () => {
-    if (inputText.trim()) {
-      const newMessage: ChatMessage = {
-        id: Date.now(),
-        text: inputText,
-        isUser: true,
-        timestamp: new Date(),
-      };
-
-      setMessages([...messages, newMessage]);
-      setInputText('');
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
       {/* 메세지 영역 */}
@@ -43,10 +19,10 @@ const ChattingContainer = () => {
               }`}
             >
               <div
-                className={`max-w-[80%] p-3 rounded-lg ${
+                className={`max-w-[80%] p-3 rounded-2xl ${
                   message.isUser
-                    ? 'bg-primary text-white rounded-tr-none'
-                    : 'bg-gray-100 text-gray-800 rounded-tl-none'
+                    ? 'bg-primary-500 text-white rounded-tr-sm shadow-lg'
+                    : 'bg-gray-100 text-gray-800 rounded-tl-sm shadow-sm'
                 }`}
               >
                 {message.text}
@@ -57,33 +33,20 @@ const ChattingContainer = () => {
       </div>
 
       {/* 입력 영역 */}
-      <div className="sticky bottom-0 p-4 bg-white border-t border-gray-300">
-        <div className="flex gap-2 items-center">
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="메시지를 입력하세요..."
-            className="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-          />
-          <Button
-            variant="primary"
-            rounded="full"
-            onClick={handleSendMessage}
-            disabled={!inputText.trim()}
-          >
-            전송
-          </Button>
-        </div>
-      </div>
+      <ChatInputProvider>
+        <ChattingInputBox />
+      </ChatInputProvider>
     </div>
   );
 };
 
 export default ChattingContainer;
+
+const messages = [
+  {
+    id: Date.now(),
+    text: 'Hello',
+    isUser: true,
+    timestamp: new Date(),
+  },
+];

@@ -13,9 +13,10 @@ export interface ButtonProps {
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
   onClick?: () => void;
   children: React.ReactNode;
+  isIconOnly?: boolean;
 }
 
-const WebButton: React.FC<ButtonProps> = ({
+const WebButton = ({
   variant = 'primary',
   size = 'md',
   disabled = false,
@@ -26,8 +27,9 @@ const WebButton: React.FC<ButtonProps> = ({
   rounded = 'md',
   children,
   className = '',
+  isIconOnly = false,
   ...props
-}) => {
+}: ButtonProps) => {
   const baseClasses = 'font-medium transition-all focus:outline-none';
 
   const variantClasses = {
@@ -66,11 +68,21 @@ const WebButton: React.FC<ButtonProps> = ({
     full: 'rounded-full',
   };
 
+  const iconOnlyClasses = isIconOnly
+    ? {
+        xs: 'p-1 aspect-square',
+        sm: 'p-1.5 aspect-square',
+        md: 'p-2 aspect-square',
+        lg: 'p-2.5 aspect-square',
+        xl: 'p-3 aspect-square',
+      }
+    : {};
+
   const classes = cn(
     baseClasses,
     variantClasses[variant],
-    sizeClasses[size],
-    roundedClasses[rounded], // ✅ radius 추가
+    isIconOnly ? iconOnlyClasses[size] : sizeClasses[size],
+    roundedClasses[rounded],
     disabled && stateClasses.disabled,
     loading && stateClasses.loading,
     fullWidth && stateClasses.fullWidth,
@@ -91,10 +103,10 @@ const WebButton: React.FC<ButtonProps> = ({
   );
 };
 
-const NativeButton: React.FC<ButtonProps> = ({
+const NativeButton = ({
   // 동일하게 props 구조 유지
   ...props
-}) => {
+}: ButtonProps) => {
   return null;
 };
 

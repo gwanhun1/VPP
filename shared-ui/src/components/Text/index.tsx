@@ -2,7 +2,7 @@ import React from 'react';
 import { isWeb, cn } from '../../utils/platform';
 
 // 웹 환경에서 사용할 텍스트 컴포넌트
-const WebText: React.FC<TextProps> = ({
+const WebText = ({
   variant = 'body',
   color = 'default',
   weight = 'normal',
@@ -12,7 +12,7 @@ const WebText: React.FC<TextProps> = ({
   className = '',
   children,
   ...props
-}) => {
+}: TextProps) => {
   const baseClasses = 'transition-colors';
 
   const variantClasses = {
@@ -126,7 +126,7 @@ const WebText: React.FC<TextProps> = ({
 };
 
 // 네이티브 환경에서 사용할 텍스트 컴포넌트
-const NativeText: React.FC<TextProps> = ({
+const NativeText = ({
   variant = 'body',
   color = 'default',
   weight = 'normal',
@@ -136,7 +136,7 @@ const NativeText: React.FC<TextProps> = ({
   className = '',
   children,
   ...props
-}) => {
+}: TextProps) => {
   // React Native에서는 Text 컴포넌트를 사용하므로, 실제 구현은 사용 시 다르게 처리
   // 여기서는 플랫폼 코드 분기점만 제공
 

@@ -5348,12 +5348,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@vpp/mobile@workspace:apps/mobile":
+"@vpp/mobile@workspace:apps/mobile-temp":
   version: 0.0.0-use.local
-  resolution: "@vpp/mobile@workspace:apps/mobile"
+  resolution: "@vpp/mobile@workspace:apps/mobile-temp"
   dependencies:
-    nativewind: "npm:^4.1.23"
-    tailwindcss: "npm:^4.1.11"
+    autoprefixer: "npm:^10.4.16"
+    nativewind: "npm:^4.0.1"
+    postcss: "npm:^8.4.32"
+    tailwindcss: "npm:^3.3.6"
   languageName: unknown
   linkType: soft
 
@@ -5395,7 +5397,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.2.0"
     "@vitest/ui": "npm:^3.0.0"
     ajv: "npm:^8.0.0"
-    autoprefixer: "npm:^10.4.21"
+    autoprefixer: "npm:^10.4.16"
     eslint: "npm:^9.8.0"
     eslint-config-prettier: "npm:^10.0.0"
     eslint-plugin-import: "npm:2.31.0"
@@ -5407,7 +5409,7 @@ __metadata:
     jsdom: "npm:~22.1.0"
     jsonc-eslint-parser: "npm:^2.1.0"
     nx: "npm:21.2.2"
-    postcss: "npm:^8.5.6"
+    postcss: "npm:^8.4.32"
     prettier: "npm:^2.6.2"
     react: "npm:~18.3.1"
     react-dom: "npm:~18.3.1"
@@ -5418,7 +5420,7 @@ __metadata:
     react-native-web: "npm:~0.19.13"
     react-router-dom: "npm:6.29.0"
     react-test-renderer: "npm:~18.3.1"
-    tailwindcss: "npm:^4.1.11"
+    tailwindcss: "npm:^3.3.6"
     tslib: "npm:^2.3.0"
     typescript: "npm:~5.8.2"
     typescript-eslint: "npm:^8.29.0"
@@ -6353,7 +6355,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:^10.4.16, autoprefixer@npm:^10.4.21":
+"autoprefixer@npm:^10.4.16":
   version: 10.4.21
   resolution: "autoprefixer@npm:10.4.21"
   dependencies:
@@ -12798,7 +12800,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nativewind@npm:^4.1.23":
+"nativewind@npm:^4.0.1":
   version: 4.1.23
   resolution: "nativewind@npm:4.1.23"
   dependencies:
@@ -15780,13 +15782,6 @@ __metadata:
     tailwind: lib/cli.js
     tailwindcss: lib/cli.js
   checksum: 10c0/cc42c6e7fdf88a5507a0d7fea37f1b4122bec158977f8c017b2ae6828741f9e6f8cb90282c6bf2bd5951fd1220a53e0a50ca58f5c1c00eb7f5d9f8b80dc4523c
-  languageName: node
-  linkType: hard
-
-"tailwindcss@npm:^4.1.11":
-  version: 4.1.11
-  resolution: "tailwindcss@npm:4.1.11"
-  checksum: 10c0/e23eed0a0d6557b3aff8ba320b82758988ca67c351ee9b33dfc646e83a64f6eaeca6183dfc97e931f7b2fab46e925090066edd697d2ede3f396c9fdeb4af24c1
   languageName: node
   linkType: hard
 
