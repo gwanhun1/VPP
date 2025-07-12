@@ -4,8 +4,8 @@
       "main": true
     }
   },
-  "buildCommand": "cd apps/web && yarn install && yarn build",
-  "outputDirectory": "apps/web/dist",
+  "buildCommand": "yarn install && yarn build",
+  "outputDirectory": "dist",
   "framework": "vite",
   "routes": [
     { "handle": "filesystem" },
