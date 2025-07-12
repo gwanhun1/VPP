@@ -6,9 +6,6 @@
       "path": "../../tailwind-config"
     },
     {
-      "path": "../../shared-ui"
-    },
-    {
       "path": "./tsconfig.app.json"
     }
   ],

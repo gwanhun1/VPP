@@ -1,0 +1,15 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "buildCommand": "cd apps/web && yarn install && yarn build",
+  "outputDirectory": "apps/web/dist",
+  "framework": "vite",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/web/"
+}
