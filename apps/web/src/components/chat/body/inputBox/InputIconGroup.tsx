@@ -1,5 +1,5 @@
 import { useChatInput } from '@/utils/inputProvider';
-import { Button } from '@vpp/shared-ui/components';
+import { Button } from '@vpp/shared-ui';
 
 const InputIconGroup = () => {
   const { handleSendMessage, inputText } = useChatInput();

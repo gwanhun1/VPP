@@ -1,4 +1,4 @@
-import { Button, Text } from '@vpp/shared-ui/components';
+import { Button, Text } from '@vpp/shared-ui';
 import ChattingHeaderPrompt from './HeaderPrompt';
 
 const ChattingHeader = () => {

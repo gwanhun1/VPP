@@ -16,6 +16,17 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["development"]
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "customConditions": ["development"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"],
+      "@vpp/shared-ui": ["shared-ui/src"],
+      "@vpp/shared-ui/*": ["shared-ui/src/*"],
+      "@vpp/shared-ui/components": ["shared-ui/src/components"],
+      "@core-logic": ["core-logic/src"],
+      "@core-logic/*": ["core-logic/src/*"]
+    }
   }
 }

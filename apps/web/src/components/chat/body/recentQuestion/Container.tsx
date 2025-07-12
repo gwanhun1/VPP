@@ -1,4 +1,4 @@
-import { Text } from '@vpp/shared-ui/components';
+import { Text } from '@vpp/shared-ui';
 import RecentQuestionBadge from './Badge';
 
 const RecentQuestionContainer = () => {

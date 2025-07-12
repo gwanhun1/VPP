@@ -12,11 +12,14 @@
       "vite/client"
     ],
     "composite": true,
+    "declaration": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@core-logic/*": ["../../core-logic/src/*"],
-      "@vpp/shared-ui/*": ["../../shared-ui/src/*"]
+      "@vpp/shared-ui": ["../../shared-ui/src"],
+      "@vpp/shared-ui/*": ["../../shared-ui/src/*"],
+      "@vpp/shared-ui/components": ["../../shared-ui/src/components"]
     }
   },
   "exclude": [
@@ -38,6 +41,9 @@
   "references": [
     {
       "path": "../../tailwind-config/tsconfig.lib.json"
+    },
+    {
+      "path": "../../shared-ui/tsconfig.lib.json"
     }
   ]
 }
