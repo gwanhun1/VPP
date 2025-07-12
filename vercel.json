@@ -4,7 +4,7 @@
       "main": true
     }
   },
-  "buildCommand": "yarn install && yarn build",
+  "buildCommand": "yarn install && yarn nx build web",
   "outputDirectory": "dist",
   "framework": "vite",
   "routes": [
