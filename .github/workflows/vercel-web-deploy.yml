@@ -32,14 +32,18 @@ jobs:
         with:
           node-version: '18'
           cache: 'yarn'
+          
+      - name: Enable Corepack
+        if: steps.check.outcome == 'success'
+        run: corepack enable
 
       - name: Install dependencies
         if: steps.check.outcome == 'success'
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Install Vercel CLI
         if: steps.check.outcome == 'success'
-        run: yarn global add vercel
+        run: npm install -g vercel
 
       - name: Deploy to Vercel
         if: steps.check.outcome == 'success'
