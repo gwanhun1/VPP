@@ -5,7 +5,7 @@
     }
   },
   "buildCommand": "yarn install && yarn nx build web",
-  "outputDirectory": "dist",
+  "outputDirectory": "dist/apps/web",
   "framework": "vite",
   "routes": [
     { "handle": "filesystem" },
