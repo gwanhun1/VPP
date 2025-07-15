@@ -1,11 +1,11 @@
-import ChattingContainer from './Container';
+import ChattingContainer from './chatting/Container';
 import RecentQuestionContainer from './recentQuestion/Container';
 
 const Chatting = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)]">
-      <RecentQuestionContainer />
-      <div className="flex-1 overflow-hidden">
+      <div className="overflow-auto flex-1">
+        <RecentQuestionContainer />
         <ChattingContainer />
       </div>
     </div>

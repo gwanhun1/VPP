@@ -27,6 +27,7 @@ const WebText = ({
     body: 'text-base tracking-tight',
     body2: 'text-sm tracking-tight',
     caption: 'text-xs tracking-tight',
+    caption2: 'text-[10px] tracking-tight',
     overline: 'text-xs uppercase tracking-wider',
   };
 
@@ -34,7 +35,7 @@ const WebText = ({
     default: 'text-neutral-900',
     primary: 'text-primary',
     secondary: 'text-secondary',
-    muted: 'text-neutral-500',
+    muted: 'text-neutral-400',
     success: 'text-success',
     warning: 'text-warning',
     error: 'text-error',
@@ -161,6 +162,7 @@ export interface TextProps {
     | 'body'
     | 'body2'
     | 'caption'
+    | 'caption2'
     | 'overline';
 
   /**

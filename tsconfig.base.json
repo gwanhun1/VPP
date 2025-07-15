@@ -22,11 +22,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["*"],
+      "@core-logic": ["core-logic/src"],
+      "@core-logic/*": ["core-logic/src/*"],
       "@vpp/shared-ui": ["shared-ui/src"],
       "@vpp/shared-ui/*": ["shared-ui/src/*"],
-      "@vpp/shared-ui/components": ["shared-ui/src/components"],
-      "@core-logic": ["core-logic/src"],
-      "@core-logic/*": ["core-logic/src/*"]
+      "@vpp/shared-ui/components": ["shared-ui/src/components"]
     }
   }
 }

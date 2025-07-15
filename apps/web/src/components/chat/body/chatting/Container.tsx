@@ -1,5 +1,7 @@
-import ChattingInputBox from './inputBox/InputBox';
-import { ChatInputProvider } from '../../../utils/inputProvider';
+import ChattingInputBox from '../inputBox/InputBox';
+import { ChatInputProvider } from '../../../../utils/inputProvider';
+import UserChattingBox from './UserChattingBox';
+import AiChattingBox from './AiChattingBox';
 
 const ChattingContainer = () => {
   return (
@@ -18,15 +20,11 @@ const ChattingContainer = () => {
                 message.isUser ? 'justify-end' : 'justify-start'
               }`}
             >
-              <div
-                className={`max-w-[80%] p-3 rounded-2xl ${
-                  message.isUser
-                    ? 'bg-primary-500 text-white rounded-tr-sm shadow-lg'
-                    : 'bg-gray-100 text-gray-800 rounded-tl-sm shadow-sm'
-                }`}
-              >
-                {message.text}
-              </div>
+              {message.isUser ? (
+                <UserChattingBox message={message} />
+              ) : (
+                <AiChattingBox message={message} />
+              )}
             </div>
           ))
         )}
@@ -47,6 +45,12 @@ const messages = [
     id: Date.now(),
     text: 'Hello',
     isUser: true,
+    timestamp: new Date(),
+  },
+  {
+    id: Date.now(),
+    text: 'Hi',
+    isUser: false,
     timestamp: new Date(),
   },
 ];
