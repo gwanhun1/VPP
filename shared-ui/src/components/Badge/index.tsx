@@ -16,6 +16,7 @@ const WebBadge = ({
   const variantClasses = {
     default: 'bg-neutral-100 text-neutral-800',
     primary: 'bg-primary-100 text-primary-800',
+    point: 'bg-primary text-white',
     secondary: 'bg-secondary-100 text-secondary-800',
     success: 'bg-success bg-opacity-15 text-success',
     warning: 'bg-warning bg-opacity-15 text-warning',
@@ -29,6 +30,7 @@ const WebBadge = ({
     sm: 'text-xs py-1 px-2',
     md: 'text-sm py-1 px-2.5',
     lg: 'text-base py-1 px-3',
+    base: 'text-base p-1',
   };
 
   const roundedClasses = {
@@ -81,6 +83,7 @@ export interface BadgeProps {
   variant?:
     | 'default'
     | 'primary'
+    | 'point'
     | 'secondary'
     | 'success'
     | 'warning'
@@ -92,7 +95,7 @@ export interface BadgeProps {
    * 뱃지 크기
    * @default 'md'
    */
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'base';
 
   /**
    * 뱃지 모서리 둥글기
