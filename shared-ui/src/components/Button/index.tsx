@@ -38,7 +38,7 @@ const WebButton = ({
     secondary:
       'bg-secondary text-white hover:bg-secondary-dark active:bg-secondary-dark',
     outline:
-      'border border-primary text-primary hover:bg-primary-50 active:bg-primary-100',
+      'border-2 border-primary-200 text-primary hover:bg-primary-50 active:bg-primary-100',
     ghost: 'text-primary hover:bg-primary-50 active:bg-primary-100',
     link: 'text-primary underline hover:text-primary-dark active:text-primary-dark p-0 h-auto',
   };
@@ -46,7 +46,7 @@ const WebButton = ({
   const sizeClasses = {
     xs: 'text-xs py-1 px-2',
     sm: 'text-sm py-1.5 px-3',
-    md: 'text-base py-2 px-4',
+    md: 'text-base py-1.5 px-4',
     lg: 'text-lg py-2.5 px-5',
     xl: 'text-xl py-3 px-6',
   };

@@ -30,6 +30,9 @@ const ChattingContainer = () => {
         )}
       </div>
 
+      {/* 추천 질문 영역 */}
+      {/* <PromptHintBox /> */}
+
       {/* 입력 영역 */}
       <ChatInputProvider>
         <ChattingInputBox />
