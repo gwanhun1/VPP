@@ -30,7 +30,7 @@ const ChattingInput = ({ onFocus, onBlur }: ChattingInputProps) => {
       className="h-10 max-h-[25vh] flex-1 border-none 
   px-2 text-md resize-none overflow-y-auto 
   placeholder:px-1 focus:outline-none 
-  placeholder:text-xs sm:placeholder:text-md placeholder:text-gray-400"
+ xs:placeholder:text-sm sm:placeholder:text-md placeholder:text-gray-400"
     />
   );
 };

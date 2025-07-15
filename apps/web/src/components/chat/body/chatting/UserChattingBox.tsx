@@ -11,11 +11,26 @@ type UserChattingBoxProps = {
 
 const UserChattingBox = ({ message }: UserChattingBoxProps) => {
   return (
-    <div className="max-w-[80%] p-4 rounded-2xl bg-primary-500 text-white rounded-tr-sm shadow-lg">
-      <Text variant="body" color="white" className="pb-2">
+    <div
+      className="max-w-[80%] p-4 rounded-2xl bg-primary-500 text-white rounded-tr-sm shadow-lg
+                  transition-all duration-500 ease-out
+                  hover:shadow-xl hover:shadow-primary-600/30
+                  hover:bg-primary
+                  hover:transform hover:scale-[1.02]
+                  cursor-pointer group"
+    >
+      <Text
+        variant="body"
+        color="white"
+        className="pb-2 transition-colors duration-300 group-hover:text-white/95"
+      >
         {message.text}
       </Text>
-      <Text variant="caption2" color="muted">
+      <Text
+        variant="caption"
+        color="muted"
+        className="transition-colors duration-300 group-hover:text-white/70"
+      >
         {message.timestamp.toLocaleTimeString()}
       </Text>
     </div>

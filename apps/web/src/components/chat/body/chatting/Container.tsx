@@ -22,7 +22,7 @@ const ChatMessages = () => {
   return (
     <>
       {messages.length <= 1 ? <RecentQuestionContainer /> : null}
-      <div className="overflow-y-auto flex-1 p-4 space-y-4 min-h-[50vh]">
+      <div className="overflow-y-auto flex-1 p-4 space-y-4 min-h-[50vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {messages.length <= 1 ? (
           <div className="flex flex-col h-full">
             <AiChattingBox
