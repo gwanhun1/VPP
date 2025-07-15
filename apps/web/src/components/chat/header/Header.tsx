@@ -1,9 +1,20 @@
 import { Button, Text } from '@vpp/shared-ui';
 import ChattingHeaderPrompt from './HeaderPrompt';
+import HeaderMoreTooltip from './HeaderMoreTooltip';
+import { useState } from 'react';
 
 const ChattingHeader = () => {
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const handleMoreButtonClick = () => {
+    setIsTooltipOpen((prev) => !prev);
+  };
+
+  const closeTooltip = () => {
+    setIsTooltipOpen(false);
+  };
   return (
-    <header className="flex overflow-hidden relative flex-col justify-end p-6 h-48 bg-primary">
+    <header className="flex overflow-hidden relative flex-col justify-end p-6 h-40 sm:h-48 bg-primary">
       <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/2 -translate-y-1/2 bg-white/5"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#f6a20b]/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
@@ -38,21 +49,31 @@ const ChattingHeader = () => {
         </div>
 
         {/* 더보기 섹션 */}
-        <Button size="sm" isIconOnly rounded="full">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="relative z-10 w-6 h-6 text-white"
-            aria-hidden="true"
+        <div className="relative">
+          <Button
+            size="sm"
+            isIconOnly
+            rounded="full"
+            onClick={handleMoreButtonClick}
+            aria-expanded={isTooltipOpen}
+            aria-label="더보기 메뉴"
           >
-            <path
-              fillRule="evenodd"
-              d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </Button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="relative z-10 w-6 h-6 text-white"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </Button>
+          <HeaderMoreTooltip isOpen={isTooltipOpen} onClose={closeTooltip} />
+        </div>
       </div>
 
       <ChattingHeaderPrompt />

@@ -100,7 +100,7 @@ const NativeInput = ({
   return null;
 };
 
-export interface InputProps {
+export type InputProps = {
   /**
    * 입력 변형
    * @default 'default'
@@ -181,7 +181,7 @@ export interface InputProps {
    * 타입
    */
   type?: string;
-}
+};
 
 /**
  * 플랫폼에 따라 적절한 입력 컴포넌트를 내보냄

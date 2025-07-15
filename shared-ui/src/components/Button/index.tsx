@@ -1,7 +1,7 @@
 import React from 'react';
 import { isWeb, cn } from '../../utils/platform';
 
-export interface ButtonProps {
+export type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   disabled?: boolean;
@@ -14,7 +14,7 @@ export interface ButtonProps {
   onClick?: () => void;
   children: React.ReactNode;
   isIconOnly?: boolean;
-}
+};
 
 const WebButton = ({
   variant = 'primary',
@@ -44,11 +44,11 @@ const WebButton = ({
   };
 
   const sizeClasses = {
-    xs: 'text-xs py-1 px-2',
-    sm: 'text-sm py-1.5 px-3',
-    md: 'text-base py-1.5 px-4',
-    lg: 'text-lg py-2.5 px-5',
-    xl: 'text-xl py-3 px-6',
+    xs: 'xs: text-[14px] sm:text-xs py-1.5 px-2',
+    sm: 'xs: text-xs sm:text-xs py-2 px-3',
+    md: 'xs: text-xs sm:text-sm py-2 px-4',
+    lg: 'xs: text-md sm:text-lg py-3 px-5',
+    xl: 'xs: text-lg sm:text-xl py-3.5 px-6',
   };
 
   const stateClasses = {

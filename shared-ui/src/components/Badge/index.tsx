@@ -75,7 +75,7 @@ const NativeBadge = ({
   return null;
 };
 
-export interface BadgeProps {
+export type BadgeProps = {
   /**
    * 뱃지 변형
    * @default 'default'
@@ -117,7 +117,7 @@ export interface BadgeProps {
    * 자식 요소
    */
   children: React.ReactNode;
-}
+};
 
 /**
  * 플랫폼에 따라 적절한 뱃지 컴포넌트를 내보냄

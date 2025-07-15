@@ -8,7 +8,7 @@ const RecentQuestionBadge = ({ question }: RecentQuestionBadgeProps) => {
   return (
     <Button variant="outline" rounded="full">
       <Text
-        variant="caption"
+        variant="body2"
         className="whitespace-nowrap text-primary-700"
         weight="medium"
       >

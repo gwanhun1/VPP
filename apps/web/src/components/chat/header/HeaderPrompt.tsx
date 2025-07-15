@@ -2,7 +2,7 @@ import { Text } from '@vpp/shared-ui';
 
 const ChattingHeaderPrompt = () => {
   return (
-    <div className="flex flex-col gap-2 justify-center items-center px-4 pt-6">
+    <div className="flex flex-col gap-2 justify-center items-center px-4 pt-2 sm:pt-6">
       <Text variant="h4" weight="bold" color="white">
         오늘은 무엇을 배워볼까요?
       </Text>

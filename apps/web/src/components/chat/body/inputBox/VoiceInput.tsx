@@ -1,13 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 
 declare global {
-  interface Window {
+  type Window = {
     SpeechRecognition: new () => SpeechRecognition;
     webkitSpeechRecognition: new () => SpeechRecognition;
-  }
+  };
 }
 
-interface SpeechRecognitionEvent {
+type SpeechRecognitionEvent = {
   results: {
     [key: number]: {
       [key: number]: {
@@ -17,9 +17,9 @@ interface SpeechRecognitionEvent {
     };
   };
   error?: string;
-}
+};
 
-interface SpeechRecognition {
+type SpeechRecognition = {
   lang: string;
   continuous: boolean;
   interimResults: boolean;
@@ -29,7 +29,7 @@ interface SpeechRecognition {
   onend: () => void;
   onerror: (event: { error: string }) => void;
   onresult: (event: SpeechRecognitionEvent) => void;
-}
+};
 
 const getSpeechRecognition = (): (new () => SpeechRecognition) | null => {
   if (typeof window !== 'undefined') {

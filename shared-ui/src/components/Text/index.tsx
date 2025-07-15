@@ -16,19 +16,19 @@ const WebText = ({
   const baseClasses = 'transition-colors';
 
   const variantClasses = {
-    h1: 'text-4xl leading-tight tracking-tight',
-    h2: 'text-3xl leading-tight tracking-tight',
-    h3: 'text-2xl leading-tight tracking-tight',
-    h4: 'text-xl leading-tight tracking-tight',
-    h5: 'text-lg leading-tight tracking-tight',
-    h6: 'text-base leading-tight font-medium tracking-tight',
-    subtitle1: 'text-lg tracking-tight',
-    subtitle2: 'text-base tracking-tight',
-    body: 'text-base tracking-tight',
-    body2: 'text-sm tracking-tight',
-    caption: 'text-xs tracking-tight',
-    caption2: 'text-[10px] tracking-tight',
-    overline: 'text-xs uppercase tracking-wider',
+    h1: 'xs:text-3xl sm:text-4xl leading-tight tracking-tight',
+    h2: 'xs:text-2xl sm:text-3xl leading-tight tracking-tight',
+    h3: 'xs:text-xl sm:text-2xl leading-tight tracking-tight',
+    h4: 'xs:text-lg sm:text-xl leading-tight tracking-tight',
+    h5: 'xs:text-base sm:text-lg leading-tight tracking-tight',
+    h6: 'xs:text-[14px] sm:text-base leading-tight font-medium tracking-tight',
+    subtitle1: 'xs:text-md sm:text-lg tracking-tight',
+    subtitle2: 'xs:text-[14px] sm:text-base tracking-tight',
+    body: 'xs:text-[12px] sm:text-[14px] tracking-tight',
+    body2: 'xs:text-[10px] sm:text-[12px] tracking-tight',
+    caption: 'xs:text-[8px] sm:text-[10px] tracking-tight',
+    caption2: 'xs:text-[6px] sm:text-[8px] tracking-tight',
+    overline: 'xs:text-[6px] sm:text-[6px] uppercase tracking-wider',
   };
 
   const colorClasses = {

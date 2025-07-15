@@ -122,7 +122,7 @@ const NativeCardHeader = () => null;
 const NativeCardBody = () => null;
 const NativeCardFooter = () => null;
 
-export interface CardProps {
+export type CardProps = {
   /**
    * 카드 변형
    * @default 'default'
@@ -162,9 +162,9 @@ export interface CardProps {
    * 자식 요소
    */
   children: React.ReactNode;
-}
+};
 
-export interface CardSectionProps {
+export type CardSectionProps = {
   /**
    * 추가 클래스명
    */
@@ -174,7 +174,7 @@ export interface CardSectionProps {
    * 자식 요소
    */
   children: React.ReactNode;
-}
+};
 
 /**
  * 플랫폼에 따라 적절한 카드 컴포넌트를 내보냄

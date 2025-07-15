@@ -1,11 +1,18 @@
 import { useChatInput } from '../../../../utils/inputProvider';
 
-const ChattingInput = () => {
+type ChattingInputProps = {
+  onFocus?: () => void;
+  onBlur?: () => void;
+};
+
+const ChattingInput = ({ onFocus, onBlur }: ChattingInputProps) => {
   const { inputText, setInputText, handleSendMessage } = useChatInput();
 
   return (
     <textarea
       value={inputText}
+      onFocus={onFocus}
+      onBlur={onBlur}
       onChange={(e) => {
         setInputText(e.target.value);
         e.target.style.height = '40px';
@@ -20,7 +27,10 @@ const ChattingInput = () => {
           handleSendMessage();
         }
       }}
-      className="h-10 max-h-[25vh] flex-1 border-none placeholder:px-1 focus:outline-none px-2 text-md placeholder:text-gray-400 placeholder:text-md resize-none overflow-y-auto"
+      className="h-10 max-h-[25vh] flex-1 border-none 
+  px-2 text-md resize-none overflow-y-auto 
+  placeholder:px-1 focus:outline-none 
+  placeholder:text-xs sm:placeholder:text-md placeholder:text-gray-400"
     />
   );
 };
