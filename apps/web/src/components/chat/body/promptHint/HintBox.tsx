@@ -4,7 +4,7 @@ import ScrollIndicator from './ScrollAnimation';
 
 const PromptHintBox = () => {
   return (
-    <div className="px-2 flex flex-col gap-2 justify-center items-center h-[30%]">
+    <div className="px-2 flex flex-1 flex-col gap-2 justify-center items-center h-[32%]">
       <div className="flex gap-2 items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -19,9 +19,7 @@ const PromptHintBox = () => {
           이런 질문들을 해보세요
         </Text>
       </div>
-      <div
-        className="flex flex-col gap-2 w-full overflow-y-auto max-h-[150px] px-2 relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-      >
+      <div className="flex flex-col gap-2 w-full overflow-y-auto max-h-[150px] px-2 relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {MOCK.slice(0, 4).map((item) => (
           <PromptHintMessage key={item.id} message={item.message} />
         ))}
