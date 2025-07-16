@@ -14,9 +14,6 @@
     },
     {
       "path": "./tailwind-config"
-    },
-    {
-      "path": "./apps/mobile-temp"
     }
   ]
 }
