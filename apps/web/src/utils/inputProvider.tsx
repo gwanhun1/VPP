@@ -22,14 +22,7 @@ const ChatInputContext = createContext<ChatInputContextType | undefined>(
 
 export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [inputText, setInputText] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: Date.now(),
-      text: '안녕하세요! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!',
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const addMessage = (text: string, isUser: boolean) => {
     const newMessage: Message = {

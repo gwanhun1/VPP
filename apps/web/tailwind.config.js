@@ -16,6 +16,7 @@ module.exports = {
       ...sharedConfig.theme.extend, // 중앙 설정 상속
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out forwards',
+        skeleton: 'skeleton-loading 1.5s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {

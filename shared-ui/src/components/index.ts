@@ -14,3 +14,6 @@ export type { InputProps } from './Input';
 
 export { default as Badge } from './Badge';
 export type { BadgeProps } from './Badge';
+
+export { default as Skeleton } from './Skeleton';
+export type { SkeletonProps } from './Skeleton';

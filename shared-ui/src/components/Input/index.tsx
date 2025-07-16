@@ -175,7 +175,7 @@ export type InputProps = {
   /**
    * 변경 핸들러
    */
-  onChange?: (e: any) => void;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 
   /**
    * 타입

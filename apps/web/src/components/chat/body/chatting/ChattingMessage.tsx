@@ -28,6 +28,7 @@ const ChattingMessage = () => {
                 isUser: false,
                 timestamp: new Date('2025-07-15T12:42:33.312Z'),
               }}
+              layout={true}
             />
             <PromptHintBox />
           </div>
@@ -36,9 +37,10 @@ const ChattingMessage = () => {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex animate-fade-in ${
+                className={`flex ${
                   message.isUser ? 'justify-end' : 'justify-start'
-                }`}
+                } animate-fade-in`}
+                style={{ animationDuration: '500ms' }}
               >
                 {message.isUser ? (
                   <UserChattingBox message={message} />
