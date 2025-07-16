@@ -1,15 +1,11 @@
-import ChattingInputBox from '../inputBox/InputBox';
-import {
-  ChatInputProvider,
-  useChatInput,
-} from '../../../../utils/inputProvider';
 import UserChattingBox from './UserChattingBox';
 import AiChattingBox from './AiChattingBox';
 import PromptHintBox from '../promptHint/HintBox';
 import { useEffect, useRef } from 'react';
 import RecentQuestionContainer from '../recentQuestion/Container';
+import { useChatInput } from '@/utils/inputProvider';
 
-const ChatMessages = () => {
+const ChattingMessage = () => {
   const { messages } = useChatInput();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,18 +55,4 @@ const ChatMessages = () => {
   );
 };
 
-const ChattingContainer = () => {
-  return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] min-h-[500px] max-h-[100vh]">
-      {/* 메세지 영역 */}
-      <ChatInputProvider>
-        <ChatMessages />
-
-        {/* 입력 영역 */}
-        <ChattingInputBox />
-      </ChatInputProvider>
-    </div>
-  );
-};
-
-export default ChattingContainer;
+export default ChattingMessage;

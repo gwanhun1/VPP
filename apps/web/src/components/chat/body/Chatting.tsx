@@ -1,4 +1,4 @@
-import ChattingContainer from './chatting/Container';
+import ChattingContainer from './chatting/ChattingContainer';
 
 const Chatting = () => {
   return (
