@@ -1,5 +1,18 @@
 {
   "name": "@vpp/mobile",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@react-native/metro-config": "*",
+    "react-native-svg-transformer": "*",
+    "react": "*",
+    "react-native": "*",
+    "react-native-svg": "*",
+    "react-dom": "*",
+    "vite": "*",
+    "@vitejs/plugin-react": "*",
+    "@nx/vite": "*",
+    "esbuild": "*"
+  },
+  "devDependencies": {}
 }

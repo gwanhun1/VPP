@@ -1,6 +1,8 @@
 # Vpp
 
-// yarn nx serve web
+// npx nx serve web
+// nx run mobile:run-ios
+// nx run mobile:run-android
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
