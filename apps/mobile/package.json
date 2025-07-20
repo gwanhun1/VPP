@@ -3,16 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "@nx/vite": "*",
     "@react-native/metro-config": "*",
-    "react-native-svg-transformer": "*",
+    "@vitejs/plugin-react": "*",
+    "esbuild": "*",
     "react": "*",
+    "react-dom": "*",
     "react-native": "*",
     "react-native-svg": "*",
-    "react-dom": "*",
-    "vite": "*",
-    "@vitejs/plugin-react": "*",
-    "@nx/vite": "*",
-    "esbuild": "*"
-  },
-  "devDependencies": {}
+    "react-native-svg-transformer": "*",
+    "vite": "*"
+  }
 }
