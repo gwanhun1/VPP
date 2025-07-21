@@ -12,6 +12,7 @@
     "react-native": "*",
     "react-native-svg": "*",
     "react-native-svg-transformer": "*",
+    "react-native-webview": "^13.15.0",
     "vite": "*"
   }
 }
