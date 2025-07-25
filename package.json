@@ -3,6 +3,15 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "nx:serve:mobile": "nx run mobile:run-ios",
+    "nx:serve:web": "nx run web:serve",
+    "nx:pod:install": "cd apps/mobile/ios && pod install",
+    "nx:android:clean": "cd apps/mobile/android && ./gradlew clean",
+    "nx:mobile:clean": "nx run mobile:clean",
+    "nx:run:android": "nx run mobile:run-android",
+    "nx:run:ios": "nx run mobile:run-ios"
+  },
   "engines": {
     "node": "22.x"
   },
