@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { View, SafeAreaView } from 'react-native';
 
 /**
  * 탭 레이아웃 컴포넌트
@@ -10,68 +11,80 @@ import React from 'react';
  */
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#14287f', // VPP 메인 컬러
-        tabBarInactiveTintColor: '#666666',
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e0e0e0',
-          paddingBottom: 5,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '500',
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'AI 채팅',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="trends"
-        options={{
-          title: '시장 동향',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trending-up-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="quiz"
-        options={{
-          title: '용어 퀴즈',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="mypage"
-        options={{
-          title: '마이페이지',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: '설정',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <View style={{ flex: 1 }}>
+      {/* 상단 SafeArea만 VPP 색상 적용 */}
+      <SafeAreaView style={{ backgroundColor: '#14287f' }} />
+
+      {/* 메인 콘텐츠 영역 */}
+      <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: '#14287f', // VPP 메인 컬러
+            tabBarInactiveTintColor: '#666666',
+            tabBarStyle: {
+              backgroundColor: '#ffffff',
+              borderTopColor: '#e0e0e0',
+              paddingBottom: 5,
+              height: 60,
+            },
+            tabBarLabelStyle: {
+              fontSize: 10,
+              fontWeight: '500',
+            },
+          }}
+        >
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'AI 채팅',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="chatbubble-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="trends"
+            options={{
+              title: '시장 동향',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons
+                  name="trending-up-outline"
+                  size={size}
+                  color={color}
+                />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="quiz"
+            options={{
+              title: '용어 퀴즈',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="book-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="mypage"
+            options={{
+              title: '마이페이지',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="person-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{
+              title: '설정',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="settings-outline" size={size} color={color} />
+              ),
+            }}
+          />
+        </Tabs>
+      </View>
+    </View>
   );
 }
