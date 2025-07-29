@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from 'react-native';
+
+import AppHeader from '../../components/common/AppHeader';
 
 /**
  * 마이페이지 화면
@@ -8,30 +10,9 @@ import { StyleSheet, Text, View } from 'react-native';
  */
 export default function MyPageScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>마이페이지</Text>
-      <Text style={styles.subtitle}>나의 투자 정보를 관리하세요</Text>
-    </View>
+    <>
+      <AppHeader title="마이페이지" subtitle="나만의 전력시장 학습 공간" />
+      <Text>마이페이지</Text>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#14287f', // VPP 메인 컬러
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-  },
-});

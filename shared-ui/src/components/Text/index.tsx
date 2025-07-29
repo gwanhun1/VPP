@@ -35,7 +35,7 @@ const WebText = ({
     default: 'text-neutral-900',
     primary: 'text-primary',
     secondary: 'text-secondary',
-    muted: 'text-neutral-400',
+    muted: 'text-neutral-300',
     success: 'text-success',
     warning: 'text-warning',
     error: 'text-error',
@@ -139,7 +139,7 @@ const NativeText = ({
 }: TextProps) => {
   try {
     const { Text } = require('react-native');
-    
+
     // 사이즈 매핑
     const variantStyles = {
       h1: { fontSize: 32, fontWeight: '700', lineHeight: 40 },
@@ -154,22 +154,27 @@ const NativeText = ({
       body2: { fontSize: 12, fontWeight: '400', lineHeight: 18 },
       caption: { fontSize: 10, fontWeight: '400', lineHeight: 14 },
       caption2: { fontSize: 8, fontWeight: '400', lineHeight: 12 },
-      overline: { fontSize: 10, fontWeight: '500', lineHeight: 14, textTransform: 'uppercase' }
+      overline: {
+        fontSize: 10,
+        fontWeight: '500',
+        lineHeight: 14,
+        textTransform: 'uppercase',
+      },
     };
-    
+
     // 색상 매핑
     const colorStyles = {
       default: '#1e293b',
       primary: '#14287f',
       secondary: '#f6a20b',
-      muted: '#64748b',
+      muted: '#cbd5e1',
       success: '#10b981',
       warning: '#f59e0b',
       error: '#ef4444',
       info: '#3b82f6',
-      white: '#ffffff'
+      white: '#ffffff',
     };
-    
+
     // 무게 매핑
     const weightStyles = {
       thin: '100',
@@ -180,18 +185,18 @@ const NativeText = ({
       semibold: '600',
       bold: '700',
       extrabold: '800',
-      black: '900'
+      black: '900',
     };
-    
+
     const textStyle = {
       ...variantStyles[variant],
       color: colorStyles[color],
       fontWeight: weightStyles[weight],
       textAlign: align,
       textTransform: transform,
-      ...(truncate && { numberOfLines: 1 })
+      ...(truncate && { numberOfLines: 1 }),
     };
-    
+
     return (
       <Text style={textStyle} {...props}>
         {children}

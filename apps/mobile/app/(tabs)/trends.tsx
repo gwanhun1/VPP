@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from 'react-native';
+
+import AppHeader from '../../components/common/AppHeader';
 /**
  * 시장 동향 화면
  * - 주식, 암호화폐, 부동산 등의 시장 동향 정보 제공
@@ -6,27 +8,9 @@ import { StyleSheet, Text, View } from 'react-native';
  */
 export default function TrendsScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>시장 동향</Text>
-      <Text style={styles.subtitle}>실시간 시장 정보를 확인하세요</Text>
-    </View>
+    <>
+      <AppHeader title="시장 동향" subtitle="실시간 시장 정보를 확인하세요" />
+      <Text>시장 동향</Text>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#14287f', // VPP 메인 컬러
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666666',
-  },
-});

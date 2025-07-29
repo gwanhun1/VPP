@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from 'react-native';
+
+import AppHeader from '../../components/common/AppHeader';
 
 /**
  * 용어 퀴즈 화면
@@ -8,30 +10,12 @@ import { StyleSheet, Text, View } from 'react-native';
  */
 export default function QuizScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>용어 퀴즈</Text>
-      <Text style={styles.subtitle}>투자 용어를 재미있게 학습해보세요</Text>
-    </View>
+    <>
+      <AppHeader
+        title="용어 퀴즈"
+        subtitle="투자 용어를 재미있게 학습해보세요"
+      />
+      <Text>용어 퀴즈</Text>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#14287f', // VPP 메인 컬러
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-  },
-});

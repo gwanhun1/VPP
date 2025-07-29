@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import Setting from '../../components/setting';
+import SettingHeader from '../../components/setting/SettingHeader';
 
 /**
  * 설정 화면
@@ -9,6 +10,7 @@ import Setting from '../../components/setting';
 export default function SettingsScreen() {
   return (
     <View style={styles.container}>
+      <SettingHeader />
       <Setting />
     </View>
   );

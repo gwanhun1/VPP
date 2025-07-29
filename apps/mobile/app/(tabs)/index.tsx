@@ -6,5 +6,14 @@ import { WebView } from 'react-native-webview';
  * - VPP 디자인 시스템 적용
  */
 export default function ChatScreen() {
-  return <WebView source={{ uri: 'https://vppweb.vercel.app' }} />;
+  return (
+    <WebView
+      source={{ uri: 'https://vppweb.vercel.app' }}
+      // 스크롤 방지
+      bounces={false}
+      overScrollMode="never"
+      // 사용자 터치로 스크롤 못하게
+      scrollEnabled={false}
+    />
+  );
 }
