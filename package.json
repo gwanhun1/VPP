@@ -15,7 +15,8 @@
     "mobile:publish": "cd apps/mobile && yarn expo publish",
     "mobile:prebuild": "cd apps/mobile && yarn expo prebuild",
     "mobile:update": "cd apps/mobile && yarn expo update",
-    "mobile:doctor": "cd apps/mobile && yarn expo doctor"
+    "mobile:doctor": "cd apps/mobile && yarn expo doctor",
+    "build": "yarn build:web"
   },
   "engines": {
     "node": "22.x"

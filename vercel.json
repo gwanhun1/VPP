@@ -4,8 +4,8 @@
       "main": true
     }
   },
-  "buildCommand": "yarn install && npx vite build",
-  "outputDirectory": "dist",
+  "buildCommand": "yarn nx build web --with-deps --skip-nx-cache",
+  "outputDirectory": "dist/apps/web",
   "framework": "vite",
   "routes": [
     { "handle": "filesystem" },
