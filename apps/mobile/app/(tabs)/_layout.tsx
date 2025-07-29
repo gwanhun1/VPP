@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { View, SafeAreaView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, SafeAreaView, Platform, StatusBar } from 'react-native';
 
 /**
  * 탭 레이아웃 컴포넌트
@@ -10,10 +10,28 @@ import { View, SafeAreaView } from 'react-native';
  * - VPP 디자인 시스템 색상 적용
  */
 export default function TabLayout() {
+  // StatusBar 색상 설정을 컴포넌트 마운트 시 적용
+  useEffect(() => {
+    // 상태바 스타일을 설정 (밝은 배경에는 어두운 콘텐츠, 어두운 배경에는 밝은 콘텐츠)
+    StatusBar.setBarStyle('light-content');
+    
+    // Android에서는 배경색도 설정
+    if (Platform.OS === 'android') {
+      StatusBar.setBackgroundColor('#14287f');
+      StatusBar.setTranslucent(true);
+    }
+  }, []);
+
   return (
     <View style={{ flex: 1 }}>
-      {/* 상단 SafeArea만 VPP 색상 적용 */}
-      <SafeAreaView style={{ backgroundColor: '#14287f' }} />
+
+      {/* ✅ iOS의 경우 SafeAreaView로 상단 영역 색상 처리 */}
+      <SafeAreaView
+        style={{
+          backgroundColor: '#14287f',
+          flex: 0, // iOS에서만 상단 Safe Area 처리
+        }}
+      />
 
       {/* 메인 콘텐츠 영역 */}
       <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -25,8 +43,8 @@ export default function TabLayout() {
             tabBarStyle: {
               backgroundColor: '#ffffff',
               borderTopColor: '#e0e0e0',
-              paddingBottom: 5,
-              height: 60,
+              paddingBottom: Platform.OS === 'ios' ? 5 : 10,
+              height: Platform.OS === 'ios' ? 60 : 65,
             },
             tabBarLabelStyle: {
               fontSize: 10,
@@ -85,6 +103,14 @@ export default function TabLayout() {
           />
         </Tabs>
       </View>
+
+      {/* ✅ iOS 하단 Safe Area 처리 */}
+      <SafeAreaView
+        style={{
+          backgroundColor: '#ffffff',
+          flex: 0,
+        }}
+      />
     </View>
   );
 }

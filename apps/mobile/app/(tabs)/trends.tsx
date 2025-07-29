@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View } from 'react-native';
-
 /**
  * 시장 동향 화면
  * - 주식, 암호화폐, 부동산 등의 시장 동향 정보 제공
@@ -20,17 +19,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
-    padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#14287f', // VPP 메인 컬러
-    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
     color: '#666666',
-    textAlign: 'center',
   },
 });
