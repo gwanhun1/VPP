@@ -14,7 +14,7 @@ const ChattingHeader = () => {
     setIsTooltipOpen(false);
   };
   return (
-    <header className="flex overflow-hidden relative flex-col justify-end p-6 h-40 sm:h-48 bg-primary">
+    <header className="flex overflow-hidden relative flex-col justify-end px-6 pb-2 h-40 sm:h-48 bg-primary">
       <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/2 -translate-y-1/2 bg-white/5"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full -translate-x-1/2 translate-y-1/2 bg-secondary/10"></div>
 

@@ -12,8 +12,8 @@ export default function ChatScreen() {
       // 스크롤 방지
       bounces={false}
       overScrollMode="never"
-      // 사용자 터치로 스크롤 못하게
-      scrollEnabled={false}
+      // 키보드 올라왔을 때 웹뷰 크기 조정
+      keyboardDisplayRequiresUserAction={false}
     />
   );
 }
