@@ -4,8 +4,11 @@
       "main": true
     }
   },
-  "framework": null,
-  "buildCommand": "npx nx build web --prod",
-  "outputDirectory": "dist/apps/web",
-  "installCommand": "yarn install --immutable"
+  "buildCommand": "yarn install && npx vite build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
+  ]
 }
