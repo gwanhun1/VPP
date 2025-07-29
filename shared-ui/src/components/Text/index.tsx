@@ -134,15 +134,72 @@ const NativeText = ({
   align = 'left',
   transform,
   truncate = false,
-  className = '',
   children,
   ...props
 }: TextProps) => {
-  // React Native에서는 Text 컴포넌트를 사용하므로, 실제 구현은 사용 시 다르게 처리
-  // 여기서는 플랫폼 코드 분기점만 제공
-
-  // 실제 사용 시 React Native의 Text 관련 로직으로 대체됨
-  return null;
+  try {
+    const { Text } = require('react-native');
+    
+    // 사이즈 매핑
+    const variantStyles = {
+      h1: { fontSize: 32, fontWeight: '700', lineHeight: 40 },
+      h2: { fontSize: 28, fontWeight: '700', lineHeight: 36 },
+      h3: { fontSize: 24, fontWeight: '600', lineHeight: 32 },
+      h4: { fontSize: 20, fontWeight: '600', lineHeight: 28 },
+      h5: { fontSize: 18, fontWeight: '600', lineHeight: 24 },
+      h6: { fontSize: 16, fontWeight: '500', lineHeight: 22 },
+      subtitle1: { fontSize: 18, fontWeight: '400', lineHeight: 24 },
+      subtitle2: { fontSize: 16, fontWeight: '400', lineHeight: 22 },
+      body: { fontSize: 14, fontWeight: '400', lineHeight: 20 },
+      body2: { fontSize: 12, fontWeight: '400', lineHeight: 18 },
+      caption: { fontSize: 10, fontWeight: '400', lineHeight: 14 },
+      caption2: { fontSize: 8, fontWeight: '400', lineHeight: 12 },
+      overline: { fontSize: 10, fontWeight: '500', lineHeight: 14, textTransform: 'uppercase' }
+    };
+    
+    // 색상 매핑
+    const colorStyles = {
+      default: '#1e293b',
+      primary: '#14287f',
+      secondary: '#f6a20b',
+      muted: '#64748b',
+      success: '#10b981',
+      warning: '#f59e0b',
+      error: '#ef4444',
+      info: '#3b82f6',
+      white: '#ffffff'
+    };
+    
+    // 무게 매핑
+    const weightStyles = {
+      thin: '100',
+      extralight: '200',
+      light: '300',
+      normal: '400',
+      medium: '500',
+      semibold: '600',
+      bold: '700',
+      extrabold: '800',
+      black: '900'
+    };
+    
+    const textStyle = {
+      ...variantStyles[variant],
+      color: colorStyles[color],
+      fontWeight: weightStyles[weight],
+      textAlign: align,
+      textTransform: transform,
+      ...(truncate && { numberOfLines: 1 })
+    };
+    
+    return (
+      <Text style={textStyle} {...props}>
+        {children}
+      </Text>
+    );
+  } catch {
+    return null;
+  }
 };
 
 export interface TextProps {

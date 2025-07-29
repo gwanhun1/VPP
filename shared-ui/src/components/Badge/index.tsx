@@ -64,15 +64,65 @@ const NativeBadge = ({
   size = 'md',
   rounded = 'default',
   icon,
-  className = '',
   children,
   ...props
 }: BadgeProps) => {
-  // React Native에서는 View 컴포넌트를 사용하므로, 실제 구현은 사용 시 다르게 처리
-  // 여기서는 플랫폼 코드 분기점만 제공
-
-  // 실제 사용 시 View 관련 로직으로 대체됨
-  return null;
+  try {
+    const { View, Text } = require('react-native');
+    
+    const variantStyles = {
+      default: { backgroundColor: '#f1f5f9', color: '#1e293b' },
+      primary: { backgroundColor: '#e9ecf5', color: '#14287f' },
+      point: { backgroundColor: '#14287f', color: '#ffffff' },
+      secondary: { backgroundColor: '#fff8e9', color: '#f6a20b' },
+      success: { backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981' },
+      warning: { backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' },
+      error: { backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' },
+      info: { backgroundColor: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' },
+      outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#cbd5e1', color: '#1e293b' }
+    };
+    
+    const sizeStyles = {
+      xs: { paddingVertical: 2, paddingHorizontal: 8, fontSize: 10 },
+      sm: { paddingVertical: 4, paddingHorizontal: 8, fontSize: 10 },
+      md: { paddingVertical: 4, paddingHorizontal: 12, fontSize: 12 },
+      lg: { paddingVertical: 6, paddingHorizontal: 16, fontSize: 14 },
+      base: { paddingVertical: 8, paddingHorizontal: 20, fontSize: 16 }
+    };
+    
+    const roundedStyles = {
+      none: { borderRadius: 0 },
+      sm: { borderRadius: 2 },
+      default: { borderRadius: 4 },
+      md: { borderRadius: 6 },
+      lg: { borderRadius: 8 },
+      full: { borderRadius: 999 }
+    };
+    
+    const badgeStyle = {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      ...variantStyles[variant],
+      ...sizeStyles[size],
+      ...roundedStyles[rounded]
+    };
+    
+    const textStyle = {
+      color: variantStyles[variant].color,
+      fontSize: sizeStyles[size].fontSize,
+      fontWeight: '500'
+    };
+    
+    return (
+      <View style={badgeStyle} {...props}>
+        {icon && <View style={{ marginRight: 4 }}>{icon}</View>}
+        <Text style={textStyle}>{children}</Text>
+      </View>
+    );
+  } catch {
+    return null;
+  }
 };
 
 export type BadgeProps = {

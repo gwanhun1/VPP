@@ -1,5 +1,5 @@
-
-import { Text, View, SafeAreaView } from 'react-native';
+import { Text } from '@vpp/shared-ui';
+import { View, SafeAreaView } from 'react-native';
 
 import tw from '../../utils/tailwind';
 
@@ -10,9 +10,14 @@ const SettingHeader = () => {
   return (
     <SafeAreaView style={tw`bg-primary`}>
       <View
-        style={tw`bg-primary px-md py-3 flex-row items-center justify-between border-b border-primary-light`}
+        style={tw`bg-primary px-md py-3 flex-row flex-col items-center justify-center border-b border-primary-light`}
       >
-        <Text style={tw`text-white font-semibold text-lg`}>설정</Text>
+        <Text variant="h4" color="white">
+          설정
+        </Text>
+        <Text variant="body2" color="white">
+          앱 환경을 개인화하세요
+        </Text>
       </View>
     </SafeAreaView>
   );

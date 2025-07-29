@@ -74,9 +74,54 @@ const WebSkeleton = ({
 };
 
 /**
- * Native 스켈레톤 (아직 미지원)
+ * Native 스켈레톤
  */
-const NativeSkeleton = (_: SkeletonProps) => null;
+const NativeSkeleton = ({
+  width = '100%',
+  height = 20,
+  rounded = true,
+  isOverlay = false,
+  isLoading = true,
+  children,
+}: SkeletonProps) => {
+  try {
+    const { View } = require('react-native');
+    
+    if (!isLoading) {
+      return children;
+    }
+    
+    const skeletonStyle = {
+      width: typeof width === 'string' ? width : width,
+      height: typeof height === 'string' ? height : height,
+      backgroundColor: '#e2e8f0',
+      borderRadius: rounded ? 6 : 0,
+      opacity: 0.7
+    };
+    
+    if (isOverlay && children) {
+      return (
+        <View style={{ position: 'relative' }}>
+          {children}
+          <View 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              ...skeletonStyle
+            }} 
+          />
+        </View>
+      );
+    }
+    
+    return <View style={skeletonStyle} />;
+  } catch {
+    return null;
+  }
+};
 
 /**
  * 플랫폼 분기

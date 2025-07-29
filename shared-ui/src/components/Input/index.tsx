@@ -89,15 +89,95 @@ const NativeInput = ({
   helperText,
   label,
   placeholder,
-  className = '',
-  inputClassName = '',
   ...props
 }: InputProps) => {
-  // React Native에서는 TextInput 컴포넌트를 사용하므로, 실제 구현은 사용 시 다르게 처리
-  // 여기서는 플랫폼 코드 분기점만 제공
-
-  // 실제 사용 시 TextInput 관련 로직으로 대체됨
-  return null;
+  try {
+    const { View, TextInput, Text } = require('react-native');
+    
+    const sizeStyles = {
+      xs: { fontSize: 12, paddingVertical: 4, paddingHorizontal: 8 },
+      sm: { fontSize: 14, paddingVertical: 6, paddingHorizontal: 12 },
+      md: { fontSize: 16, paddingVertical: 8, paddingHorizontal: 16 },
+      lg: { fontSize: 18, paddingVertical: 10, paddingHorizontal: 20 }
+    };
+    
+    const variantStyles = {
+      default: {
+        borderWidth: 1,
+        borderColor: '#cbd5e1',
+        backgroundColor: '#ffffff',
+        borderRadius: 6
+      },
+      filled: {
+        borderWidth: 1,
+        borderColor: 'transparent',
+        backgroundColor: '#f1f5f9',
+        borderRadius: 6
+      },
+      flushed: {
+        borderWidth: 0,
+        borderBottomWidth: 1,
+        borderBottomColor: '#cbd5e1',
+        backgroundColor: 'transparent',
+        borderRadius: 0
+      }
+    };
+    
+    let inputStyle: any = {
+      ...variantStyles[variant],
+      ...sizeStyles[size],
+      color: '#1e293b'
+    };
+    
+    if (error) {
+      inputStyle = {
+        ...inputStyle,
+        borderColor: '#ef4444'
+      };
+    } else if (success) {
+      inputStyle = {
+        ...inputStyle,
+        borderColor: '#10b981'
+      };
+    }
+    
+    if (disabled) {
+      inputStyle = {
+        ...inputStyle,
+        opacity: 0.6,
+        backgroundColor: '#f8fafc'
+      };
+    }
+    
+    const labelStyle = {
+      fontSize: 14,
+      fontWeight: '500',
+      color: '#374151',
+      marginBottom: 4
+    };
+    
+    const helperTextStyle = {
+      fontSize: 12,
+      color: error ? '#ef4444' : success ? '#10b981' : '#6b7280',
+      marginTop: 4
+    };
+    
+    return (
+      <View style={{ width: fullWidth ? '100%' : undefined }}>
+        {label && <Text style={labelStyle}>{label}</Text>}
+        <TextInput
+          style={inputStyle}
+          placeholder={placeholder}
+          editable={!disabled}
+          placeholderTextColor="#9ca3af"
+          {...props}
+        />
+        {helperText && <Text style={helperTextStyle}>{helperText}</Text>}
+      </View>
+    );
+  } catch {
+    return null;
+  }
 };
 
 export type InputProps = {

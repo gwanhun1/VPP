@@ -105,22 +105,117 @@ const NativeCard = ({
   padding = 'default',
   shadow = 'md',
   bordered = false,
-  hoverEffect = false,
-  className = '',
   children,
   ...props
 }: CardProps) => {
-  // React Native에서는 View 컴포넌트를 사용하므로, 실제 구현은 사용 시 다르게 처리
-  // 여기서는 플랫폼 코드 분기점만 제공
-
-  // 실제 사용 시 View 관련 로직으로 대체됨
-  return null;
+  try {
+    const { View } = require('react-native');
+    
+    const variantStyles = {
+      default: { backgroundColor: '#ffffff' },
+      primary: { backgroundColor: '#e9ecf5' }, // primary-50 색상
+      secondary: { backgroundColor: '#fff8e9' } // secondary-50 색상
+    };
+    
+    const paddingStyles = {
+      none: { padding: 0 },
+      xs: { padding: 8 },
+      sm: { padding: 12 },
+      default: { padding: 16 },
+      lg: { padding: 24 },
+      xl: { padding: 32 }
+    };
+    
+    const shadowStyles = {
+      none: {},
+      sm: { 
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 2,
+        elevation: 1
+      },
+      md: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 2
+      },
+      lg: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4
+      },
+      xl: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.12,
+        shadowRadius: 10,
+        elevation: 8
+      }
+    };
+    
+    const cardStyle = {
+      borderRadius: 8,
+      overflow: 'hidden',
+      ...variantStyles[variant],
+      ...paddingStyles[padding],
+      ...shadowStyles[shadow],
+      ...(bordered && { borderWidth: 1, borderColor: '#e2e8f0' })
+    };
+    
+    return (
+      <View style={cardStyle} {...props}>
+        {children}
+      </View>
+    );
+  } catch {
+    return null;
+  }
 };
 
 // 네이티브 환경에서 사용할 카드 섹션 컴포넌트들
-const NativeCardHeader = () => null;
-const NativeCardBody = () => null;
-const NativeCardFooter = () => null;
+const NativeCardHeader = ({ children, ...props }: CardSectionProps) => {
+  try {
+    const { View } = require('react-native');
+    return (
+      <View style={{ marginBottom: 12 }} {...props}>
+        {children}
+      </View>
+    );
+  } catch {
+    return null;
+  }
+};
+
+const NativeCardBody = ({ children, ...props }: CardSectionProps) => {
+  try {
+    const { View } = require('react-native');
+    return (
+      <View {...props}>
+        {children}
+      </View>
+    );
+  } catch {
+    return null;
+  }
+};
+
+const NativeCardFooter = ({ children, ...props }: CardSectionProps) => {
+  try {
+    const { View } = require('react-native');
+    return (
+      <View style={{ marginTop: 12 }} {...props}>
+        {children}
+      </View>
+    );
+  } catch {
+    return null;
+  }
+};
 
 export type CardProps = {
   /**
