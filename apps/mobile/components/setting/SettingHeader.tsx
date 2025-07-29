@@ -1,3 +1,4 @@
+
 import { Text, View, SafeAreaView } from 'react-native';
 
 import tw from '../../utils/tailwind';
@@ -8,8 +9,10 @@ import tw from '../../utils/tailwind';
 const SettingHeader = () => {
   return (
     <SafeAreaView style={tw`bg-primary`}>
-      <View style={tw`bg-primary px-md py-3 flex-row items-center justify-center border-b border-primary-light`}>
-        <Text style={tw`text-white font-semibold text-lg text-center`}>설정</Text>
+      <View
+        style={tw`bg-primary px-md py-3 flex-row items-center justify-between border-b border-primary-light`}
+      >
+        <Text style={tw`text-white font-semibold text-lg`}>설정</Text>
       </View>
     </SafeAreaView>
   );
