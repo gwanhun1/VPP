@@ -5,7 +5,7 @@ import { Switch, View } from 'react-native';
 import tw from '../../utils/tailwind';
 
 const AlarmButtonGroup = () => {
-  const subColor = tw.color('sub') ?? '#f6a20b';
+  const subColor = tw.color('secondary');
 
   const [drNoticeEnabled, setDrNoticeEnabled] = useState(false);
   const [marketNoticeEnabled, setMarketNoticeEnabled] = useState(false);

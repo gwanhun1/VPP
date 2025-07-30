@@ -7,8 +7,8 @@ import tw from '../../utils/tailwind';
 import Card from '../common/Card';
 
 const DarkMode = () => {
-  const primaryColor = tw.color('primary') ?? '#14287f';
-  const subColor = tw.color('sub') ?? '#f6a20b';
+  const primaryColor = tw.color('primary');
+  const subColor = tw.color('secondary');
 
   const [isEnabled, setIsEnabled] = useState(false);
 
