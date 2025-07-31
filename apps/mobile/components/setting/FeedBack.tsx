@@ -1,9 +1,8 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Text } from '@vpp/shared-ui';
+import { Card, Text } from '@vpp/shared-ui';
 import { TouchableOpacity, View } from 'react-native';
 
 import tw from '../../utils/tailwind';
-import Card from '../common/Card';
 
 const FeedBack = () => {
   const primaryColor = tw.color('primary');
@@ -11,7 +10,7 @@ const FeedBack = () => {
 
   return (
     <TouchableOpacity>
-      <Card>
+      <Card bordered>
         <View style={tw`flex-row items-center gap-2 mb-2 justify-between`}>
           <View style={tw`flex-row items-center gap-2`}>
             <View

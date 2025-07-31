@@ -1,15 +1,14 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Text } from '@vpp/shared-ui';
+import { Card, Text } from '@vpp/shared-ui';
 import { View } from 'react-native';
 
 import tw from '../../utils/tailwind';
-import Card from '../common/Card';
 
 const Language = () => {
   const primaryColor = tw.color('primary');
 
   return (
-    <Card>
+    <Card bordered>
       <View style={tw`flex-row items-center gap-2 mb-2`}>
         <View
           style={tw`w-10 p-2 rounded-xl items-center justify-center bg-gray-200`}

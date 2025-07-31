@@ -1,6 +1,5 @@
-import { Text } from 'react-native';
-
 import AppHeader from '../../components/common/AppHeader';
+import MyPage from '../../components/myPage';
 
 /**
  * 마이페이지 화면
@@ -12,7 +11,7 @@ export default function MyPageScreen() {
   return (
     <>
       <AppHeader title="마이페이지" subtitle="나만의 전력시장 학습 공간" />
-      <Text>마이페이지</Text>
+      <MyPage />
     </>
   );
 }
