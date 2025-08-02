@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Card, Text } from '@vpp/shared-ui';
 import { TouchableOpacity, View } from 'react-native';
 
@@ -16,7 +17,7 @@ const FeedBack = () => {
             <View
               style={tw`w-10 p-2 rounded-xl items-center justify-center bg-gray-200`}
             >
-              <MaterialIcons name="help" size={24} color={primaryColor} />
+              <Ionicons name="chatbox-outline" size={24} color={primaryColor} />
             </View>
             <View>
               <Text variant="h5" color="primary" weight="semibold">

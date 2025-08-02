@@ -1,4 +1,4 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import { View } from 'react-native';
 
@@ -13,7 +13,11 @@ const MyQuizPage = () => {
     <Card bordered>
       <CardHeader>
         <View style={tw`flex-row items-center gap-2`}>
-          <MaterialIcons name="quiz" size={24} color={primaryColor} />
+          <MaterialCommunityIcons
+            name="medal-outline"
+            size={24}
+            color={primaryColor}
+          />
           <Text variant="h5" weight="semibold" color="primary">
             퀴즈 성과
           </Text>

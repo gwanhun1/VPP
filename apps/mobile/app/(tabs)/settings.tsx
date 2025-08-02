@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import Setting from '../../components/setting';
 import SettingHeader from '../../components/setting/SettingHeader';
@@ -9,16 +9,9 @@ import SettingHeader from '../../components/setting/SettingHeader';
  */
 export default function SettingsScreen() {
   return (
-    <View style={styles.container}>
+    <View>
       <SettingHeader />
       <Setting />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-});

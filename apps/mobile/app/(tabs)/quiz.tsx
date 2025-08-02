@@ -1,6 +1,8 @@
-import { Text } from 'react-native';
+import { View } from 'react-native';
 
-import AppHeader from '../../components/common/AppHeader';
+import Quiz from '../../components/quiz';
+import QuizHeader from '../../components/quiz/QuizHeader';
+import { QuizProvider } from '../../utils/QuizProvider';
 
 /**
  * 용어 퀴즈 화면
@@ -10,12 +12,11 @@ import AppHeader from '../../components/common/AppHeader';
  */
 export default function QuizScreen() {
   return (
-    <>
-      <AppHeader
-        title="용어 퀴즈"
-        subtitle="투자 용어를 재미있게 학습해보세요"
-      />
-      <Text>용어 퀴즈</Text>
-    </>
+    <View>
+      <QuizProvider>
+        <QuizHeader />
+        <Quiz />
+      </QuizProvider>
+    </View>
   );
 }

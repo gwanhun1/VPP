@@ -23,10 +23,10 @@ const Language = () => {
       <View style={tw`flex-row items-center justify-between`}>
         <View style={tw`p-2`}>
           <Text variant="h6" color="primary">
-            다크 모드
+            언어
           </Text>
           <Text variant="body2" color="muted">
-            어두운 테마로 변경
+            앱 표시 언어
           </Text>
         </View>
         <Text variant="h6" weight="bold" color="primary">
