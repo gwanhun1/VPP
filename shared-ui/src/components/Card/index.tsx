@@ -16,8 +16,10 @@ const WebCard = ({
 
   const variantClasses = {
     default: 'bg-white',
-    primary: 'bg-primary-50',
-    secondary: 'bg-secondary-50',
+    primary: 'bg-blue-50',
+    secondary: 'bg-gray-50',
+    error: 'bg-red-50',
+    success: 'bg-green-50',
   };
 
   const paddingClasses = {
@@ -110,63 +112,65 @@ const NativeCard = ({
 }: CardProps) => {
   try {
     const { View } = require('react-native');
-    
+
     const variantStyles = {
       default: { backgroundColor: '#ffffff' },
-      primary: { backgroundColor: '#e9ecf5' }, // primary-50 색상
-      secondary: { backgroundColor: '#fff8e9' } // secondary-50 색상
+      primary: { backgroundColor: '#eff6ff' }, // blue-50
+      secondary: { backgroundColor: '#fff9e6' }, // yellow-50
+      error: { backgroundColor: '#fef2f2' }, // red-50
+      success: { backgroundColor: '#f0fdf4' }, // green-50
     };
-    
+
     const paddingStyles = {
       none: { padding: 0 },
       xs: { padding: 8 },
       sm: { padding: 12 },
       default: { padding: 16 },
       lg: { padding: 24 },
-      xl: { padding: 32 }
+      xl: { padding: 32 },
     };
-    
+
     const shadowStyles = {
       none: {},
-      sm: { 
+      sm: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.06,
         shadowRadius: 2,
-        elevation: 1
+        elevation: 1,
       },
       md: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 4,
-        elevation: 2
+        elevation: 2,
       },
       lg: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 6,
-        elevation: 4
+        elevation: 4,
       },
       xl: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.12,
         shadowRadius: 10,
-        elevation: 8
-      }
+        elevation: 8,
+      },
     };
-    
+
     const cardStyle = {
       borderRadius: 8,
       overflow: 'hidden',
       ...variantStyles[variant],
       ...paddingStyles[padding],
       ...shadowStyles[shadow],
-      ...(bordered && { borderWidth: 1, borderColor: '#e2e8f0' })
+      ...(bordered && { borderWidth: 1, borderColor: '#e2e8f0' }),
     };
-    
+
     return (
       <View style={cardStyle} {...props}>
         {children}
@@ -194,11 +198,7 @@ const NativeCardHeader = ({ children, ...props }: CardSectionProps) => {
 const NativeCardBody = ({ children, ...props }: CardSectionProps) => {
   try {
     const { View } = require('react-native');
-    return (
-      <View {...props}>
-        {children}
-      </View>
-    );
+    return <View {...props}>{children}</View>;
   } catch {
     return null;
   }
@@ -222,7 +222,7 @@ export type CardProps = {
    * 카드 변형
    * @default 'default'
    */
-  variant?: 'default' | 'primary' | 'secondary';
+  variant?: 'default' | 'primary' | 'secondary' | 'error' | 'success';
 
   /**
    * 패딩 크기

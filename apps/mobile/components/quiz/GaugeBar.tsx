@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Animated } from 'react-native';
+import { Animated, View } from 'react-native';
+
 import { useQuiz } from '../../utils/QuizProvider';
 import tw from '../../utils/tailwind';
 
 const GaugeBar = () => {
-  const { step, question } = useQuiz();
-  const progress = (step / question?.length) * 100;
+  const { step, questions } = useQuiz();
+  const progress = ((step + 1) / questions?.length) * 100;
   const animatedWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

@@ -14,7 +14,7 @@ export default function TabLayout() {
   useEffect(() => {
     // 상태바 스타일을 설정 (밝은 배경에는 어두운 콘텐츠, 어두운 배경에는 밝은 콘텐츠)
     StatusBar.setBarStyle('light-content');
-    
+
     // Android에서는 배경색도 설정
     if (Platform.OS === 'android') {
       StatusBar.setBackgroundColor('#14287f');
@@ -24,7 +24,6 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-
       {/* ✅ iOS의 경우 SafeAreaView로 상단 영역 색상 처리 */}
       <SafeAreaView
         style={{

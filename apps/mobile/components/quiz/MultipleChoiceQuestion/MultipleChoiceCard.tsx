@@ -30,16 +30,22 @@ const MultipleChoiceCard = ({
   option,
   questionId,
 }: MultipleChoiceCardProps) => {
-  const { answer, setAnswer } = useQuiz();
+  const { answer, setAnswer, getAnswerState } = useQuiz();
 
-  console.log(answer);
+  const isSelected = answer[questionId] === option;
+  const answerState = getAnswerState(questionId);
+
+  // 카드 variant 결정
+  const getCardVariant = () => {
+    if (!isSelected) return 'default';
+    if (answerState === 'correct') return 'primary'; // 정답은 primary
+    if (answerState === 'incorrect') return 'error'; // 오답은 error
+    return 'primary';
+  };
 
   return (
-    <TouchableOpacity onPress={() => setAnswer(questionId, number)}>
-      <Card
-        bordered
-        variant={answer[questionId] === number ? 'primary' : 'default'}
-      >
+    <TouchableOpacity onPress={() => setAnswer(questionId, option)}>
+      <Card bordered variant={getCardVariant()}>
         <View style={tw`flex-row items-center gap-2`}>
           <Badge variant="primary" rounded="full" size="sm">
             <Text weight="bold">{SelectAlphabet(number)}</Text>

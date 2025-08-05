@@ -8,8 +8,7 @@ import tw from '../../utils/tailwind';
 import GaugeBar from './GaugeBar';
 
 const QuizHeader = () => {
-  const { step, question } = useQuiz();
-  const primaryColor = tw.color('primary');
+  const { step, questions } = useQuiz();
 
   return (
     <View>
@@ -19,9 +18,9 @@ const QuizHeader = () => {
         {/* 왼쪽 아이콘 + 텍스트 영역 */}
         <View style={tw`flex-row items-center gap-2`}>
           <View
-            style={tw`w-10 h-10 rounded-xl items-center justify-center bg-gray-200`}
+            style={tw`w-10 h-10 rounded-xl items-center justify-center bg-[rgba(255,255,255,0.2)]`}
           >
-            <MaterialIcons name="language" size={24} color={primaryColor} />
+            <MaterialIcons name="language" size={24} color="white" />
           </View>
 
           <View>
@@ -42,7 +41,7 @@ const QuizHeader = () => {
             진행률
           </Text>
           <Text variant="body2" color="white" weight="bold">
-            {step}/{question?.length}
+            {step + 1}/{questions.length}
           </Text>
         </View>
       </View>
