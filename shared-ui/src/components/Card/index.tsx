@@ -8,6 +8,7 @@ const WebCard = ({
   shadow = 'md',
   bordered = false,
   hoverEffect = false,
+  backgroundColor,
   className = '',
   children,
   ...props
@@ -17,9 +18,10 @@ const WebCard = ({
   const variantClasses = {
     default: 'bg-white',
     primary: 'bg-blue-50',
-    secondary: 'bg-gray-50',
+    secondary: 'bg-yellow-50',
     error: 'bg-red-50',
     success: 'bg-green-50',
+    warning: 'bg-orange-50',
   };
 
   const paddingClasses = {
@@ -41,7 +43,7 @@ const WebCard = ({
 
   const classes = cn(
     baseClasses,
-    variantClasses[variant as keyof typeof variantClasses],
+    !backgroundColor && variantClasses[variant as keyof typeof variantClasses], // backgroundColor가 있으면 variant 무시
     paddingClasses[padding as keyof typeof paddingClasses],
     shadowClasses[shadow as keyof typeof shadowClasses],
     bordered && 'border border-neutral-200',
@@ -49,8 +51,10 @@ const WebCard = ({
     className
   );
 
+  const style = backgroundColor ? { backgroundColor } : {};
+
   return (
-    <div className={classes} {...props}>
+    <div className={classes} style={style} {...props}>
       {children}
     </div>
   );
@@ -107,6 +111,7 @@ const NativeCard = ({
   padding = 'default',
   shadow = 'md',
   bordered = false,
+  backgroundColor,
   children,
   ...props
 }: CardProps) => {
@@ -119,6 +124,7 @@ const NativeCard = ({
       secondary: { backgroundColor: '#fff9e6' }, // yellow-50
       error: { backgroundColor: '#fef2f2' }, // red-50
       success: { backgroundColor: '#f0fdf4' }, // green-50
+      warning: { backgroundColor: '#fff9e6' }, // orange-500
     };
 
     const paddingStyles = {
@@ -165,7 +171,8 @@ const NativeCard = ({
     const cardStyle = {
       borderRadius: 8,
       overflow: 'hidden',
-      ...variantStyles[variant],
+      // backgroundColor prop이 있으면 우선 사용, 없으면 variant 사용
+      ...(backgroundColor ? { backgroundColor } : variantStyles[variant]),
       ...paddingStyles[padding],
       ...shadowStyles[shadow],
       ...(bordered && { borderWidth: 1, borderColor: '#e2e8f0' }),
@@ -222,7 +229,13 @@ export type CardProps = {
    * 카드 변형
    * @default 'default'
    */
-  variant?: 'default' | 'primary' | 'secondary' | 'error' | 'success';
+  variant?:
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'success'
+    | 'warning';
 
   /**
    * 패딩 크기
@@ -247,6 +260,11 @@ export type CardProps = {
    * @default false
    */
   hoverEffect?: boolean;
+
+  /**
+   * 커스텀 배경색 (variant보다 우선순위 높음)
+   */
+  backgroundColor?: string;
 
   /**
    * 추가 클래스명
