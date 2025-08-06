@@ -30,7 +30,7 @@ const OXButton = ({ option, questionId, number }: OXButtonProps) => {
       onPress={() => setAnswer(questionId, option || '')}
     >
       <Card bordered variant={getCardVariant()}>
-        <View style={tw`justify-center items-center`}>
+        <View style={tw`justify-center items-center h-30`}>
           <Text variant="h6" weight="bold" color={'primary'}>
             {option} {option === 'O' ? '(맞다)' : '(틀렸다)'}
           </Text>

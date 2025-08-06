@@ -48,7 +48,9 @@ const MultipleChoiceCard = ({
       <Card bordered variant={getCardVariant()}>
         <View style={tw`flex-row items-center gap-2`}>
           <Badge variant="primary" rounded="full" size="sm">
-            <Text weight="bold">{SelectAlphabet(number)}</Text>
+            <Text weight="bold" color="primary">
+              {SelectAlphabet(number)}
+            </Text>
           </Badge>
           <Text variant="body" color="primary">
             {option}
