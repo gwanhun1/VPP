@@ -12,6 +12,11 @@ export default function ChatScreen() {
       // 스크롤 방지
       bounces={false}
       overScrollMode="never"
+      // 전체 화면 채움 + iOS 자동 인셋/액세서리 바 비활성화
+      style={{ flex: 1 }}
+      automaticallyAdjustContentInsets={false}
+      contentInsetAdjustmentBehavior="never"
+      hideKeyboardAccessoryView
       // 키보드 올라왔을 때 웹뷰 크기 조정
       keyboardDisplayRequiresUserAction={false}
     />
