@@ -1,8 +1,9 @@
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import Quiz from '../../components/quiz';
 import QuizHeader from '../../components/quiz/QuizHeader';
 import { QuizProvider } from '../../utils/QuizProvider';
+import useResponsive from '../../utils/useResponsive';
 
 /**
  * 용어 퀴즈 화면
@@ -11,12 +12,30 @@ import { QuizProvider } from '../../utils/QuizProvider';
  * - VPP 디자인 시스템 적용
  */
 export default function QuizScreen() {
+  const { containerMaxWidth, horizontalPadding } = useResponsive();
   return (
-    <View>
-      <QuizProvider>
-        <QuizHeader />
-        <Quiz />
-      </QuizProvider>
-    </View>
+    <QuizProvider>
+      <QuizHeader />
+      <ScrollView
+        contentContainerStyle={{
+          paddingTop: 12,
+          paddingBottom: 24,
+          flexGrow: 1,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={{
+            alignSelf: 'center',
+            width: '100%',
+            maxWidth: containerMaxWidth,
+            paddingHorizontal: horizontalPadding,
+            rowGap: 12,
+          }}
+        >
+          <Quiz />
+        </View>
+      </ScrollView>
+    </QuizProvider>
   );
 }

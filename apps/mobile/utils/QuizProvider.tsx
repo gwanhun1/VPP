@@ -56,7 +56,11 @@ type ResultContextType = {
 };
 
 const QuizContext = createContext<
-  (QuizContextType & AnswerContextType & QuestionContextType & ResultContextType) | undefined
+  | (QuizContextType &
+      AnswerContextType &
+      QuestionContextType &
+      ResultContextType)
+  | undefined
 >(undefined);
 
 export const QuizProvider = ({ children }: { children: ReactNode }) => {
@@ -64,38 +68,47 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
   const [step, _setStep] = useState<number>(0);
   const [questions, _setQuestions] = useState<QuizQuestion[]>([]);
   const [results, _setResults] = useState<AnswerResult[]>([]);
-  const [answerStates, _setAnswerStates] = useState<Record<number, 'correct' | 'incorrect' | null>>({});
+  const [answerStates, _setAnswerStates] = useState<
+    Record<number, 'correct' | 'incorrect' | null>
+  >({});
 
   // 답변 설정 및 즉시 검증
   const setAnswer = (id: number, value: string) => {
     _setAnswer((prev) => ({ ...prev, [id]: value }));
-    
+
     // 즉시 답변 검증
-    const question = questions.find(q => q.id === id);
+    const question = questions.find((q) => q.id === id);
     if (question) {
-      const isCorrect = value.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
-      _setAnswerStates(prev => ({ ...prev, [id]: isCorrect ? 'correct' : 'incorrect' }));
-      
+      const isCorrect =
+        value.toLowerCase().trim() ===
+        question.correctAnswer.toLowerCase().trim();
+      _setAnswerStates((prev) => ({
+        ...prev,
+        [id]: isCorrect ? 'correct' : 'incorrect',
+      }));
+
       // 결과 저장
       const result: AnswerResult = {
         questionId: id,
         userAnswer: value,
         correctAnswer: question.correctAnswer,
         isCorrect,
-        description: question.description
+        description: question.description,
       };
       addResult(result);
     }
   };
 
   // 답변 상태 조회
-  const getAnswerState = (questionId: number): 'correct' | 'incorrect' | null => {
+  const getAnswerState = (
+    questionId: number
+  ): 'correct' | 'incorrect' | null => {
     return answerStates[questionId] || null;
   };
 
   // 답변 검증 (기존 호환성을 위해 유지)
   const checkAnswer = (questionId: number): AnswerResult | null => {
-    return results.find(r => r.questionId === questionId) || null;
+    return results.find((r) => r.questionId === questionId) || null;
   };
 
   // 단계 관리
@@ -124,17 +137,17 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
 
   // 결과 관리
   const addResult = (result: AnswerResult) => {
-    _setResults(prev => {
-      const filtered = prev.filter(r => r.questionId !== result.questionId);
+    _setResults((prev) => {
+      const filtered = prev.filter((r) => r.questionId !== result.questionId);
       return [...filtered, result];
     });
   };
 
   const getQuizResult = (): QuizResult => {
     const totalQuestions = questions.length;
-    const correctCount = results.filter(r => r.isCorrect).length;
-    const wrongCount = results.filter(r => !r.isCorrect).length;
-    const wrongAnswers = results.filter(r => !r.isCorrect);
+    const correctCount = results.filter((r) => r.isCorrect).length;
+    const wrongCount = results.filter((r) => !r.isCorrect).length;
+    const wrongAnswers = results.filter((r) => !r.isCorrect);
     const totalScore = correctCount * 10; // 문제당 10점
 
     return {
@@ -142,7 +155,7 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
       correctCount,
       wrongCount,
       wrongAnswers,
-      totalScore
+      totalScore,
     };
   };
 
@@ -175,7 +188,7 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
         results,
         addResult,
         getQuizResult,
-        resetQuiz
+        resetQuiz,
       }}
     >
       {children}

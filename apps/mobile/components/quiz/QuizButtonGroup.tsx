@@ -1,9 +1,11 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { Button, Text } from '@vpp/shared-ui';
+import { Text } from '@vpp/shared-ui';
 import { Alert, View } from 'react-native';
 
 import { useQuiz } from '../../utils/QuizProvider';
 import tw from '../../utils/tailwind';
+
+import QuizActionButton from './QuizActionButton';
 
 const QuizButtonGroup = () => {
   const primaryColor = tw.color('primary');
@@ -15,6 +17,7 @@ const QuizButtonGroup = () => {
     currentQuestion,
     answer,
     getQuizResult,
+    resetQuiz,
   } = useQuiz();
 
   const handleNextStep = () => {
@@ -47,10 +50,7 @@ const QuizButtonGroup = () => {
       '퀴즈 완료 🙌',
 
       `총 ${result.totalQuestions}문제 중 ${result.correctCount}문제 맞춤\n정답률: ${percentage}%\n점수: ${result.totalScore}점\n\n오답 ${result.wrongCount}개`,
-      [
-        { text: '다시 풀기', onPress: () => window.location.reload() },
-        { text: '확인' },
-      ]
+      [{ text: '다시 풀기', onPress: () => resetQuiz() }, { text: '확인' }]
     );
   };
 
@@ -59,12 +59,11 @@ const QuizButtonGroup = () => {
 
   return (
     <View style={tw`mt-2 flex-row justify-between`}>
-      <Button
+      <QuizActionButton
         variant="outline"
-        onClick={handlePrevStep}
+        onPress={handlePrevStep}
         disabled={step === 0}
         rounded="full"
-        size="lg"
       >
         <View style={tw`flex-row items-center gap-1`}>
           <AntDesign name="left" size={12} color={primaryColor} />
@@ -72,14 +71,13 @@ const QuizButtonGroup = () => {
             이전
           </Text>
         </View>
-      </Button>
+      </QuizActionButton>
 
-      <Button
-        onClick={isLastQuestion ? handleComplete : handleNextStep}
+      <QuizActionButton
+        onPress={isLastQuestion ? handleComplete : handleNextStep}
         disabled={!hasAnswer}
         rounded="full"
         variant="secondary"
-        size="lg"
       >
         <View style={tw`flex-row items-center gap-1`}>
           <Text variant="body" weight="bold" color="white">
@@ -87,7 +85,7 @@ const QuizButtonGroup = () => {
           </Text>
           {!isLastQuestion && <AntDesign name="right" size={12} color="#fff" />}
         </View>
-      </Button>
+      </QuizActionButton>
     </View>
   );
 };

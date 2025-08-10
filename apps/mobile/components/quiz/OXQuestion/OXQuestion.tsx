@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
@@ -17,22 +17,18 @@ type OXQuestionProps = {
 
 const OXQuestion = ({ quiz }: OXQuestionProps) => {
   return (
-    <ScrollView>
-      <View style={tw`flex-col gap-2`}>
-        <View
-          style={tw`flex-row items-center gap-2 justify-center items-center`}
-        >
-          {quiz?.options?.map((option, index) => (
-            <OXButton
-              key={index}
-              option={option}
-              questionId={quiz.id}
-              number={index + 1}
-            />
-          ))}
-        </View>
+    <View style={tw`flex-col gap-2`}>
+      <View style={tw`flex-row justify-center items-center gap-2`}>
+        {quiz?.options?.map((option, index) => (
+          <OXButton
+            key={index}
+            option={option}
+            questionId={quiz.id}
+            number={index + 1}
+          />
+        ))}
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
