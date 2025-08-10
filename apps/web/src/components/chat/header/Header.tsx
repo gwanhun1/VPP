@@ -1,10 +1,11 @@
 import { Button, Text } from '@vpp/shared-ui';
 import ChattingHeaderPrompt from './HeaderPrompt';
 import HeaderMoreTooltip from './HeaderMoreTooltip';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const ChattingHeader = () => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+  const moreAnchorRef = useRef<HTMLDivElement | null>(null);
 
   const handleMoreButtonClick = () => {
     setIsTooltipOpen((prev) => !prev);
@@ -14,7 +15,7 @@ const ChattingHeader = () => {
     setIsTooltipOpen(false);
   };
   return (
-    <header className="flex overflow-hidden relative flex-col justify-end px-6 pb-2 h-40 sm:h-48 bg-primary">
+    <header className="flex overflow-hidden relative flex-col justify-end px-6 pb-2 h-28 sm:h-32 bg-primary">
       <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/2 -translate-y-1/2 bg-white/5"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full -translate-x-1/2 translate-y-1/2 bg-secondary/10"></div>
 
@@ -49,7 +50,7 @@ const ChattingHeader = () => {
         </div>
 
         {/* 더보기 섹션 */}
-        <div className="relative">
+        <div className="relative" ref={moreAnchorRef}>
           <Button
             size="sm"
             isIconOnly
@@ -72,7 +73,11 @@ const ChattingHeader = () => {
               />
             </svg>
           </Button>
-          <HeaderMoreTooltip isOpen={isTooltipOpen} onClose={closeTooltip} />
+          <HeaderMoreTooltip
+            isOpen={isTooltipOpen}
+            onClose={closeTooltip}
+            anchorRef={moreAnchorRef}
+          />
         </div>
       </div>
 

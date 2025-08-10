@@ -1,9 +1,10 @@
 import { Button, Text } from '@vpp/shared-ui';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 type HeaderMoreTooltipProps = {
   isOpen: boolean;
   onClose: () => void;
+  anchorRef: React.RefObject<HTMLElement | HTMLDivElement>;
 };
 
 type TooltipItem = {
@@ -12,8 +13,41 @@ type TooltipItem = {
   onClick: () => void;
 };
 
-const HeaderMoreTooltip = ({ isOpen, onClose }: HeaderMoreTooltipProps) => {
+const HeaderMoreTooltip = ({ isOpen, onClose, anchorRef }: HeaderMoreTooltipProps) => {
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  // anchor 위치에 따라 툴팁 위치 계산
+  const computePosition = useCallback(() => {
+    const anchor = anchorRef.current as HTMLElement | null;
+    const panel = tooltipRef.current;
+    if (!anchor || !panel) return;
+
+    const rect = anchor.getBoundingClientRect();
+    const panelWidth = panel.offsetWidth;
+    const gap = 8; // 버튼 아래 여백
+    const top = rect.bottom + gap;
+    const left = Math.max(8, rect.right - panelWidth); // 우측 정렬, 화면 밖 방지
+    setPos({ top, left });
+  }, [anchorRef]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    // 초기 렌더 후 측정
+    const id = requestAnimationFrame(computePosition);
+    return () => cancelAnimationFrame(id);
+  }, [isOpen, computePosition]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = () => computePosition();
+    window.addEventListener('resize', handler);
+    window.addEventListener('scroll', handler, true);
+    return () => {
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('scroll', handler, true);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -78,19 +112,20 @@ const HeaderMoreTooltip = ({ isOpen, onClose }: HeaderMoreTooltipProps) => {
 
   return (
     <>
-      {isOpen && <div className="fixed inset-0 z-90" aria-hidden="true" />}
+      {isOpen && <div className="fixed inset-0 z-[900]" aria-hidden="true" />}
       <div
         ref={tooltipRef}
-        className="absolute z-100 right-0 top-full mt-2 bg-white rounded-xl shadow-lg py-2 w-56 overflow-hidden"
+        className="overflow-hidden fixed py-2 w-56 bg-white rounded-xl shadow-lg z-[1000]"
+        style={{ top: pos.top, left: pos.left }}
       >
         {tooltipItems.map((item, index) => (
           <Button
             variant="ghost"
             key={index}
-            className="flex items-center w-full px-4 py-2 hover:bg-gray-50 transition-colors"
+            className="flex items-center px-4 py-2 w-full transition-colors hover:bg-gray-50"
             onClick={item.onClick}
           >
-            <span className="text-gray-500 mr-3">{item.icon}</span>
+            <span className="mr-3 text-gray-500">{item.icon}</span>
             <Text variant="body2" className="text-gray-700">
               {item.label}
             </Text>
