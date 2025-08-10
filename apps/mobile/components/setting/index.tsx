@@ -10,7 +10,7 @@ import Language from './Language';
 
 const Setting = () => {
   return (
-    <ScrollView style={tw`p-4`}>
+    <ScrollView>
       <View style={tw`flex-col gap-2`}>
         <Language />
         <Alarm />

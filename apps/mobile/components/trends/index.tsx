@@ -8,8 +8,8 @@ import TrendsStatus from './status/TrendsStatus';
 
 const Trends = () => {
   return (
-    <ScrollView style={tw`flex-1`}>
-      <View style={tw`p-4 flex-col gap-4`}>
+    <ScrollView>
+      <View style={tw`flex-col gap-4`}>
         <TrendsStatus />
         <TrendFilter />
         <TrendContainer />

@@ -10,7 +10,7 @@ import MyPageStatus from './status/MyPageStatus';
 
 const MyPage = () => {
   return (
-    <ScrollView style={tw`p-4`}>
+    <ScrollView>
       <View style={tw`flex-col gap-4`}>
         <MyPageStatus />
         <MyQuizPage />
