@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import tw from '../../utils/tailwind';
 
@@ -10,15 +10,13 @@ import Language from './Language';
 
 const Setting = () => {
   return (
-    <ScrollView>
-      <View style={tw`flex-col gap-2`}>
-        <Language />
-        <Alarm />
-        <DarkMode />
-        <Assist />
-        <FeedBack />
-      </View>
-    </ScrollView>
+    <View style={tw`flex-col gap-2`}>
+      <Language />
+      <Alarm />
+      <DarkMode />
+      <Assist />
+      <FeedBack />
+    </View>
   );
 };
 export default Setting;

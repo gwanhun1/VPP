@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import tw from '../../utils/tailwind';
 
@@ -10,15 +10,13 @@ import MyPageStatus from './status/MyPageStatus';
 
 const MyPage = () => {
   return (
-    <ScrollView>
-      <View style={tw`flex-col gap-4`}>
-        <MyPageStatus />
-        <MyQuizPage />
-        <BookMark />
-        <Recent />
-        <ChattingLog />
-      </View>
-    </ScrollView>
+    <View style={tw`flex-col gap-4`}>
+      <MyPageStatus />
+      <MyQuizPage />
+      <BookMark />
+      <Recent />
+      <ChattingLog />
+    </View>
   );
 };
 

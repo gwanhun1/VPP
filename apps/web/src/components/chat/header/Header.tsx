@@ -40,10 +40,10 @@ const ChattingHeader = () => {
 
           {/* 텍스트 섹션 */}
           <div className="flex flex-col justify-center">
-            <Text variant="h5" weight="bold" color="white">
+            <Text variant="h4" weight="bold" color="white">
               전력시장 AI
             </Text>
-            <Text variant="caption" className="text-secondary-dark">
+            <Text variant="body2" className="text-secondary-dark">
               전문가 어시스턴트
             </Text>
           </div>
