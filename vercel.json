@@ -4,8 +4,9 @@
       "main": true
     }
   },
-  "buildCommand": "yarn install && npx vite build",
-  "outputDirectory": "dist",
+  "installCommand": "corepack enable && corepack yarn --version && corepack yarn install --immutable",
+  "buildCommand": "NX_NO_CLOUD=1 CI=1 corepack yarn nx build web --output-style=stream",
+  "outputDirectory": "apps/web/dist",
   "framework": "vite",
   "routes": [
     { "handle": "filesystem" },
