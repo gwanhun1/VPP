@@ -14,12 +14,6 @@
     },
     {
       "path": "./tailwind-config"
-    },
-    {
-      "path": "./apps/mobile"
-    },
-    {
-      "path": "./apps"
     }
   ]
 }
