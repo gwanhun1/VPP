@@ -3,7 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@vpp/core-logic": ["../../core-logic/src"],
+      "@vpp/core-logic/*": ["../../core-logic/src/*"]
     }
   },
   "include": [
