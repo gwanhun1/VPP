@@ -6,9 +6,6 @@ import {
 } from '@react-navigation/native';
 import {
   setFirebaseConfig,
-  onAuthStateChanged,
-  signInAsGuest,
-  type AuthUser,
   createReactNativeAuthPersistence,
 } from '@vpp/core-logic';
 import { useFonts } from 'expo-font';
@@ -30,11 +27,9 @@ export default function RootLayout() {
         ? createReactNativeAuthPersistence(AsyncStorage)
         : undefined;
 
-    const apiKey = process.env.EXPO_PUBLIC_FB_API_KEY as string | undefined;
-    const appId = process.env.EXPO_PUBLIC_FB_APP_ID as string | undefined;
-    const projectId = process.env.EXPO_PUBLIC_FB_PROJECT_ID as
-      | string
-      | undefined;
+    const apiKey = process.env.EXPO_PUBLIC_FB_API_KEY;
+    const appId = process.env.EXPO_PUBLIC_FB_APP_ID;
+    const projectId = process.env.EXPO_PUBLIC_FB_PROJECT_ID;
     const envReady = Boolean(apiKey && appId && projectId);
     if (__DEV__) {
       console.log('[Firebase][ENV]', {
@@ -56,20 +51,15 @@ export default function RootLayout() {
       }
       return; // 초기화/구독 패스
     }
+    if (!apiKey || !appId || !projectId) return;
     setFirebaseConfig(
       {
-        apiKey: apiKey!,
-        appId: appId!,
-        projectId: projectId!,
-        authDomain:
-          (process.env.EXPO_PUBLIC_FB_AUTH_DOMAIN as string | undefined) ??
-          undefined,
-        storageBucket:
-          (process.env.EXPO_PUBLIC_FB_STORAGE_BUCKET as string | undefined) ??
-          undefined,
-        messagingSenderId:
-          (process.env.EXPO_PUBLIC_FB_SENDER_ID as string | undefined) ??
-          undefined,
+        apiKey,
+        appId,
+        projectId,
+        authDomain: process.env.EXPO_PUBLIC_FB_AUTH_DOMAIN ?? undefined,
+        storageBucket: process.env.EXPO_PUBLIC_FB_STORAGE_BUCKET ?? undefined,
+        messagingSenderId: process.env.EXPO_PUBLIC_FB_SENDER_ID ?? undefined,
       },
       {
         useEmulators: false,
@@ -78,20 +68,8 @@ export default function RootLayout() {
       }
     );
 
-    const off = onAuthStateChanged(async (user: AuthUser | null) => {
-      if (__DEV__) {
-        console.log('[Auth] onAuthStateChanged', { uid: user?.uid ?? null });
-      }
-      if (!user) {
-        try {
-          await signInAsGuest();
-          if (__DEV__) console.log('[Auth] Guest sign-in attempted');
-        } catch {
-          // 로그인 실패 시 조용히 무시 (네트워크 등)
-        }
-      }
-    });
-    return off;
+    // 이 레이아웃에서는 인증 구독을 수행하지 않습니다.
+    // 인증 게이트는 `app/index.tsx`에서 Redirect로 처리합니다.
   }, []);
 
   if (!loaded) {
@@ -101,8 +79,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack initialRouteName="(tabs)">
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </ThemeProvider>
   );
