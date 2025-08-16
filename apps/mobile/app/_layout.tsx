@@ -7,6 +7,7 @@ import {
 import {
   setFirebaseConfig,
   createReactNativeAuthPersistence,
+  initializeGoogleSignIn,
 } from '@vpp/core-logic';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -67,6 +68,19 @@ export default function RootLayout() {
         ...(authPersistence ? { authPersistence } : {}),
       }
     );
+
+    // Google 로그인 초기화
+    const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+    if (googleWebClientId) {
+      initializeGoogleSignIn(googleWebClientId);
+      if (__DEV__) {
+        console.log('[Google SignIn] 초기화 완료');
+      }
+    } else {
+      if (__DEV__) {
+        console.warn('[Google SignIn] EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID가 설정되지 않았습니다.');
+      }
+    }
 
     // 이 레이아웃에서는 인증 구독을 수행하지 않습니다.
     // 인증 게이트는 `app/index.tsx`에서 Redirect로 처리합니다.
