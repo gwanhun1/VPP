@@ -30,10 +30,31 @@ export default function AuthScreen() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((user) => {
       if (user && loading) {
-        // 로그인 성공 시 AI 채팅 탭으로 이동
-        setTimeout(() => {
-          router.replace('/(tabs)/ai-chat');
-        }, 100); // 약간의 지연으로 상태 안정화
+        // 로그인 성공 시 즉시 상태 초기화
+        setLoading(null);
+
+        // 강제 네비게이션 - 여러 방법으로 시도
+        const navigate = () => {
+          try {
+            router.replace('/(tabs)');
+          } catch (error) {
+            console.warn('첫 번째 네비게이션 실패:', error);
+            // 대안 경로로 시도
+            setTimeout(() => {
+              try {
+                router.push('/(tabs)');
+              } catch (pushError) {
+                console.warn('두 번째 네비게이션 실패:', pushError);
+                // 마지막 시도
+                router.replace('/(tabs)');
+              }
+            }, 100);
+          }
+        };
+
+        // 즉시 실행 및 지연 실행으로 이중 보장
+        navigate();
+        setTimeout(navigate, 300);
       }
     });
 
@@ -47,7 +68,12 @@ export default function AuthScreen() {
     try {
       setLoading(key);
       await fn();
-      // Firebase 인증 상태 변화를 기다림 (useEffect에서 처리)
+
+      // 로그인 성공 후 강제 리다이렉트 (Firebase 상태 변화 대기하지 않음)
+      setTimeout(() => {
+        setLoading(null);
+        router.replace('/(tabs)');
+      }, 1000); // 브라우저 닫기와 Firebase 인증 처리 시간 확보
     } catch (e) {
       Alert.alert(
         '로그인 실패',
@@ -261,10 +287,13 @@ export default function AuthScreen() {
         </View>
 
         {/* 약관 동의 */}
-        <Text style={tw`text-xs text-gray-500 text-center leading-relaxed px-4`}>
-          로그인 시{' '}
-          <Text style={tw`text-[#14287f] font-medium`}>이용약관</Text> 및{' '}
-          <Text style={tw`text-[#14287f] font-medium`}>개인정보처리방침</Text>에 동의합니다.
+        <Text
+          style={tw`text-xs text-gray-500 text-center leading-relaxed px-4`}
+        >
+          로그인 시 <Text style={tw`text-[#14287f] font-medium`}>이용약관</Text>{' '}
+          및{' '}
+          <Text style={tw`text-[#14287f] font-medium`}>개인정보처리방침</Text>에
+          동의합니다.
         </Text>
       </View>
 

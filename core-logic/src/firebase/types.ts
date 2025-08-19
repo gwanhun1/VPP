@@ -2,6 +2,9 @@
 export interface AuthUser {
   uid: string;
   isAnonymous?: boolean;
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
 }
 
 export interface FirebaseConfig {
