@@ -1,6 +1,5 @@
-import { onAuthStateChanged } from '@vpp/core-logic';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,40 +16,6 @@ export default function AuthScreen() {
     null | 'google' | 'naver' | 'kakao' | 'guest'
   >(null);
 
-  // 인증 상태 변화 감지하여 자동 네비게이션
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged((user) => {
-      if (user && loading) {
-        // 로그인 성공 시 즉시 상태 초기화
-        setLoading(null);
-
-        // 강제 네비게이션 - 여러 방법으로 시도
-        const navigate = () => {
-          try {
-            router.replace('/(tabs)');
-          } catch (error) {
-            console.warn('첫 번째 네비게이션 실패:', error);
-            // 대안 경로로 시도
-            setTimeout(() => {
-              try {
-                router.push('/(tabs)');
-              } catch (pushError) {
-                console.warn('두 번째 네비게이션 실패:', pushError);
-                // 마지막 시도
-                router.replace('/(tabs)');
-              }
-            }, 100);
-          }
-        };
-
-        // 즉시 실행 및 지연 실행으로 이중 보장
-        navigate();
-        setTimeout(navigate, 300);
-      }
-    });
-
-    return unsubscribe;
-  }, [loading, router]);
 
   const run = async (
     key: 'google' | 'naver' | 'kakao' | 'guest',
@@ -58,13 +23,13 @@ export default function AuthScreen() {
   ) => {
     try {
       setLoading(key);
-      await fn();
+      await fn(); // 더미 작업 (실제 로그인 없음)
 
-      // 로그인 성공 후 강제 리다이렉트 (Firebase 상태 변화 대기하지 않음)
+      // 간단한 리다이렉트만 수행
       setTimeout(() => {
         setLoading(null);
         router.replace('/(tabs)');
-      }, 500); // 브라우저 닫기와 Firebase 인증 처리 시간 확보
+      }, 300);
     } catch (error) {
       // 에러 발생 시 즉시 로딩 상태 초기화
       setLoading(null);
@@ -73,10 +38,7 @@ export default function AuthScreen() {
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
 
-      if (
-        !errorMessage.includes('취소') &&
-        !errorMessage.includes('canceled')
-      ) {
+      if (!errorMessage.includes('취소') && !errorMessage.includes('canceled')) {
         Alert.alert('로그인 실패', errorMessage);
       }
     }

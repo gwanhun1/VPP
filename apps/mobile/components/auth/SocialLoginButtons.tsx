@@ -1,10 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import {
-  signInWithGoogle,
-  signInWithNaver,
-  signInWithKakao,
-  signInAsGuest,
-} from '@vpp/core-logic';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import tw from '../../utils/tailwind';
 
@@ -27,7 +21,7 @@ export default function SocialLoginButtons({
         <TouchableOpacity
           activeOpacity={0.85}
           disabled={loading !== null}
-          onPress={() => onLogin('google', () => signInWithGoogle())}
+          onPress={() => onLogin('google', async () => Promise.resolve())}
           style={[
             tw`bg-white border border-gray-300 py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -58,7 +52,7 @@ export default function SocialLoginButtons({
         <TouchableOpacity
           activeOpacity={0.85}
           disabled={loading !== null}
-          onPress={() => onLogin('naver', () => signInWithNaver())}
+          onPress={() => onLogin('naver', async () => Promise.resolve())}
           style={[
             tw`bg-[#03C75A] py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -87,7 +81,7 @@ export default function SocialLoginButtons({
         <TouchableOpacity
           activeOpacity={0.85}
           disabled={loading !== null}
-          onPress={() => onLogin('kakao', () => signInWithKakao())}
+          onPress={() => onLogin('kakao', async () => Promise.resolve())}
           style={[
             tw`bg-[#FEE500] py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -125,7 +119,7 @@ export default function SocialLoginButtons({
 
       {/* 익명 로그인 */}
       <TouchableOpacity
-        onPress={() => onLogin('guest', () => signInAsGuest())}
+        onPress={() => onLogin('guest', async () => Promise.resolve())}
         disabled={loading !== null}
         style={[
           tw`border border-dashed border-gray-300 bg-gray-50 py-3.5 px-5 rounded-xl flex-row items-center justify-center mb-8`,
