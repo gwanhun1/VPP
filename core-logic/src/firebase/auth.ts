@@ -173,7 +173,6 @@ export async function signInWithGoogle(): Promise<AuthUser> {
           try {
             await WebBrowser.dismissBrowser();
             await WebBrowser.coolDownAsync();
-            console.log('[GOOGLE_AUTH] 성공 후 브라우저 닫기');
           } catch (error) {
             console.warn('성공 후 브라우저 닫기 실패:', error);
           }
@@ -181,8 +180,6 @@ export async function signInWithGoogle(): Promise<AuthUser> {
 
         resolve(authUser);
       } catch (error) {
-        console.error('[GOOGLE_AUTH] 예외 발생:', error);
-
         // 에러 발생 시에도 브라우저 닫기
         setTimeout(async () => {
           try {

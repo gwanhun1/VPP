@@ -65,41 +65,26 @@ export default function AuthScreen() {
     key: 'google' | 'naver' | 'kakao' | 'guest',
     fn: () => Promise<unknown>
   ) => {
-    console.log(`[AUTH] ${key} 로그인 시작`);
-    
     try {
       setLoading(key);
-      console.log(`[AUTH] 로딩 상태 설정: ${key}`);
-      
-      // Promise.race로 타임아웃 강제 적용
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          console.log(`[AUTH] ${key} 로그인 타임아웃`);
-          reject(new Error('로그인 시간이 초과되었습니다.'));
-        }, 30000); // 30초 타임아웃
-      });
-      
-      await Promise.race([fn(), timeoutPromise]);
-      console.log(`[AUTH] ${key} 로그인 성공`);
+      await fn();
 
       // 로그인 성공 후 강제 리다이렉트 (Firebase 상태 변화 대기하지 않음)
       setTimeout(() => {
-        console.log(`[AUTH] 성공 후 로딩 상태 해제`);
         setLoading(null);
         router.replace('/(tabs)');
-      }, 1000); // 브라우저 닫기와 Firebase 인증 처리 시간 확보
-    } catch (e) {
-      console.log(`[AUTH] ${key} 로그인 에러 발생:`, e);
-      
+      }, 500); // 브라우저 닫기와 Firebase 인증 처리 시간 확보
+    } catch (error) {
       // 에러 발생 시 즉시 로딩 상태 초기화
-      console.log(`[AUTH] 에러 시 로딩 상태 해제`);
       setLoading(null);
-      
+
       // 사용자가 취소한 경우는 에러 메시지를 표시하지 않음
-      const errorMessage = e instanceof Error ? e.message : '알 수 없는 오류';
-      console.log(`[AUTH] 에러 메시지:`, errorMessage);
-      
-      if (!errorMessage.includes('취소') && !errorMessage.includes('canceled')) {
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+
+      if (
+        !errorMessage.includes('취소') &&
+        !errorMessage.includes('canceled')
+      ) {
         Alert.alert('로그인 실패', errorMessage);
       }
     }
