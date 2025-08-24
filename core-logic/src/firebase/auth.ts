@@ -8,7 +8,6 @@ import {
 } from 'firebase/auth';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
-import { Platform } from 'react-native';
 import { getFirebaseAuth } from './app';
 import type { AuthUser, AuthPersistence } from './types';
 
@@ -84,142 +83,136 @@ export async function signInWithGoogle(): Promise<AuthUser> {
     throw new Error('Google 클라이언트 ID가 설정되지 않았습니다.');
   }
 
-  try {
-    // 리디렉션 URI 설정
-    // 개발(Expo Go)에서는 Google이 요구하는 HTTPS 리디렉션을 위해 Expo Auth Proxy를 명시적으로 사용
-    // 운영(스탠드얼론)은 커스텀 스킴 딥링크 사용
-    const redirectUri = __DEV__
-      ? 'https://auth.expo.dev/@gwanhun/vpp-mobile'
-      : AuthSession.makeRedirectUri({ scheme: 'vpp-mobile' });
+  // 리디렉션 URI 설정
+  const redirectUri = __DEV__
+    ? 'https://auth.expo.dev/@gwanhun/vpp-mobile'
+    : AuthSession.makeRedirectUri({ scheme: 'vpp-mobile' });
 
-    if (__DEV__) {
-      console.log('Google OAuth 리디렉션 URI:', redirectUri);
-    }
+  // AuthSession 요청 설정 (PKCE 비활성화)
+  const request = new AuthSession.AuthRequest({
+    clientId: googleClientId,
+    scopes: ['openid', 'profile', 'email'],
+    redirectUri: redirectUri,
+    responseType: AuthSession.ResponseType.IdToken,
+    extraParams: {
+      nonce: Math.random().toString(36).substring(2, 15),
+    },
+    usePKCE: false, // PKCE 비활성화
+  });
 
-    // AuthSession 요청 설정 (PKCE 비활성화)
-    const request = new AuthSession.AuthRequest({
-      clientId: googleClientId,
-      scopes: ['openid', 'profile', 'email'],
-      redirectUri: redirectUri,
-      responseType: AuthSession.ResponseType.IdToken,
-      extraParams: {
-        nonce: Math.random().toString(36).substring(2, 15),
-      },
-      usePKCE: false, // PKCE 비활성화
-    });
+  // Google OAuth 엔드포인트
+  const discovery = {
+    authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenEndpoint: 'https://oauth2.googleapis.com/token',
+  };
 
-    // Google OAuth 엔드포인트
-    const discovery = {
-      authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-      tokenEndpoint: 'https://oauth2.googleapis.com/token',
-    };
-
-    // 인증 요청 수행 (브라우저 스타일 설정)
-    const result = await request.promptAsync(discovery, {
-      preferEphemeralSession: true,
-      showInRecents: false,
-      dismissButtonStyle: 'close',
-      readerMode: false,
-    });
-
-    if (result.type !== 'success') {
-      // 실패 시에도 브라우저 강제 닫기
+  // Promise wrapper로 확실한 에러 처리
+  return new Promise((resolve, reject) => {
+    const executeAuth = async () => {
       try {
-        await WebBrowser.dismissBrowser();
-        await WebBrowser.coolDownAsync();
-      } catch (dismissError) {
-        console.warn('브라우저 닫기 실패:', dismissError);
-        try {
-          await WebBrowser.coolDownAsync();
-        } catch (coolDownError) {
-          console.warn('브라우저 쿨다운 실패:', coolDownError);
-        }
-      }
-      throw new Error('Google 로그인이 취소되었습니다.');
-    }
+        // 인증 요청 수행 (브라우저 스타일 설정)
+        const result = await request.promptAsync(discovery, {
+          preferEphemeralSession: true,
+          showInRecents: false,
+          dismissButtonStyle: 'close',
+          readerMode: false,
+        });
 
-    const { id_token } = result.params;
+        if (result.type !== 'success') {
+          // 취소 타입별로 다른 에러 메시지 먼저 준비
+          let errorMessage = 'Google 로그인이 취소되었습니다.';
+          if (result.type === 'cancel') {
+            errorMessage = 'Google 로그인이 취소되었습니다.';
+          } else if (result.type === 'dismiss') {
+            errorMessage = 'Google 로그인이 취소되었습니다.';
+          } else if (result.type === 'error') {
+            errorMessage = `Google 로그인 오류: ${
+              result.error?.message || '알 수 없는 오류'
+            }`;
+          }
 
-    if (!id_token) {
-      throw new Error('Google 로그인에서 ID 토큰을 받지 못했습니다.');
-    }
+          // 브라우저 닫기를 백그라운드에서 실행
+          setTimeout(async () => {
+            try {
+              await WebBrowser.dismissBrowser();
+              await WebBrowser.coolDownAsync();
+            } catch (dismissError) {
+              console.warn('브라우저 닫기 실패:', dismissError);
+            }
+          }, 0);
 
-    // Firebase 자격 증명 생성
-    const googleCredential = GoogleAuthProvider.credential(id_token);
-
-    // Firebase에 로그인
-    const userCredential = await signInWithCredential(auth, googleCredential);
-    const authUser = convertFirebaseUser(userCredential.user);
-
-    if (!authUser) {
-      throw new Error('Google 로그인에 실패했습니다.');
-    }
-
-    // 로그인 성공 후 브라우저 강제 닫기 (플랫폼별 최적화)
-    const forceDismissBrowser = async () => {
-      try {
-        await WebBrowser.dismissBrowser();
-
-        if (Platform.OS === 'ios') {
-          // iOS에서 추가 정리
-          await WebBrowser.coolDownAsync();
+          // 즉시 reject
+          reject(new Error(errorMessage));
+          return;
         }
 
-        if (__DEV__) {
-          console.log('브라우저 닫기 성공');
-        }
-      } catch (error) {
-        console.warn('브라우저 닫기 실패:', error);
+        const { id_token } = result.params;
 
-        // 재시도
+        if (!id_token) {
+          reject(new Error('Google 로그인에서 ID 토큰을 받지 못했습니다.'));
+          return;
+        }
+
+        // Firebase 자격 증명 생성
+        const googleCredential = GoogleAuthProvider.credential(id_token);
+
+        // Firebase에 로그인
+        const userCredential = await signInWithCredential(
+          auth,
+          googleCredential
+        );
+        const authUser = convertFirebaseUser(userCredential.user);
+
+        if (!authUser) {
+          reject(new Error('Google 로그인에 실패했습니다.'));
+          return;
+        }
+
+        // 로그인 성공 후 브라우저 강제 닫기
         setTimeout(async () => {
           try {
             await WebBrowser.dismissBrowser();
-            if (Platform.OS === 'ios') {
-              await WebBrowser.coolDownAsync();
-            }
-          } catch (retryError) {
-            console.warn('브라우저 재시도 실패:', retryError);
+            await WebBrowser.coolDownAsync();
+            console.log('[GOOGLE_AUTH] 성공 후 브라우저 닫기');
+          } catch (error) {
+            console.warn('성공 후 브라우저 닫기 실패:', error);
           }
-        }, 100);
+        }, 0);
+
+        resolve(authUser);
+      } catch (error) {
+        console.error('[GOOGLE_AUTH] 예외 발생:', error);
+
+        // 에러 발생 시에도 브라우저 닫기
+        setTimeout(async () => {
+          try {
+            await WebBrowser.dismissBrowser();
+            await WebBrowser.coolDownAsync();
+          } catch (dismissError) {
+            console.warn('예외 시 브라우저 닫기 실패:', dismissError);
+          }
+        }, 0);
+
+        reject(error);
       }
     };
 
-    // 즉시 실행
-    await forceDismissBrowser();
-
-    // 추가 보장을 위한 지연 실행
-    setTimeout(forceDismissBrowser, 200);
-
-    return authUser;
-  } catch (error) {
-    // 에러 발생 시에도 브라우저 강제 닫기 시도
-    try {
-      await WebBrowser.dismissBrowser();
-      await WebBrowser.coolDownAsync();
-    } catch (dismissError) {
-      console.warn('에러 시 브라우저 닫기 실패:', dismissError);
-      // 추가 시도
-      try {
-        await WebBrowser.coolDownAsync();
-      } catch (coolDownError) {
-        console.warn('에러 시 브라우저 쿨다운 실패:', coolDownError);
-      }
-    }
-
-    console.error('Google 로그인 오류:', error);
-    throw error;
-  }
+    executeAuth();
+  });
 }
 
 export async function signInWithNaver(): Promise<AuthUser> {
   // TODO: 실제 구현 시 네이버 OAuth → 백엔드 커스텀 토큰 발급 → Firebase signInWithCustomToken
-  throw new Error('네이버 로그인은 아직 구현되지 않았습니다.');
+  throw new Error(
+    '네이버 로그인은 준비 중입니다. Google 로그인을 이용해주세요.'
+  );
 }
 
 export async function signInWithKakao(): Promise<AuthUser> {
   // TODO: 실제 구현 시 카카오 OAuth → 백엔드 커스텀 토큰 발급 → Firebase signInWithCustomToken
-  throw new Error('카카오 로그인은 아직 구현되지 않았습니다.');
+  throw new Error(
+    '카카오 로그인은 준비 중입니다. Google 로그인을 이용해주세요.'
+  );
 }
 
 export async function signOut(): Promise<void> {
