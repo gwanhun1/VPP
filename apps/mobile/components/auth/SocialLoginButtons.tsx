@@ -1,5 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  signInWithGoogle,
+  signInWithNaver,
+  signInWithKakao,
+  signInAsGuest,
+} from '@vpp/core-logic';
 import tw from '../../utils/tailwind';
 
 interface SocialLoginButtonsProps {
@@ -21,7 +27,7 @@ export default function SocialLoginButtons({
         <TouchableOpacity
           activeOpacity={0.85}
           disabled={loading !== null}
-          onPress={() => onLogin('google', async () => Promise.resolve())}
+          onPress={() => onLogin('google', async () => signInWithGoogle())}
           style={[
             tw`bg-white border border-gray-300 py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -52,7 +58,7 @@ export default function SocialLoginButtons({
         <TouchableOpacity
           activeOpacity={0.85}
           disabled={loading !== null}
-          onPress={() => onLogin('naver', async () => Promise.resolve())}
+          onPress={() => onLogin('naver', async () => signInWithNaver())}
           style={[
             tw`bg-[#03C75A] py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -81,7 +87,7 @@ export default function SocialLoginButtons({
         <TouchableOpacity
           activeOpacity={0.85}
           disabled={loading !== null}
-          onPress={() => onLogin('kakao', async () => Promise.resolve())}
+          onPress={() => onLogin('kakao', async () => signInWithKakao())}
           style={[
             tw`bg-[#FEE500] py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -119,7 +125,7 @@ export default function SocialLoginButtons({
 
       {/* 익명 로그인 */}
       <TouchableOpacity
-        onPress={() => onLogin('guest', async () => Promise.resolve())}
+        onPress={() => onLogin('guest', async () => signInAsGuest())}
         disabled={loading !== null}
         style={[
           tw`border border-dashed border-gray-300 bg-gray-50 py-3.5 px-5 rounded-xl flex-row items-center justify-center mb-8`,

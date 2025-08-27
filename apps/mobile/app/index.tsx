@@ -2,6 +2,7 @@ import {
   onAuthStateChanged,
   type AuthUser,
   getCurrentUser,
+  getFirebaseConfig,
 } from '@vpp/core-logic';
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,12 @@ export default function IndexGate() {
   const [user, setUser] = useState<AuthUser | null | undefined>(undefined);
 
   useEffect(() => {
+    // Firebase 설정이 없으면 인증 호출을 건너뜀
+    if (!getFirebaseConfig()) {
+      setUser(null);
+      return;
+    }
+
     // 초기 렌더에서 이미 로그인되어 있을 수 있으므로 현재 사용자 반영
     setUser(getCurrentUser());
     const off = onAuthStateChanged((u) => setUser(u));
