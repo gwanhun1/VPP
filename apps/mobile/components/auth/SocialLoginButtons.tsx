@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import {
-  signInWithGoogle,
-  signInWithNaver,
-  signInWithKakao,
   signInAsGuest,
+  signInWithGoogle,
+  signInWithKakao,
+  signInWithNaver,
 } from '@vpp/core-logic';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import tw from '../../utils/tailwind';
 
 interface SocialLoginButtonsProps {

@@ -1,8 +1,8 @@
 import {
-  onAuthStateChanged,
-  type AuthUser,
   getCurrentUser,
   getFirebaseConfig,
+  onAuthStateChanged,
+  type AuthUser,
 } from '@vpp/core-logic';
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';

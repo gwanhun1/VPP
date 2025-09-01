@@ -1,9 +1,10 @@
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import type { FirebaseConfig } from './types';
 
 let currentConfig: FirebaseConfig | null = null;
 
 export function setFirebaseConfig(config: FirebaseConfig): void {
-  // SDK 제거: 설정만 보관
   currentConfig = { ...config };
 }
 
@@ -11,12 +12,21 @@ export function getFirebaseConfig(): FirebaseConfig | null {
   return currentConfig;
 }
 
-export function getFirebaseApp(): null {
-  // SDK 제거: 항상 null
-  return null;
+let app: ReturnType<typeof initializeApp> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
+
+export function initializeFirebase(): void {
+  if (!currentConfig) throw new Error('Firebase config가 설정되지 않았습니다.');
+  if (!app) {
+    app = initializeApp(currentConfig);
+    auth = getAuth(app);
+  }
 }
 
-export function getFirebaseAuth(): null {
-  // SDK 제거: 항상 null
-  return null;
+export function getFirebaseApp(): ReturnType<typeof initializeApp> | null {
+  return app;
+}
+
+export function getFirebaseAuth(): ReturnType<typeof getAuth> | null {
+  return auth;
 }
