@@ -3,6 +3,7 @@ import { ScrollView, View } from 'react-native';
 import Setting from '../../components/setting';
 import SettingHeader from '../../components/setting/SettingHeader';
 import useResponsive from '../../utils/useResponsive';
+import { getFirebaseAuth } from '@vpp/core-logic';
 
 /**
  * 설정 화면
@@ -10,11 +11,17 @@ import useResponsive from '../../utils/useResponsive';
  */
 export default function SettingsScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
+  const auth = getFirebaseAuth();
+  console.log(auth);
   return (
     <>
       <SettingHeader />
       <ScrollView
-        contentContainerStyle={{ paddingTop: 12, paddingBottom: 24, flexGrow: 1 }}
+        contentContainerStyle={{
+          paddingTop: 12,
+          paddingBottom: 24,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
       >
         <View

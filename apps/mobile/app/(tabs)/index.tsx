@@ -1,7 +1,7 @@
 import { onAuthStateChanged } from '@vpp/core-logic';
 import { AuthUser } from '@vpp/core-logic/firebase/auth';
-import React, { useEffect, useRef, useState } from 'react';
-import { WebView } from 'react-native-webview';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 /**
  * AI 채팅 화면
@@ -12,45 +12,64 @@ import { WebView } from 'react-native-webview';
 export default function ChatScreen() {
   const webViewRef = useRef<WebView>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [webViewReady, setWebViewReady] = useState(false);
+
+  // RN → Web AUTH 전송 (필요 시 재시도)
+  const postAuthToWeb = useCallback(
+    (authUser: AuthUser | null, attempt = 0): void => {
+      const maxAttempts = 3;
+      const delayMs = 150;
+      const payload = JSON.stringify({ type: 'AUTH', payload: authUser });
+
+      if (!webViewRef.current) return;
+      try {
+        webViewRef.current.postMessage(payload);
+      } catch {
+        if (attempt < maxAttempts) {
+          setTimeout(() => postAuthToWeb(authUser, attempt + 1), delayMs);
+        }
+      }
+    },
+    []
+  );
 
   // 로그인 상태 감지 → WebView로 전달
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged((authUser: any) => {
+    const unsubscribe = onAuthStateChanged((authUser: AuthUser | null) => {
       setUser(authUser);
-
-      if (webViewRef.current) {
-        webViewRef.current.postMessage(
-          JSON.stringify({
-            type: 'AUTH',
-            payload: authUser, // 로그인 정보(uid, email 등)
-          })
-        );
+      // WebView가 준비된 이후에는 즉시 전송
+      if (webViewReady) {
+        postAuthToWeb(authUser);
       }
     });
 
     return unsubscribe;
-  }, []);
+  }, [postAuthToWeb, webViewReady]);
 
   // WebView → RN 메시지 수신
-  const handleMessage = (event: any) => {
+  const handleMessage = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data = JSON.parse(event.nativeEvent.data) as
+        | { type: 'REQUEST_AUTH' }
+        | { type: string; payload?: unknown };
       if (data.type === 'REQUEST_AUTH' && user && webViewRef.current) {
         // 웹뷰에서 로그인 정보 요청 시 다시 전달
-        webViewRef.current.postMessage(
-          JSON.stringify({
-            type: 'AUTH',
-            payload: user,
-          })
-        );
+        postAuthToWeb(user);
       }
     } catch (e) {
       console.error('WebView message parse error', e);
     }
   };
 
+  // WebView 로드 완료 시 인증 정보 전송 (초기 유실 방지)
+  const handleLoadEnd = () => {
+    setWebViewReady(true);
+    postAuthToWeb(user);
+  };
+
   return (
     <WebView
+      originWhitelist={['*']}
       ref={webViewRef}
       source={{ uri: 'https://vppweb.vercel.app' }}
       // 스크롤 방지
@@ -64,6 +83,7 @@ export default function ChatScreen() {
       // 키보드 올라왔을 때 웹뷰 크기 조정
       keyboardDisplayRequiresUserAction={false}
       onMessage={handleMessage} // RN <-> WebView 통신 연결
+      onLoadEnd={handleLoadEnd}
     />
   );
 }
