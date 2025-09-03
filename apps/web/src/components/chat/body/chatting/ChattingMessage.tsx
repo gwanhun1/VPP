@@ -6,7 +6,7 @@ import RecentQuestionContainer from '../recentQuestion/Container';
 import { useChatInput } from '@/utils/inputProvider';
 
 const ChattingMessage = () => {
-  const { messages } = useChatInput();
+  const { messages, authUser } = useChatInput();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,6 +17,9 @@ const ChattingMessage = () => {
 
   return (
     <>
+      {authUser?.displayName}
+      {authUser?.email}
+      {authUser?.uid}
       {messages.length <= 1 ? <RecentQuestionContainer /> : null}
       <div className="overflow-y-auto flex-1 p-4 space-y-4 min-h-[50vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {messages.length <= 1 ? (

@@ -1,3 +1,4 @@
+import { AuthUser } from '@vpp/core-logic';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Message {
@@ -14,6 +15,8 @@ export interface ChatInputContextType {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   handleSendMessage: () => void;
   addMessage: (text: string, isUser: boolean) => void;
+  authUser: AuthUser | null; // 추가
+  setAuthUser: React.Dispatch<React.SetStateAction<AuthUser | null>>; // 추가
 }
 
 const ChatInputContext = createContext<ChatInputContextType | undefined>(
@@ -23,6 +26,7 @@ const ChatInputContext = createContext<ChatInputContextType | undefined>(
 export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null); // 추가
 
   const addMessage = (text: string, isUser: boolean) => {
     const newMessage: Message = {
@@ -55,6 +59,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         setMessages,
         handleSendMessage,
         addMessage,
+        authUser,
+        setAuthUser,
       }}
     >
       {children}
