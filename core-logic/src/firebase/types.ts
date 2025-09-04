@@ -1,6 +1,5 @@
-import { AuthProvider } from './auth';
-
 // 공유 타입 정의
+export type AuthProvider = 'anonymous' | 'google' | 'naver' | 'kakao';
 export interface AuthUser {
   uid: string;
   email?: string | null;

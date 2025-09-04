@@ -5,26 +5,9 @@ import {
   User,
 } from 'firebase/auth';
 import { getFirebaseAuth, initializeFirebase } from './app';
+import type { AuthProvider, AuthUser, AuthPersistence } from './types';
 
-// --- 타입 정의 (기존 types.ts 파일에 있을 내용) ---
-
-// 소셜 로그인을 포함한 인증 제공자 타입을 정의합니다.
-export type AuthProvider = 'anonymous' | 'google' | 'naver' | 'kakao';
-
-// 앱 전체에서 사용할 사용자 정보 인터페이스입니다.
-// 소셜 로그인을 통해 얻을 수 있는 추가 정보를 포함하도록 확장되었습니다.
-export interface AuthUser {
-  uid: string;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-  providerId: AuthProvider;
-}
-
-export interface AuthPersistence {
-  type: 'react-native-async-storage';
-}
-// --- 타입 정의 끝 ---
+// --- 타입은 './types'에서 공유 ---
 
 export type AuthStateCallback = (user: AuthUser | null) => void;
 

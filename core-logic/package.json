@@ -14,5 +14,8 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
+  },
+  "dependencies": {
+    "zustand": "^4.5.2"
   }
 }
