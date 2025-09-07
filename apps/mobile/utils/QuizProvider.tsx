@@ -2,7 +2,7 @@ import { api } from '@vpp/core-logic';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // 퀴즈 문제 타입 정의
-export interface QuizQuestion {
+export type QuizQuestion = {
   id: number;
   type: 'multiple' | 'ox' | 'short';
   question: string;
@@ -10,25 +10,25 @@ export interface QuizQuestion {
   correctAnswer: string;
   description: string;
   point?: number; // 문제별 점수
-}
+};
 
 // 답변 결과 타입
-export interface AnswerResult {
+export type AnswerResult = {
   questionId: number;
   userAnswer: string;
   correctAnswer: string;
   isCorrect: boolean;
   description: string;
-}
+};
 
 // 퀴즈 결과 타입
-export interface QuizResult {
+export type QuizResult = {
   totalQuestions: number;
   correctCount: number;
   wrongCount: number;
   wrongAnswers: AnswerResult[];
   totalScore: number;
-}
+};
 
 type AnswerType = Record<number, string>;
 type AnswerContextType = {
@@ -193,7 +193,10 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
       const ok = resp.ok ?? true; // 서버가 ok를 주지 않는 경우(레거시) 성공으로 간주
       return { ok, message: resp.message };
     } catch (e) {
-      return { ok: false, message: e instanceof Error ? e.message : 'submit failed' };
+      return {
+        ok: false,
+        message: e instanceof Error ? e.message : 'submit failed',
+      };
     }
   };
 

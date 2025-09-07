@@ -1,16 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
-import { signInAsGuest, signInWithKakao, signInWithNaver } from '@vpp/core-logic';
+import {
+  signInAsGuest,
+  signInWithKakao,
+  signInWithNaver,
+} from '@vpp/core-logic';
 import { signInWithGoogle } from '@vpp/core-logic/firebase/auth-native';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import tw from '../../utils/tailwind';
 
-interface SocialLoginButtonsProps {
+type SocialLoginButtonsProps = {
   loading: null | 'google' | 'naver' | 'kakao' | 'guest';
   onLogin: (
     key: 'google' | 'naver' | 'kakao' | 'guest',
     fn: () => Promise<unknown>
   ) => void;
-}
+};
 
 export default function SocialLoginButtons({
   loading,

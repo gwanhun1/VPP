@@ -207,7 +207,7 @@ const NativeText = ({
   }
 };
 
-export interface TextProps {
+export type TextProps = {
   /**
    * 텍스트 변형
    * @default 'body'
@@ -283,7 +283,7 @@ export interface TextProps {
    * 자식 요소
    */
   children: React.ReactNode;
-}
+};
 
 /**
  * 플랫폼에 따라 적절한 텍스트 컴포넌트를 내보냄

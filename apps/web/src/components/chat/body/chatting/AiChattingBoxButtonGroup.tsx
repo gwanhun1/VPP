@@ -1,9 +1,9 @@
 import { Button } from '@vpp/shared-ui';
 import { useState } from 'react';
 
-interface AiChattingBoxButtonGroupProps {
+type AiChattingBoxButtonGroupProps = {
   messageText: string;
-}
+};
 
 const AiChattingBoxButtonGroup = ({
   messageText,

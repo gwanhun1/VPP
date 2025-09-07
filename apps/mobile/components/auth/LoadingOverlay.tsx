@@ -1,9 +1,9 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import tw from '../../utils/tailwind';
 
-interface LoadingOverlayProps {
+type LoadingOverlayProps = {
   loading: null | 'google' | 'naver' | 'kakao' | 'guest';
-}
+};
 
 export default function LoadingOverlay({ loading }: LoadingOverlayProps) {
   if (!loading) return null;

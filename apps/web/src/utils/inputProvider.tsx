@@ -7,14 +7,14 @@ import React, {
   useContext,
 } from 'react';
 
-export interface Message {
+export type Message = {
   id: number;
   text: string;
   isUser: boolean;
   timestamp: Date;
-}
+};
 
-export interface ChatInputContextType {
+export type ChatInputContextType = {
   inputText: string;
   setInputText: React.Dispatch<React.SetStateAction<string>>;
   messages: Message[];
@@ -23,7 +23,7 @@ export interface ChatInputContextType {
   addMessage: (text: string, isUser: boolean) => void;
   authUser: AuthUser | null; // 추가
   setAuthUser: React.Dispatch<React.SetStateAction<AuthUser | null>>; // 추가
-}
+};
 
 type IncomingMessage =
   | { type: 'AI_RESPONSE'; payload: { text: string } }
@@ -66,14 +66,20 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         // RN(WebView) → Web으로 오는 payload는 문자열일 수도, 객체일 수도 있음
         const raw = (event as MessageEvent).data as unknown;
         const data: IncomingMessage =
-          typeof raw === 'string' ? (JSON.parse(raw) as IncomingMessage) : (raw as IncomingMessage);
+          typeof raw === 'string'
+            ? (JSON.parse(raw) as IncomingMessage)
+            : (raw as IncomingMessage);
 
         if (
           data?.type === 'AI_RESPONSE' &&
           data?.payload &&
-          typeof (data as { payload: { text?: unknown } }).payload.text === 'string'
+          typeof (data as { payload: { text?: unknown } }).payload.text ===
+            'string'
         ) {
-          addMessage((data as { payload: { text: string } }).payload.text, false);
+          addMessage(
+            (data as { payload: { text: string } }).payload.text,
+            false
+          );
           return;
         }
 
@@ -92,9 +98,11 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     // 웹이 WebView 안에서 구동될 때, 초기 로드시 RN에 인증정보를 요청
     try {
       // 존재하지 않을 수 있으므로 optional chaining 사용
-      (window as unknown as {
-        ReactNativeWebView?: { postMessage: (msg: string) => void };
-      }).ReactNativeWebView?.postMessage(
+      (
+        window as unknown as {
+          ReactNativeWebView?: { postMessage: (msg: string) => void };
+        }
+      ).ReactNativeWebView?.postMessage(
         JSON.stringify({ type: 'REQUEST_AUTH' })
       );
     } catch {

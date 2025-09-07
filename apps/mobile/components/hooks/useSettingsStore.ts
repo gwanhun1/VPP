@@ -5,13 +5,13 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 // 앱(기기) 단위로 유지할 설정 상태
 export type AppLanguage = 'ko' | 'en' | 'fr' | 'ja';
 
-export interface AlarmSettings {
+export type AlarmSettings = {
   drNoticeEnabled: boolean;
   marketNoticeEnabled: boolean;
   bidNoticeEnabled: boolean;
-}
+};
 
-export interface SettingsState {
+export type SettingsState = {
   darkMode: boolean;
   language: AppLanguage;
   alarms: AlarmSettings;
@@ -21,7 +21,7 @@ export interface SettingsState {
   setLanguage: (lang: AppLanguage) => void;
   setAlarm: (key: keyof AlarmSettings, value: boolean) => void;
   reset: () => void;
-}
+};
 
 const initialState: Pick<SettingsState, 'darkMode' | 'language' | 'alarms'> = {
   darkMode: false,

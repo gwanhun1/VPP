@@ -2,27 +2,27 @@ import { createStore } from 'zustand/vanilla';
 import type { AuthUser } from '../firebase/types';
 
 // 공용 메시지 타입 (웹/모바일 공통)
-export interface ChatMessage {
+export type ChatMessage = {
   id: number;
   text: string;
   isUser: boolean;
   // Date 직렬화 안전성을 위해 string으로 저장 (플랫폼 간 전송 고려)
   timestamp: string;
-}
+};
 
-export interface AppState {
+export type AppState = {
   authUser: AuthUser | null;
   inputText: string;
   messages: ChatMessage[];
-}
+};
 
-export interface AppActions {
+export type AppActions = {
   setAuthUser: (user: AuthUser | null) => void;
   setInputText: (text: string) => void;
   addMessage: (text: string, isUser: boolean) => void;
   clearMessages: () => void;
   reset: () => void;
-}
+};
 
 export type AppStore = AppState & AppActions;
 
