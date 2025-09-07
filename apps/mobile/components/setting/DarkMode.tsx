@@ -1,17 +1,16 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Card, Text } from '@vpp/shared-ui';
-import { useState } from 'react';
 import { Switch, View } from 'react-native';
 
 import tw from '../../utils/tailwind';
+import { useSettingsStore } from '../hooks/useSettingsStore';
 
 const DarkMode = () => {
   const primaryColor = tw.color('primary');
   const subColor = tw.color('secondary');
-
-  const [isEnabled, setIsEnabled] = useState(false);
-
-  const toggleSwitch = () => setIsEnabled((prev) => !prev);
+  const isEnabled = useSettingsStore((s) => s.darkMode);
+  const setDarkMode = useSettingsStore((s) => s.setDarkMode);
+  const toggleSwitch = () => setDarkMode(!isEnabled);
 
   return (
     <Card bordered>

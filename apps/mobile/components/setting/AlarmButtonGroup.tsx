@@ -1,19 +1,19 @@
 import { Text } from '@vpp/shared-ui';
-import { useState } from 'react';
 import { Switch, View } from 'react-native';
 
 import tw from '../../utils/tailwind';
+import { useSettingsStore } from '../hooks/useSettingsStore';
 
 const AlarmButtonGroup = () => {
   const subColor = tw.color('secondary');
-
-  const [drNoticeEnabled, setDrNoticeEnabled] = useState(false);
-  const [marketNoticeEnabled, setMarketNoticeEnabled] = useState(false);
-  const [bidNoticeEnabled, setBidNoticeEnabled] = useState(false);
-
-  const toggleDrNotice = () => setDrNoticeEnabled((prev) => !prev);
-  const toggleMarketNotice = () => setMarketNoticeEnabled((prev) => !prev);
-  const toggleBidNotice = () => setBidNoticeEnabled((prev) => !prev);
+  const alarms = useSettingsStore((s) => s.alarms);
+  const setAlarm = useSettingsStore((s) => s.setAlarm);
+  const toggleDrNotice = () =>
+    setAlarm('drNoticeEnabled', !alarms.drNoticeEnabled);
+  const toggleMarketNotice = () =>
+    setAlarm('marketNoticeEnabled', !alarms.marketNoticeEnabled);
+  const toggleBidNotice = () =>
+    setAlarm('bidNoticeEnabled', !alarms.bidNoticeEnabled);
 
   return (
     <View style={tw`flex-col gap-1`}>
@@ -27,7 +27,7 @@ const AlarmButtonGroup = () => {
           </Text>
         </View>
         <Switch
-          value={drNoticeEnabled}
+          value={alarms.drNoticeEnabled}
           onValueChange={toggleDrNotice}
           trackColor={{ false: '#e5e7eb', true: subColor }}
         />
@@ -42,7 +42,7 @@ const AlarmButtonGroup = () => {
           </Text>
         </View>
         <Switch
-          value={marketNoticeEnabled}
+          value={alarms.marketNoticeEnabled}
           onValueChange={toggleMarketNotice}
           trackColor={{ false: '#e5e7eb', true: subColor }}
         />
@@ -57,7 +57,7 @@ const AlarmButtonGroup = () => {
           </Text>
         </View>
         <Switch
-          value={bidNoticeEnabled}
+          value={alarms.bidNoticeEnabled}
           onValueChange={toggleBidNotice}
           trackColor={{ false: '#e5e7eb', true: subColor }}
         />
