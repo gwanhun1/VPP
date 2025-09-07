@@ -1,10 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import {
-  signInAsGuest,
-  signInWithGoogle,
-  signInWithKakao,
-  signInWithNaver,
-} from '@vpp/core-logic';
+import { signInAsGuest, signInWithKakao, signInWithNaver } from '@vpp/core-logic';
+import { signInWithGoogle } from '@vpp/core-logic/firebase/auth-native';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import tw from '../../utils/tailwind';
 

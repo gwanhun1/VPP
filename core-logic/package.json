@@ -13,9 +13,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./firebase/auth-native": {
+      "development": "./src/firebase/auth-native.ts",
+      "types": "./dist/firebase/auth-native.d.ts",
+      "import": "./dist/firebase/auth-native.js",
+      "default": "./dist/firebase/auth-native.js"
     }
   },
   "dependencies": {
+    "firebase": "^12.2.1",
     "zustand": "^4.5.2"
   }
 }

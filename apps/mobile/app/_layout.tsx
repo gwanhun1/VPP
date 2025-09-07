@@ -8,10 +8,10 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import 'react-native-reanimated';
-// import * as WebBrowser from 'expo-web-browser';
+import * as WebBrowser from 'expo-web-browser';
 
-// // OAuth 리디렉션 완료 처리: auth.expo.io에서 돌아올 때 세션을 마무리
-// WebBrowser.maybeCompleteAuthSession();
+// OAuth 리디렉션 완료 처리: auth.expo.io에서 돌아올 때 세션을 마무리
+WebBrowser.maybeCompleteAuthSession();
 // 모듈 로드 시점에서 Firebase 설정을 주입해 렌더 전에 준비되도록 함
 (() => {
   const apiKey =
