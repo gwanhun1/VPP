@@ -31,6 +31,7 @@ WebBrowser.maybeCompleteAuthSession();
     process.env.EXPO_PUBLIC_FB_STORAGE_BUCKET;
   const messagingSenderId =
     process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ??
+    process.env.EXPO_PUBLIC_FIREBASE_SENDER_ID ??
     process.env.EXPO_PUBLIC_FB_SENDER_ID;
 
   if (apiKey && appId && projectId) {

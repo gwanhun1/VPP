@@ -1,19 +1,7 @@
-import {
-  getCurrentUser,
-  onAuthStateChanged,
-  signOut,
-  type AuthUser,
-} from '@vpp/core-logic';
+import { getCurrentUser } from '@vpp/core-logic';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
 import AppHeader from '../../components/common/AppHeader';
 import MyPage from '../../components/myPage';
@@ -23,58 +11,35 @@ import useResponsive from '../../utils/useResponsive';
 export default function MyPageScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null | undefined>(undefined);
+
+  const user = getCurrentUser();
 
   useEffect(() => {
-    setUser(getCurrentUser());
-    const off = onAuthStateChanged((u) => setUser(u));
-    return off;
-  }, []);
-
-  useEffect(() => {
-    if (user === null || user?.providerId === 'anonymous') {
+    // 로딩 완료 후에만 리다이렉트 처리
+    if (user === null) {
+      // if (user === null || user.providerId === 'anonymous') { 추후 소셜로그인 개발하면 연계
       router.replace('/(auth)');
     }
   }, [user, router]);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      router.replace('/(auth)');
-    } catch {
-      Alert.alert('로그아웃 실패', '다시 시도해주세요.');
-    }
-  };
-
+  // 로딩 상태 표시
   if (user === undefined) {
     return (
-      <View style={tw`flex-1 items-center justify-center bg-white`}>
-        <ActivityIndicator size="large" color="#14287f" />
-      </View>
+      <>
+        <AppHeader title="마이페이지" subtitle="나만의 전력시장 학습 공간" />
+        <View style={tw`flex-1 justify-center items-center`}>
+          <ActivityIndicator size="large" color="#14287f" />
+          <View style={tw`mt-4`}>
+            <Text style={tw`text-gray-600`}>사용자 정보를 불러오는 중...</Text>
+          </View>
+        </View>
+      </>
     );
-  }
-
-  if (!user || user.providerId === 'anonymous') {
-    return null; // 이동은 useEffect에서 처리되므로 화면 렌더링하지 않음
   }
 
   return (
     <>
       <AppHeader title="마이페이지" subtitle="나만의 전력시장 학습 공간" />
-      <View
-        style={[
-          tw`px-4`,
-          { alignSelf: 'center', width: '100%', maxWidth: containerMaxWidth },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={handleSignOut}
-          activeOpacity={0.85}
-          style={tw`mt-3 self-end bg-[#14287f] px-4 py-2 rounded-lg`}
-        >
-          <Text style={tw`text-white font-semibold`}>로그아웃</Text>
-        </TouchableOpacity>
-      </View>
       <ScrollView
         contentContainerStyle={{
           paddingTop: 12,

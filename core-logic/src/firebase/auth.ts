@@ -67,8 +67,17 @@ export function onAuthStateChanged(cb: AuthStateCallback): () => void {
             AUTH_USER_STORAGE_KEY,
             JSON.stringify(authUser)
           );
+
+          // 익명 사용자가 아닌 경우에만 Firestore 사용자 데이터 초기화
+          if (authUser.providerId !== 'anonymous') {
+            // 동적 import로 순환 참조 방지
+            const { initializeUserProfile } = await import(
+              '../services/userService'
+            );
+            await initializeUserProfile();
+          }
         } catch (error) {
-          console.error('AsyncStorage: 사용자 정보 저장 실패', error);
+          console.error('AsyncStorage 저장 또는 Firestore 초기화 실패:', error);
         }
         cb(authUser);
       } else {
@@ -131,11 +140,25 @@ export async function signOut(): Promise<void> {
  * @returns 현재 사용자의 AuthUser 객체 또는 없으면 null
  */
 export function getCurrentUser(): AuthUser | null {
-  const auth = getFirebaseAuth();
+  try {
+    initializeFirebase(); // Firebase 초기화 보장
+    const auth = getFirebaseAuth();
 
-  console.log(auth);
-  const user = auth?.currentUser ?? null;
-  return user ? mapFirebaseUserToAuthUser(user) : null;
+    if (!auth) {
+      console.warn('Firebase Auth가 초기화되지 않음');
+      return null;
+    }
+
+    const user = auth.currentUser;
+    if (user) {
+      return mapFirebaseUserToAuthUser(user);
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('getCurrentUser 오류:', error);
+    return null;
+  }
 }
 
 export function createReactNativeAuthPersistence(

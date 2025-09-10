@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
+  getFirebaseAuth,
+  initializeFirebase,
   signInAsGuest,
-  signInWithKakao,
   signInWithNaver,
 } from '@vpp/core-logic';
 import { signInWithGoogle } from '@vpp/core-logic/firebase/auth-native';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import tw from '../../utils/tailwind';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 type SocialLoginButtonsProps = {
   loading: null | 'google' | 'naver' | 'kakao' | 'guest';
@@ -20,6 +22,28 @@ export default function SocialLoginButtons({
   loading,
   onLogin,
 }: SocialLoginButtonsProps) {
+  const loginTestUser = async () => {
+    try {
+      // Firebase 초기화 및 Auth 인스턴스 확보 (null 가드)
+      initializeFirebase();
+      const auth = getFirebaseAuth();
+      if (!auth)
+        throw new Error(
+          'Firebase Auth가 초기화되지 않았습니다. setFirebaseConfig를 확인하세요.'
+        );
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        'test@test.com',
+        'testtest'
+      );
+      console.log('✅ 로그인 성공:', userCredential.user.email);
+    } catch (e) {
+      // 중요: 테스트 로그인 실패 시 조용히 무시하지 않도록 최소 로그 남김
+      console.warn('테스트 사용자 로그인 실패', e);
+    }
+  };
+
   return (
     <>
       {/* 로그인 버튼들 */}
@@ -87,7 +111,7 @@ export default function SocialLoginButtons({
         <TouchableOpacity
           activeOpacity={0.85}
           disabled={loading !== null}
-          onPress={() => onLogin('kakao', async () => signInWithKakao())}
+          onPress={() => onLogin('kakao', async () => loginTestUser())}
           style={[
             tw`bg-[#FEE500] py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {

@@ -1,60 +1,89 @@
+import { fetchUserChatHistory, getCurrentUser, type ChatHistory } from '@vpp/core-logic';
 import { Text } from '@vpp/shared-ui';
-import { ScrollView, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ScrollView, View, ActivityIndicator } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
 import ChattingLogCard from './ChattingLogCard';
 
 const ChattingLog = () => {
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [user] = useState(() => getCurrentUser());
+
+  useEffect(() => {
+    if (user && user.providerId !== 'anonymous') {
+      loadChatHistory();
+    }
+  }, [user]);
+
+  const loadChatHistory = async () => {
+    setLoading(true);
+    try {
+      const history = await fetchUserChatHistory();
+      setChatHistory(history);
+    } catch (error) {
+      console.error('채팅 기록 로드 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user || user.providerId === 'anonymous') {
+    return (
+      <>
+        <Text variant="h5" weight="bold" color="primary">
+          AI 채팅 기록
+        </Text>
+        <View style={tw`h-60 items-center justify-center`}>
+          <Text variant="body2" color="muted">
+            로그인 후 채팅 기록을 확인하세요
+          </Text>
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
       <Text variant="h5" weight="bold" color="primary">
         AI 채팅 기록
       </Text>
       <ScrollView style={tw`h-60`}>
-        <View style={tw`flex-col`}>
-          {CHATTING_LOG_DATA.map((item, idx) => (
-            <View
-              key={item.id}
-              style={
-                idx !== CHATTING_LOG_DATA.length - 1 ? tw`mb-1` : undefined
-              }
-            >
-              <ChattingLogCard text={item.text} time={item.time} />
+        {loading ? (
+          <View style={tw`flex-1 items-center justify-center py-8`}>
+            <ActivityIndicator size="small" color="#14287f" />
+            <View style={tw`mt-2`}>
+              <Text variant="body2" color="muted">
+                채팅 기록을 불러오는 중...
+              </Text>
             </View>
-          ))}
-        </View>
+          </View>
+        ) : chatHistory.length > 0 ? (
+          <View style={tw`flex-col`}>
+            {chatHistory.map((chat, idx) => (
+              <View
+                key={chat.id}
+                style={idx !== chatHistory.length - 1 ? tw`mb-1` : undefined}
+              >
+                <ChattingLogCard 
+                  text={chat.title} 
+                  time={chat.updatedAt.toDate().toString()} 
+                />
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View style={tw`flex-1 items-center justify-center py-8`}>
+            <Text variant="body2" color="muted">
+              아직 AI 채팅 기록이 없습니다
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </>
   );
 };
 
 export default ChattingLog;
-
-const CHATTING_LOG_DATA = [
-  {
-    id: 0,
-    text: '채팅1',
-    time: 'Wed Jul 30 2025 15:23:45 GMT+0900 (Korean Standard Time)',
-  },
-  {
-    id: 1,
-    text: '채팅2',
-    time: 'Wed Jul 27 2025 15:23:45 GMT+0900 (Korean Standard Time)',
-  },
-  {
-    id: 2,
-    text: '채팅3',
-    time: 'Wed Jul 26 2025 15:23:45 GMT+0900 (Korean Standard Time)',
-  },
-  {
-    id: 3,
-    text: '채팅4',
-    time: 'Wed Jul 30 2025 15:23:45 GMT+0900 (Korean Standard Time)',
-  },
-  {
-    id: 4,
-    text: '채팅5',
-    time: 'Wed Jul 31 2025 12:23:45 GMT+0900 (Korean Standard Time)',
-  },
-];

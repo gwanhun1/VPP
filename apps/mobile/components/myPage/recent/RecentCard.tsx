@@ -4,19 +4,45 @@ import { TouchableOpacity, View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
-type RecentCardProps = { text: string };
+type RecentCardProps = { 
+  text: string;
+  time?: string;
+};
 
-const RecentCard = ({ text }: RecentCardProps) => {
+const RecentCard = ({ text, time }: RecentCardProps) => {
   const subColor = tw.color('secondary');
+  
+  // 시간 포맷팅 함수
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return '';
+    try {
+      const date = new Date(timeString);
+      return date.toLocaleDateString('ko-KR', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return '';
+    }
+  };
 
   return (
     <TouchableOpacity>
       <Card bordered>
         <View style={tw`flex flex-row justify-between items-center`}>
-          <View style={tw`flex-1 flex-row items-center overflow-hidden`}>
+          <View style={tw`flex-1 flex-col overflow-hidden`}>
             <Text color="primary" weight="bold">
               {text}
             </Text>
+            {time && (
+              <View style={tw`mt-1`}>
+                <Text variant="body2" color="muted">
+                  {formatTime(time)}
+                </Text>
+              </View>
+            )}
           </View>
           <MaterialIcons name="arrow-right" size={32} color={subColor} />
         </View>

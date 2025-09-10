@@ -1,6 +1,8 @@
+import { fetchUserQuizHistory, getCurrentUser, type QuizResult } from '@vpp/core-logic';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
-import { View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
@@ -8,6 +10,27 @@ import QuizResponse from './QuizResponse';
 
 const MyQuizPage = () => {
   const primaryColor = tw.color('primary');
+  const [quizHistory, setQuizHistory] = useState<QuizResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [user] = useState(() => getCurrentUser());
+
+  useEffect(() => {
+    if (user && user.providerId !== 'anonymous') {
+      loadQuizHistory();
+    }
+  }, [user]);
+
+  const loadQuizHistory = async () => {
+    setLoading(true);
+    try {
+      const history = await fetchUserQuizHistory();
+      setQuizHistory(history);
+    } catch (error) {
+      console.error('퀴즈 기록 로드 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Card bordered>
@@ -23,7 +46,13 @@ const MyQuizPage = () => {
           </Text>
         </View>
       </CardHeader>
-      <QuizResponse />
+      {loading ? (
+        <View style={tw`py-4 items-center`}>
+          <ActivityIndicator size="small" color="#14287f" />
+        </View>
+      ) : (
+        <QuizResponse quizHistory={quizHistory} />
+      )}
     </Card>
   );
 };

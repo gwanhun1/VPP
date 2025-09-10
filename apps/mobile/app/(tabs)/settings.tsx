@@ -3,7 +3,6 @@ import { ScrollView, View } from 'react-native';
 import Setting from '../../components/setting';
 import SettingHeader from '../../components/setting/SettingHeader';
 import useResponsive from '../../utils/useResponsive';
-import { getFirebaseAuth } from '@vpp/core-logic';
 
 /**
  * 설정 화면
@@ -11,8 +10,7 @@ import { getFirebaseAuth } from '@vpp/core-logic';
  */
 export default function SettingsScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
-  const auth = getFirebaseAuth();
-  console.log(auth);
+
   return (
     <>
       <SettingHeader />

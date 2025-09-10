@@ -1,5 +1,4 @@
-import { onAuthStateChanged } from '@vpp/core-logic';
-import { AuthUser } from '@vpp/core-logic/firebase/auth';
+import { AuthUser, onAuthStateChanged } from '@vpp/core-logic';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 

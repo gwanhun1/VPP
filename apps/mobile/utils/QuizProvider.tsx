@@ -1,4 +1,4 @@
-import { api } from '@vpp/core-logic';
+import { saveUserQuizResult, getCurrentUser } from '@vpp/core-logic';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // 퀴즈 문제 타입 정의
@@ -171,31 +171,39 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
     _setAnswerStates({});
   };
 
-  // 서버 제출: 함수 호출은 실패해도 UI를 막지 않도록 결과만 반환
+  // Firebase에 퀴즈 결과 저장
   const submitResults: ResultContextType['submitResults'] = async (payload) => {
     try {
+      const currentUser = getCurrentUser();
+      if (!currentUser || currentUser.providerId === 'anonymous') {
+        return {
+          ok: false,
+          message: '로그인이 필요합니다.',
+        };
+      }
+
       const summary = getQuizResult();
-      const resp = await api.quiz.submit({
-        quizId: payload?.quizId ?? 'default',
-        userId: payload?.userId,
-        totalQuestions: summary.totalQuestions,
-        correctCount: summary.correctCount,
-        wrongCount: summary.wrongCount,
-        totalScore: summary.totalScore,
-        // 서버에서 학습에 유용하도록 오답 상세 포함
-        wrongAnswers: summary.wrongAnswers.map((w) => ({
-          questionId: w.questionId,
-          userAnswer: w.userAnswer,
-          correctAnswer: w.correctAnswer,
-          description: w.description,
-        })),
-      });
-      const ok = resp.ok ?? true; // 서버가 ok를 주지 않는 경우(레거시) 성공으로 간주
-      return { ok, message: resp.message };
+      const quizType = payload?.quizId ?? '전력시장 용어 퀴즈';
+      const score = Math.round((summary.correctCount / summary.totalQuestions) * 100);
+      const timeSpent = 0; // TODO: 실제 소요 시간 계산 추가
+
+      await saveUserQuizResult(
+        quizType,
+        score,
+        summary.totalQuestions,
+        summary.correctCount,
+        timeSpent
+      );
+
+      return { 
+        ok: true, 
+        message: `퀴즈 결과가 저장되었습니다. 점수: ${score}점` 
+      };
     } catch (e) {
+      console.error('퀴즈 결과 저장 실패:', e);
       return {
         ok: false,
-        message: e instanceof Error ? e.message : 'submit failed',
+        message: e instanceof Error ? e.message : '퀴즈 결과 저장에 실패했습니다.',
       };
     }
   };
