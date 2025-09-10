@@ -1,5 +1,5 @@
 // 공유 타입 정의
-export type AuthProvider = 'anonymous' | 'google' | 'naver' | 'kakao';
+export type AuthProvider = 'anonymous' | 'google' | 'naver' | 'kakao' | 'password';
 export type AuthUser = {
   uid: string;
   email?: string | null;

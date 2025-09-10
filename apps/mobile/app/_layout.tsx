@@ -3,10 +3,15 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from '@react-navigation/native';
-import { setFirebaseConfig } from '@vpp/core-logic';
+import {
+  onAuthStateChanged,
+  setFirebaseConfig,
+  type AuthUser,
+} from '@vpp/core-logic';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 import * as WebBrowser from 'expo-web-browser';
 
@@ -51,6 +56,17 @@ WebBrowser.maybeCompleteAuthSession();
 })();
 
 export default function RootLayout() {
+  // 전역 Auth 구독: 로그인 직후 Firestore 사용자 초기화가 반드시 실행되도록 보장
+  useEffect(() => {
+    const off = onAuthStateChanged((user: AuthUser | null) => {
+      // 중요: core-logic onAuthStateChanged 내부에서 initializeUserProfile을 호출함
+      if (user) {
+        // console.log('[RootLayout] Auth user detected:', user.email);
+      }
+    });
+    return off;
+  }, []);
+
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),

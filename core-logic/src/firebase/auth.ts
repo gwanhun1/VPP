@@ -21,16 +21,25 @@ const AUTH_USER_STORAGE_KEY = '@Auth/user';
  * @returns 앱에서 사용할 AuthUser 객체
  */
 function mapFirebaseUserToAuthUser(user: User): AuthUser {
-  // 사용자의 주된 인증 제공자 정보를 가져옵니다.
-  const providerId = user.providerData[0]?.providerId || 'anonymous';
+  // 익명 여부가 가장 우선
+  if (user.isAnonymous) {
+    return {
+      uid: user.uid,
+      displayName: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL,
+      providerId: 'anonymous',
+    };
+  }
+
+  // 사용자의 주된 인증 제공자 정보를 파악
+  const rawProvider = user.providerData[0]?.providerId;
   let mappedProvider: AuthProvider = 'anonymous';
 
-  // Firebase의 providerId 문자열을 우리가 정의한 AuthProvider 타입으로 매핑합니다.
-  if (providerId === 'google.com') {
-    mappedProvider = 'google';
-  }
-  // TODO: 추후 네이버, 카카오 로그인 구현 시 여기에 매핑 로직을 추가합니다.
-  // if (providerId === 'naver.com') { ... }
+  // Firebase providerId -> 우리 타입으로 매핑
+  if (rawProvider === 'google.com') mappedProvider = 'google';
+  else if (rawProvider === 'password') mappedProvider = 'password';
+  // TODO: 네이버/카카오 도입 시 매핑 추가
 
   return {
     uid: user.uid,
