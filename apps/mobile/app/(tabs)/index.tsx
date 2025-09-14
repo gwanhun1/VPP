@@ -1,5 +1,7 @@
 import { AuthUser, onAuthStateChanged } from '@vpp/core-logic';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
+import { Spinner } from '@vpp/shared-ui';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 /**
@@ -12,6 +14,7 @@ export default function ChatScreen() {
   const webViewRef = useRef<WebView>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [webViewReady, setWebViewReady] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // RN → Web AUTH 전송 (필요 시 재시도)
   const postAuthToWeb = useCallback(
@@ -64,25 +67,37 @@ export default function ChatScreen() {
   const handleLoadEnd = () => {
     setWebViewReady(true);
     postAuthToWeb(user);
+    setIsLoading(false);
+  };
+
+  const handleLoadStart = () => {
+    setIsLoading(true);
   };
 
   return (
-    <WebView
-      originWhitelist={['*']}
-      ref={webViewRef}
-      source={{ uri: 'https://vppweb.vercel.app' }}
-      // 스크롤 방지
-      bounces={false}
-      overScrollMode="never"
-      // 전체 화면 채움 + iOS 자동 인셋/액세서리 바 비활성화
-      style={{ flex: 1 }}
-      automaticallyAdjustContentInsets={false}
-      contentInsetAdjustmentBehavior="never"
-      hideKeyboardAccessoryView
-      // 키보드 올라왔을 때 웹뷰 크기 조정
-      keyboardDisplayRequiresUserAction={false}
-      onMessage={handleMessage} // RN <-> WebView 통신 연결
-      onLoadEnd={handleLoadEnd}
-    />
+    <View style={{ flex: 1, position: 'relative' }}>
+      <WebView
+        originWhitelist={['*']}
+        ref={webViewRef}
+        source={{ uri: 'https://vppweb.vercel.app' }}
+        // 스크롤 방지
+        bounces={false}
+        overScrollMode="never"
+        // 전체 화면 채움 + iOS 자동 인셋/액세서리 바 비활성화
+        style={{ flex: 1 }}
+        automaticallyAdjustContentInsets={false}
+        contentInsetAdjustmentBehavior="never"
+        hideKeyboardAccessoryView
+        // 키보드 올라왔을 때 웹뷰 크기 조정
+        keyboardDisplayRequiresUserAction={false}
+        onMessage={handleMessage} // RN <-> WebView 통신 연결
+        onLoadStart={handleLoadStart}
+        onLoadEnd={handleLoadEnd}
+      />
+
+      {isLoading ? (
+        <Spinner overlay size={36} message="로딩 중..." />
+      ) : null}
+    </View>
   );
 }

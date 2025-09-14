@@ -17,3 +17,6 @@ export type { BadgeProps } from './Badge';
 
 export { default as Skeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
+
+export { default as Spinner } from './Spinner';
+export type { SpinnerProps } from './Spinner';

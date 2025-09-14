@@ -1,4 +1,6 @@
 import { Text } from '@vpp/shared-ui';
+import tw from '../../utils/tailwind';
+import { View } from 'react-native';
 
 type QuestionBoxProps = {
   quiz: {
@@ -13,9 +15,11 @@ type QuestionBoxProps = {
 
 const QuestionBox = ({ quiz }: QuestionBoxProps) => {
   return (
-    <Text variant="h4" weight="bold" color="primary">
-      {quiz?.question}
-    </Text>
+    <View style={tw`flex-col mb-6`}>
+      <Text variant="h4" weight="bold" color="primary">
+        {quiz?.question}
+      </Text>
+    </View>
   );
 };
 

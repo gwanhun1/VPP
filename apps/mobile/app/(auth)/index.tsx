@@ -16,7 +16,6 @@ export default function AuthScreen() {
     null | 'google' | 'naver' | 'kakao' | 'guest'
   >(null);
 
-
   const run = async (
     key: 'google' | 'naver' | 'kakao' | 'guest',
     fn: () => Promise<unknown>
@@ -38,7 +37,10 @@ export default function AuthScreen() {
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
 
-      if (!errorMessage.includes('취소') && !errorMessage.includes('canceled')) {
+      if (
+        !errorMessage.includes('취소') &&
+        !errorMessage.includes('canceled')
+      ) {
         Alert.alert('로그인 실패', errorMessage);
       }
     }

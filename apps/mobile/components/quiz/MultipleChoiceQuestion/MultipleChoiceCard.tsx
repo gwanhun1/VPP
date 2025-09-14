@@ -45,7 +45,7 @@ const MultipleChoiceCard = ({
 
   return (
     <TouchableOpacity onPress={() => setAnswer(questionId, option)}>
-      <Card bordered variant={getCardVariant()}>
+      <Card bordered variant={getCardVariant()} padding="xs">
         <View style={tw`flex-row items-center gap-2`}>
           <Badge variant="primary" rounded="full" size="sm">
             <Text weight="bold" color="primary">
