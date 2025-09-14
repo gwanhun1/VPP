@@ -13,11 +13,11 @@ const Alarm = () => {
     <Card bordered>
       <View style={tw`flex-row items-center gap-2 mb-2`}>
         <View
-          style={tw`w-10 p-2 rounded-xl items-center justify-center bg-gray-200`}
+          style={tw`w-8 p-2 rounded-xl items-center justify-center bg-gray-200`}
         >
-          <MaterialIcons name="notifications" size={24} color={primaryColor} />
+          <MaterialIcons name="notifications" size={16} color={primaryColor} />
         </View>
-        <Text variant="h5" color="primary" weight="semibold">
+        <Text variant="h6" color="primary" weight="semibold">
           알림 설정
         </Text>
       </View>

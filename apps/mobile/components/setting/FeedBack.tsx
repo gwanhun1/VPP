@@ -15,15 +15,15 @@ const FeedBack = () => {
         <View style={tw`flex-row items-center gap-2 mb-2 justify-between`}>
           <View style={tw`flex-row items-center gap-2`}>
             <View
-              style={tw`w-10 p-2 rounded-xl items-center justify-center bg-gray-200`}
+              style={tw`w-8 p-2 rounded-xl items-center justify-center bg-gray-200`}
             >
-              <Ionicons name="chatbox-outline" size={24} color={primaryColor} />
+              <Ionicons name="chatbox-outline" size={16} color={primaryColor} />
             </View>
             <View>
-              <Text variant="h5" color="primary" weight="semibold">
+              <Text variant="subtitle2" color="primary" weight="semibold">
                 피드백 보내기
               </Text>
-              <Text variant="body2" color="muted">
+              <Text variant="caption" color="muted">
                 개선사항을 알려주세요
               </Text>
             </View>

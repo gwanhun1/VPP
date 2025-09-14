@@ -1,7 +1,14 @@
-import { getCurrentUser, type AuthUser } from '@vpp/core-logic';
+import {
+  getCurrentUser,
+  onAuthStateChanged,
+  signOut,
+  type AuthUser,
+} from '@vpp/core-logic';
 import { Card, Text } from '@vpp/shared-ui';
 import { useEffect, useState } from 'react';
-import { Image, View, TouchableOpacity } from 'react-native';
+import { Alert, Image, TouchableOpacity, View } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router } from 'expo-router';
 
 import tw from '../../../utils/tailwind';
 
@@ -9,9 +16,10 @@ const UserProfile = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
-    // 로그인된 사용자 정보 가져오기
-    const currentUser = getCurrentUser();
-    setUser(currentUser);
+    // 초기 사용자 상태 설정 및 Auth 상태 구독
+    setUser(getCurrentUser());
+    const unsubscribe = onAuthStateChanged((authUser) => setUser(authUser));
+    return unsubscribe;
   }, []);
 
   // 로그인되지 않은 경우 표시하지 않음
@@ -116,18 +124,41 @@ const UserProfile = () => {
             </View>
           </View>
         </View>
-
-        {/* 설정 버튼 */}
+      </View>
+      {/* 구분선 및 로그아웃 액션 */}
+      <View style={tw`border-t border-gray-200 mt-3 pt-3`}>
         <TouchableOpacity
-          style={tw`items-center justify-center p-2`}
+          style={tw`flex-row items-center justify-between py-2`}
           onPress={() => {
-            // TODO: 설정 페이지로 이동
-            console.log('설정 페이지로 이동');
+            Alert.alert('로그아웃', '정말로 로그아웃하시겠습니까?', [
+              { text: '취소', style: 'cancel' },
+              {
+                text: '로그아웃',
+                style: 'destructive',
+                onPress: async () => {
+                  try {
+                    await signOut();
+                    router.replace('/(auth)');
+                  } catch (error) {
+                    console.error('로그아웃 실패:', error);
+                    Alert.alert('오류', '로그아웃 중 오류가 발생했습니다.');
+                  }
+                },
+              },
+            ]);
           }}
         >
-          <Text variant="h6" color="muted">
-            설정
-          </Text>
+          <View style={tw`flex-row items-center gap-2`}>
+            <MaterialIcons name="logout" size={20} color="#DC2626" />
+            <Text color="error" weight="medium">
+              로그아웃
+            </Text>
+          </View>
+          <MaterialIcons
+            name="chevron-right"
+            size={20}
+            color={tw.color('red')}
+          />
         </TouchableOpacity>
       </View>
     </Card>

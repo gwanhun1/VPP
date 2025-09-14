@@ -1,6 +1,10 @@
-import { fetchUserQuizHistory, getCurrentUser, type QuizResult } from '@vpp/core-logic';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import {
+  fetchUserQuizHistory,
+  getCurrentUser,
+  type QuizResult,
+} from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 
@@ -36,12 +40,12 @@ const MyQuizPage = () => {
     <Card bordered>
       <CardHeader>
         <View style={tw`flex-row items-center gap-2`}>
-          <MaterialCommunityIcons
-            name="medal-outline"
-            size={24}
-            color={primaryColor}
-          />
-          <Text variant="h5" weight="semibold" color="primary">
+          <View
+            style={tw`w-8 p-2 rounded-xl items-center justify-center bg-gray-200`}
+          >
+            <MaterialIcons name="emoji-events" size={16} color={primaryColor} />
+          </View>
+          <Text variant="h6" weight="semibold" color="primary">
             퀴즈 성과
           </Text>
         </View>

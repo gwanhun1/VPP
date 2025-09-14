@@ -1,5 +1,10 @@
-import { fetchUserBookmarks, getCurrentUser, type Bookmark } from '@vpp/core-logic';
-import { Text } from '@vpp/shared-ui';
+import {
+  fetchUserBookmarks,
+  getCurrentUser,
+  type Bookmark,
+} from '@vpp/core-logic';
+import { Card, CardHeader, Text } from '@vpp/shared-ui';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useEffect, useState } from 'react';
 import { ScrollView, View, ActivityIndicator } from 'react-native';
 
@@ -11,6 +16,7 @@ const BookMark = () => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(false);
   const [user] = useState(() => getCurrentUser());
+  const primaryColor = tw.color('primary');
 
   useEffect(() => {
     if (user && user.providerId !== 'anonymous') {
@@ -30,30 +36,33 @@ const BookMark = () => {
     }
   };
 
-  if (!user || user.providerId === 'anonymous') {
-    return (
-      <>
-        <Text variant="h5" weight="bold" color="primary">
-          북마크한 용어
-        </Text>
-        <View style={tw`h-60 items-center justify-center`}>
-          <Text variant="body2" color="muted">
-            로그인 후 북마크 기능을 이용하세요
+  return (
+    <Card bordered>
+      <CardHeader>
+        <View style={tw`flex-row items-center gap-2`}>
+          <View
+            style={tw`w-8 p-2 rounded-xl items-center justify-center bg-gray-200`}
+          >
+            <MaterialIcons name="bookmark" size={16} color={primaryColor} />
+          </View>
+          <Text variant="h6" weight="semibold" color="primary">
+            북마크한 용어
           </Text>
         </View>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Text variant="h5" weight="bold" color="primary">
-        북마크한 용어
-      </Text>
-      <ScrollView style={tw`h-60`}>
-        {loading ? (
+      </CardHeader>
+      <View style={tw`h-40`}>
+        {!user || user.providerId === 'anonymous' ? (
+          <View style={tw`flex-1 items-center justify-center`}>
+            <Text variant="body2" color="muted">
+              로그인 후 북마크 기능을 이용하세요
+            </Text>
+          </View>
+        ) : loading ? (
           <View style={tw`flex-1 items-center justify-center py-8`}>
-            <ActivityIndicator size="small" color="#14287f" />
+            <ActivityIndicator
+              size="small"
+              color={tw.color('primary-500') ?? '#14287f'}
+            />
             <View style={tw`mt-2`}>
               <Text variant="body2" color="muted">
                 북마크를 불러오는 중...
@@ -61,16 +70,18 @@ const BookMark = () => {
             </View>
           </View>
         ) : bookmarks.length > 0 ? (
-          <View style={tw`flex-col`}>
-            {bookmarks.map((bookmark, idx) => (
-              <View
-                key={bookmark.id}
-                style={idx !== bookmarks.length - 1 ? tw`mb-1` : undefined}
-              >
-                <BookmarkCard text={bookmark.termName} />
-              </View>
-            ))}
-          </View>
+          <ScrollView style={tw`h-60`}>
+            <View style={tw`flex-col`}>
+              {bookmarks.map((bookmark, idx) => (
+                <View
+                  key={bookmark.id}
+                  style={idx !== bookmarks.length - 1 ? tw`mb-1` : undefined}
+                >
+                  <BookmarkCard text={bookmark.termName} />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
         ) : (
           <View style={tw`flex-1 items-center justify-center py-8`}>
             <Text variant="body2" color="muted">
@@ -78,8 +89,8 @@ const BookMark = () => {
             </Text>
           </View>
         )}
-      </ScrollView>
-    </>
+      </View>
+    </Card>
   );
 };
 

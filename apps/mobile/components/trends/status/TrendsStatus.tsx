@@ -4,13 +4,13 @@ import { View } from 'react-native';
 import tw from '../../../utils/tailwind';
 
 const TrendsStatus = () => {
-  const successColor = tw.color('success');
-  const infoColor = tw.color('info');
+  const greenColor = tw.color('green-500');
+  const secondaryColor = tw.color('secondary-400');
 
   return (
     <View style={tw`flex-row items-center gap-2`}>
       <View style={tw`flex-1`}>
-        <Card bordered backgroundColor={successColor}>
+        <Card bordered backgroundColor={greenColor}>
           <View style={tw`flex-col justify-center items-center gap-2`}>
             <Text variant="h3" weight="bold" color="white">
               120.25
@@ -26,7 +26,7 @@ const TrendsStatus = () => {
       </View>
 
       <View style={tw`flex-1`}>
-        <Card bordered backgroundColor={infoColor}>
+        <Card bordered backgroundColor={secondaryColor}>
           <View style={tw`flex-col justify-center items-center gap-2`}>
             <Text variant="h3" weight="bold" color="white">
               85.2
