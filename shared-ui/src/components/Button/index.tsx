@@ -12,6 +12,7 @@ export type ButtonProps = {
   className?: string;
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
   onClick?: () => void;
+  onPress?: () => void;
   children: React.ReactNode;
   isIconOnly?: boolean;
 };
@@ -109,6 +110,7 @@ const NativeButton = ({
   disabled = false,
   children,
   onClick,
+  onPress,
   ...props
 }: ButtonProps) => {
   // React Native에서는 react-native 모듈을 동적으로 import
@@ -149,7 +151,7 @@ const NativeButton = ({
     return (
       <TouchableOpacity 
         style={buttonStyle}
-        onPress={onClick}
+        onPress={onPress || onClick}
         disabled={disabled}
         activeOpacity={0.7}
       >

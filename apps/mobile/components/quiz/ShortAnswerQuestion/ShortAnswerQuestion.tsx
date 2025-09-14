@@ -60,7 +60,7 @@ const ShortAnswerQuestion = ({ quiz }: ShortAnswerQuestionProps) => {
           autoCorrect={false}
         />
         <View style={tw`flex-row justify-end`}>
-          <Button onClick={handleCheckAnswer} disabled={isCorrect}>
+          <Button onPress={handleCheckAnswer} disabled={isCorrect}>
             정답 확인
           </Button>
         </View>

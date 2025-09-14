@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 
 declare global {
-  type Window = {
+  interface Window {
     SpeechRecognition: new () => SpeechRecognition;
     webkitSpeechRecognition: new () => SpeechRecognition;
-  };
+  }
 }
 
 type SpeechRecognitionEvent = {
