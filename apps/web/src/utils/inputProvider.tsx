@@ -1,11 +1,8 @@
-import { AuthUser } from '@vpp/core-logic';
-import React, {
-  createContext,
-  useState,
-  ReactNode,
-  useEffect,
-  useContext,
-} from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import type { AuthUser } from '@vpp/core-logic';
+import { getFirestore } from '@vpp/core-logic';
+import { useAuth } from '../contexts/AuthContext';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export type Message = {
   id: number;
@@ -21,8 +18,6 @@ export type ChatInputContextType = {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   handleSendMessage: () => void;
   addMessage: (text: string, isUser: boolean) => void;
-  authUser: AuthUser | null; // 추가
-  setAuthUser: React.Dispatch<React.SetStateAction<AuthUser | null>>; // 추가
 };
 
 type IncomingMessage =
@@ -37,9 +32,10 @@ const ChatInputContext = createContext<ChatInputContextType | undefined>(
 export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const { authUser } = useAuth();
 
-  const addMessage = (text: string, isUser: boolean) => {
+  const addMessage = useCallback(async (text: string, isUser: boolean) => {
     const newMessage: Message = {
       id: Date.now(),
       text,
@@ -47,29 +43,69 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, newMessage]);
-  };
+
+    // Firebase에 메시지 저장
+    if (authUser) {
+      try {
+        const db = getFirestore();
+        if (db) {
+          // 채팅 메시지 저장
+          await addDoc(collection(db, 'chatMessages'), {
+            userId: authUser.uid,
+            text,
+            isUser,
+            timestamp: serverTimestamp(),
+            sessionId: currentSessionId,
+            platform: 'web',
+            source: 'webview'
+          });
+
+          // 사용자 활동 로그
+          await addDoc(collection(db, 'userActivities'), {
+            userId: authUser.uid,
+            type: 'chat_message',
+            data: { text, isUser, sessionId: currentSessionId },
+            timestamp: serverTimestamp(),
+            platform: 'web',
+            source: 'webview'
+          });
+        }
+      } catch (error) {
+        console.error('[ChatInput] Firebase 저장 실패:', error);
+      }
+    }
+  }, [authUser, currentSessionId]);
 
   const handleSendMessage = () => {
     if (inputText.trim()) {
       addMessage(inputText.trim(), true);
       setTimeout(() => {
-        addMessage('전력시장 관련 질문에 답변드리겠습니다.', false);
+        const userName = authUser?.displayName || authUser?.email || '사용자';
+        addMessage(`${userName}님, 전력시장 관련 질문에 답변드리겠습니다.`, false);
       }, 500);
       setInputText('');
     }
   };
 
-  // 🔹 WebView 등 외부 메시지 수신
+  // 채팅 세션 초기화
+  useEffect(() => {
+    if (authUser && !currentSessionId) {
+      const sessionId = `session_${Date.now()}_${authUser.uid}`;
+      setCurrentSessionId(sessionId);
+    }
+  }, [authUser, currentSessionId]);
+
+  // AI 응답 메시지 수신 처리
   useEffect(() => {
     const handleExternalMessage = (event: MessageEvent) => {
       try {
-        // RN(WebView) → Web으로 오는 payload는 문자열일 수도, 객체일 수도 있음
         const raw = (event as MessageEvent).data as unknown;
         const data: IncomingMessage =
           typeof raw === 'string'
             ? (JSON.parse(raw) as IncomingMessage)
             : (raw as IncomingMessage);
 
+        // AI 응답 메시지만 처리 (AUTH는 AuthContext에서 처리)
         if (
           data?.type === 'AI_RESPONSE' &&
           data?.payload &&
@@ -82,35 +118,14 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
           );
           return;
         }
-
-        if (data?.type === 'AUTH') {
-          // RN에서 전달된 로그인 사용자 정보를 보관
-          setAuthUser(data.payload as AuthUser);
-          return;
-        }
       } catch {
         console.log('message error');
       }
     };
 
     window.addEventListener('message', handleExternalMessage);
-
-    // 웹이 WebView 안에서 구동될 때, 초기 로드시 RN에 인증정보를 요청
-    try {
-      // 존재하지 않을 수 있으므로 optional chaining 사용
-      (
-        window as unknown as {
-          ReactNativeWebView?: { postMessage: (msg: string) => void };
-        }
-      ).ReactNativeWebView?.postMessage(
-        JSON.stringify({ type: 'REQUEST_AUTH' })
-      );
-    } catch {
-      // no-op
-    }
-
     return () => window.removeEventListener('message', handleExternalMessage);
-  }, []);
+  }, [addMessage]);
 
   return (
     <ChatInputContext.Provider
@@ -121,8 +136,6 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         setMessages,
         handleSendMessage,
         addMessage,
-        authUser,
-        setAuthUser,
       }}
     >
       {children}

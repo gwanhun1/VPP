@@ -3,6 +3,9 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import type { FirebaseConfig } from './types';
 
+// Firebase 원본 함수들을 re-export
+export { getFirestore } from 'firebase/firestore';
+
 let currentConfig: FirebaseConfig | null = null;
 
 export function setFirebaseConfig(config: FirebaseConfig): void {

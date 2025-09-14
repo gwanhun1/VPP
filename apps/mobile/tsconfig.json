@@ -21,6 +21,9 @@
     },
     {
       "path": "../../shared-ui"
+    },
+    {
+      "path": "../../core-logic"
     }
   ]
 }

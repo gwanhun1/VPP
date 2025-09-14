@@ -1,4 +1,4 @@
-import { AuthUser, onAuthStateChanged } from '@vpp/core-logic';
+import { AuthUser, onAuthStateChanged, getFirebaseConfig } from '@vpp/core-logic';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { Spinner } from '@vpp/shared-ui';
@@ -63,10 +63,27 @@ export default function ChatScreen() {
     }
   };
 
-  // WebView 로드 완료 시 인증 정보 전송 (초기 유실 방지)
+  // Firebase 설정을 웹으로 전송
+  const postFirebaseConfigToWeb = useCallback(() => {
+    const config = getFirebaseConfig();
+    if (config && webViewRef.current) {
+      const payload = JSON.stringify({ 
+        type: 'FIREBASE_CONFIG', 
+        payload: config 
+      });
+      try {
+        webViewRef.current.postMessage(payload);
+      } catch (error) {
+        console.error('Firebase config 전송 실패:', error);
+      }
+    }
+  }, []);
+
+  // WebView 로드 완료 시 인증 정보 및 Firebase 설정 전송
   const handleLoadEnd = () => {
     setWebViewReady(true);
     postAuthToWeb(user);
+    postFirebaseConfigToWeb();
     setIsLoading(false);
   };
 
@@ -79,7 +96,7 @@ export default function ChatScreen() {
       <WebView
         originWhitelist={['*']}
         ref={webViewRef}
-        source={{ uri: 'https://vppweb.vercel.app' }}
+        source={{ uri: 'https://vpp-two.vercel.app' }}
         // 스크롤 방지
         bounces={false}
         overScrollMode="never"

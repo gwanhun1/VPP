@@ -4,9 +4,11 @@ import PromptHintBox from '../promptHint/HintBox';
 import { useEffect, useRef } from 'react';
 import RecentQuestionContainer from '../recentQuestion/Container';
 import { useChatInput } from '@/utils/inputProvider';
+import { useAuth } from '../../../../contexts/AuthContext';
 
 const ChattingMessage = () => {
-  const { messages, authUser } = useChatInput();
+  const { messages } = useChatInput();
+  const { authUser } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,9 +19,6 @@ const ChattingMessage = () => {
 
   return (
     <>
-      {authUser?.displayName}
-      {authUser?.email}
-      {authUser?.uid}
       {messages.length <= 1 ? <RecentQuestionContainer /> : null}
       <div className="overflow-y-auto flex-1 p-4 space-y-4 min-h-[50vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {messages.length <= 1 ? (
@@ -27,7 +26,7 @@ const ChattingMessage = () => {
             <AiChattingBox
               message={{
                 id: 1752583353312,
-                text: '안녕하세요! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!',
+                text: `안녕하세요${authUser ? `, ${authUser.displayName || authUser.email || '사용자'}님` : ''}! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!`,
                 isUser: false,
                 timestamp: new Date('2025-07-15T12:42:33.312Z'),
               }}

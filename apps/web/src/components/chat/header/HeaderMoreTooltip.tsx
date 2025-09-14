@@ -1,5 +1,12 @@
 import { Button, Text } from '@vpp/shared-ui';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
 
 type HeaderMoreTooltipProps = {
   isOpen: boolean;
@@ -13,9 +20,17 @@ type TooltipItem = {
   onClick: () => void;
 };
 
-const HeaderMoreTooltip = ({ isOpen, onClose, anchorRef }: HeaderMoreTooltipProps) => {
+const HeaderMoreTooltip = ({
+  isOpen,
+  onClose,
+  anchorRef,
+}: HeaderMoreTooltipProps) => {
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [pos, setPos] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
+  const { authUser } = useAuth();
 
   // anchor 위치에 따라 툴팁 위치 계산
   const computePosition = useCallback(() => {
@@ -47,7 +62,7 @@ const HeaderMoreTooltip = ({ isOpen, onClose, anchorRef }: HeaderMoreTooltipProp
       window.removeEventListener('resize', handler);
       window.removeEventListener('scroll', handler, true);
     };
-  }, [isOpen]);
+  }, [isOpen, computePosition]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -118,6 +133,15 @@ const HeaderMoreTooltip = ({ isOpen, onClose, anchorRef }: HeaderMoreTooltipProp
         className="overflow-hidden fixed py-2 w-56 bg-white rounded-xl shadow-lg z-[1000]"
         style={{ top: pos.top, left: pos.left }}
       >
+        {/* Firebase 연결 상태 표시 */}
+        {authUser && (
+          <div className="px-4 py-2 border-b border-gray-100">
+            <Text className="text-sm font-medium text-green-600 truncate">
+              {authUser.email || authUser.displayName || 'Unknown User'}
+            </Text>
+          </div>
+        )}
+
         {tooltipItems.map((item, index) => (
           <Button
             variant="ghost"

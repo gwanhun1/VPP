@@ -1,8 +1,389 @@
-# Vpp
+# VPP (Virtual Power Plant) - 가상발전소 플랫폼
 
-// npx nx serve web
-// nx run mobile:run-ios
-// nx run mobile:run-android
+VPP는 React Native(모바일)와 React(웹) 기반의 가상발전소 플랫폼으로, Firebase를 통한 실시간 데이터 동기화와 AI 채팅 기능을 제공합니다.
+
+## 🏗️ 아키텍처 개요
+
+### 전체 시스템 구조
+
+```
+VPP Platform
+├── Mobile App (React Native + Expo)
+│   ├── WebView Integration
+│   ├── Firebase Auth
+│   └── Native Features
+├── Web App (React + Vite)
+│   ├── Chat Interface
+│   ├── Firebase Integration
+│   └── WebView Bridge
+├── Core Logic (@vpp/core-logic)
+│   ├── Firebase SDK Wrapper
+│   ├── Auth Management
+│   ├── Shared Types
+│   └── Zustand Store
+├── Shared UI (@vpp/shared-ui)
+│   └── Common Components
+└── Firebase Backend
+    ├── Authentication
+    ├── Firestore Database
+    └── Cloud Functions
+```
+
+### 모바일-웹 연동 아키텍처
+
+```
+Mobile App (React Native)
+    ↓ postMessage (AUTH + FIREBASE_CONFIG)
+WebView (Web App)
+    ↓ Firebase SDK
+Firestore Database
+    ↑ Real-time sync
+Both Platforms
+```
+
+## 🗄️ Firebase 데이터베이스 구조
+
+### 데이터베이스 아키텍처 다이어그램
+```
+Firebase Firestore
+├── users/                    # 사용자 프로필
+├── userStats/               # 사용자 통계
+├── chatMessages/            # 채팅 메시지 (웹뷰 통합)
+├── chatSessions/            # 채팅 세션 (웹뷰 통합)  
+├── chatHistory/             # 채팅 기록 (기존 시스템)
+├── userActivities/          # 사용자 활동 로그 (웹뷰 통합)
+├── userStatus/              # 사용자 온라인 상태 (웹뷰 통합)
+├── bookmarks/               # 북마크
+├── quizResults/             # 퀴즈 결과
+└── recentActivities/        # 최근 활동
+```
+
+### 웹뷰 통합 Collections (신규)
+
+#### `chatMessages` - 실시간 채팅 메시지
+```typescript
+{
+  id: string,
+  userId: string,
+  text: string,
+  isUser: boolean,
+  timestamp: Timestamp,
+  sessionId?: string,
+  platform: 'web' | 'mobile',
+  source: 'webview' | 'native'
+}
+```
+
+#### `chatSessions` - 채팅 세션 관리
+```typescript
+{
+  id: string,
+  userId: string,
+  title?: string,
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  platform: 'web' | 'mobile',
+  source: 'webview' | 'native'
+}
+```
+
+#### `userActivities` - 사용자 활동 추적
+```typescript
+{
+  id: string,
+  userId: string,
+  type: 'login' | 'logout' | 'chat_message' | 'page_view' | 'quiz_attempt',
+  data: Record<string, any>,
+  timestamp: Timestamp,
+  platform: 'web' | 'mobile',
+  source: 'webview' | 'native'
+}
+```
+
+#### `userStatus` - 실시간 사용자 상태
+```typescript
+{
+  id: string, // userId
+  userId: string,
+  isOnline: boolean,
+  lastSeen: Timestamp,
+  platform: 'web' | 'mobile',
+  source: 'webview' | 'native',
+  activeSession?: string
+}
+```
+
+### 기존 시스템 Collections
+
+#### `users` - 사용자 프로필
+```typescript
+{
+  uid: string,
+  displayName: string | null,
+  email: string | null,
+  photoURL: string | null,
+  providerId: string,
+  createdAt: Timestamp,
+  updatedAt: Timestamp
+}
+```
+
+#### `userStats` - 사용자 학습 통계
+```typescript
+{
+  uid: string,
+  learnedTerms: number,
+  bookmarks: number,
+  quizScore: number,
+  studyDays: number,
+  totalQuizzes: number,
+  correctAnswers: number,
+  lastStudyDate: Timestamp,
+  createdAt: Timestamp,
+  updatedAt: Timestamp
+}
+```
+
+#### `bookmarks` - 용어 북마크
+```typescript
+{
+  id: string,
+  uid: string,
+  termId: string,
+  termName: string,
+  definition: string,
+  category: string,
+  createdAt: Timestamp
+}
+```
+
+#### `chatHistory` - 채팅 기록 (기존)
+```typescript
+{
+  id: string,
+  uid: string,
+  title: string,
+  lastMessage: string,
+  messageCount: number,
+  createdAt: Timestamp,
+  updatedAt: Timestamp
+}
+```
+
+#### `quizResults` - 퀴즈 결과
+```typescript
+{
+  id: string,
+  uid: string,
+  quizType: string,
+  score: number,
+  totalQuestions: number,
+  correctAnswers: number,
+  timeSpent: number,
+  completedAt: Timestamp
+}
+```
+
+#### `recentActivities` - 최근 활동
+```typescript
+{
+  id: string,
+  uid: string,
+  type: 'quiz' | 'bookmark' | 'chat' | 'study',
+  title: string,
+  description: string,
+  createdAt: Timestamp
+}
+```
+
+## 🔥 Firebase 함수 및 서비스 정리
+
+### Core Logic Firebase 함수 (@vpp/core-logic)
+
+#### Firebase 초기화 및 설정
+```typescript
+// core-logic/src/firebase/app.ts
+setFirebaseConfig(config: FirebaseConfig): void
+getFirebaseConfig(): FirebaseConfig | null
+initializeFirebase(): void
+getFirebaseApp(): FirebaseApp | null
+getFirebaseAuth(): Auth | null
+getFirebaseFirestore(): Firestore | null
+```
+
+#### 사용자 프로필 관리
+```typescript
+// core-logic/src/firebase/firestore.ts
+createUserProfile(userProfile: Omit<UserProfile, 'createdAt' | 'updatedAt'>): Promise<void>
+getUserProfile(uid: string): Promise<UserProfile | null>
+updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void>
+```
+
+#### 사용자 통계 관리
+```typescript
+createUserStats(uid: string): Promise<void>
+getUserStats(uid: string): Promise<UserStats | null>
+updateUserStats(uid: string, updates: Partial<UserStats>): Promise<void>
+subscribeToUserStats(uid: string, callback: (stats: UserStats | null) => void): () => void
+```
+
+#### 북마크 관리
+```typescript
+addBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Promise<string>
+getUserBookmarks(uid: string): Promise<Bookmark[]>
+removeBookmark(bookmarkId: string): Promise<void>
+subscribeToUserBookmarks(uid: string, callback: (bookmarks: Bookmark[]) => void): () => void
+```
+
+#### 채팅 기록 관리 (기존 시스템)
+```typescript
+createChatHistory(chatHistory: Omit<ChatHistory, 'id' | 'createdAt' | 'updatedAt'>): Promise<string>
+getUserChatHistory(uid: string, limitCount?: number): Promise<ChatHistory[]>
+```
+
+#### 퀴즈 결과 관리
+```typescript
+saveQuizResult(quizResult: Omit<QuizResult, 'id' | 'completedAt'>): Promise<string>
+getUserQuizResults(uid: string, limitCount?: number): Promise<QuizResult[]>
+```
+
+#### 최근 활동 관리
+```typescript
+addRecentActivity(activity: Omit<RecentActivity, 'id' | 'createdAt'>): Promise<string>
+getUserRecentActivities(uid: string, limitCount?: number): Promise<RecentActivity[]>
+```
+
+### 웹 앱 Firebase 함수 (apps/web)
+
+#### 웹뷰 인증 및 설정
+```typescript
+// hooks/useWebViewAuth.ts
+- Firebase 설정 수신 및 초기화
+- 사용자 인증 상태 관리
+- 사용자 온라인 상태 업데이트 (userStatus 컬렉션)
+- 로그인/페이지뷰 활동 로그 (userActivities 컬렉션)
+```
+
+#### 채팅 서비스 (웹뷰 통합)
+```typescript
+// services/chatService.ts
+saveChatMessage(authUser: AuthUser, text: string, isUser: boolean, sessionId?: string): Promise<string>
+subscribeToChatMessages(authUser: AuthUser, sessionId: string | null, onMessagesUpdate: (messages: ChatMessage[]) => void): () => void
+createChatSession(authUser: AuthUser, title?: string): Promise<string>
+```
+
+#### 사용자 활동 서비스 (웹뷰 통합)
+```typescript
+// services/userActivityService.ts
+logUserActivity(authUser: AuthUser, type: ActivityType, details: Partial<UserActivity['details']>, sessionId?: string): Promise<string>
+updateUserStatus(authUser: AuthUser, isOnline: boolean, sessionId?: string): Promise<void>
+subscribeToUserActivities(authUser: AuthUser, onActivitiesUpdate: (activities: UserActivity[]) => void, limitCount?: number): () => void
+
+// 편의 함수들
+logChatMessage(authUser: AuthUser, message: string, sessionId?: string): Promise<string>
+logPageView(authUser: AuthUser, page: string, url?: string): Promise<string>
+logLogin(authUser: AuthUser): Promise<string>
+logLogout(authUser: AuthUser): Promise<string>
+logQuizAttempt(authUser: AuthUser, quizType: string, score: number, sessionId?: string): Promise<string>
+```
+
+#### 채팅 입력 프로바이더 (실시간 저장)
+```typescript
+// utils/inputProvider.tsx
+- 채팅 메시지 즉시 Firebase 저장
+- 사용자 활동 자동 로깅
+- 세션 ID 자동 생성 및 관리
+```
+
+### Firebase 연동 플로우
+
+#### 1. 모바일 → 웹 초기화
+```
+1. 모바일: getFirebaseConfig() → Firebase 설정 획득
+2. 모바일: postMessage로 FIREBASE_CONFIG 전송
+3. 웹: setFirebaseConfig() → Firebase 초기화
+4. 웹: 사용자 상태 및 활동 로그 시작
+```
+
+#### 2. 실시간 채팅 저장
+```
+1. 사용자 메시지 입력
+2. 로컬 상태 즉시 업데이트
+3. Firebase chatMessages 컬렉션에 저장
+4. Firebase userActivities에 채팅 활동 로그
+5. 실시간 리스너를 통한 동기화
+```
+
+#### 3. 사용자 상태 추적
+```
+1. 로그인 시: userStatus 온라인 상태 업데이트
+2. 페이지 뷰: userActivities에 페이지 방문 로그
+3. 채팅 활동: 실시간 활동 추적
+4. 로그아웃 시: 오프라인 상태 업데이트
+```
+
+## 🔧 개발 환경 설정
+
+### 실행 명령어
+
+```bash
+# 웹 개발 서버
+npx nx serve web
+
+# 모바일 앱 실행
+nx run mobile:run-ios
+nx run mobile:run-android
+```
+
+### 환경 변수 설정
+
+```bash
+# Web App (.env)
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+
+# Mobile App (.env)
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=your_google_client_id
+```
+
+## 🔄 데이터 흐름
+
+### 인증 흐름
+
+1. **모바일**: Google OAuth → Firebase Auth
+2. **모바일 → 웹**: postMessage로 AuthUser + Firebase Config 전송
+3. **웹**: Firebase 초기화 → 사용자 상태 업데이트
+4. **양방향**: Firestore에 활동 로그 저장
+
+### 채팅 메시지 흐름
+
+1. **사용자 입력**: 웹 또는 모바일에서 메시지 작성
+2. **로컬 상태**: 즉시 UI 업데이트
+3. **Firebase 저장**: chatMessages 컬렉션에 저장
+4. **활동 로그**: userActivities에 채팅 활동 기록
+5. **실시간 동기화**: 다른 클라이언트에 실시간 전파
+
+## 📦 패키지 구조
+
+### Monorepo 구성
+
+- `apps/mobile/`: React Native + Expo 모바일 앱
+- `apps/web/`: React + Vite 웹 앱
+- `core-logic/`: 공용 비즈니스 로직 및 Firebase SDK
+- `shared-ui/`: 공용 UI 컴포넌트
+- `tailwind-config/`: 공용 Tailwind 설정
+
+### 주요 기술 스택
+
+- **Frontend**: React, React Native, TypeScript, Tailwind CSS
+- **State Management**: Zustand (Vanilla Store)
+- **Backend**: Firebase (Auth, Firestore, Functions)
+- **Build Tools**: Nx, Vite, Expo
+- **Authentication**: Firebase Auth + Google OAuth
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
@@ -67,19 +448,3 @@ You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx 
 Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
 
 [Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/react-native?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)

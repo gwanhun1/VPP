@@ -43,6 +43,9 @@
       "path": "../../tailwind-config/tsconfig.lib.json"
     },
     {
+      "path": "../../core-logic/tsconfig.lib.json"
+    },
+    {
       "path": "../../shared-ui/tsconfig.lib.json"
     }
   ]

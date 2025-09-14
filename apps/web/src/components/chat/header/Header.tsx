@@ -1,11 +1,13 @@
 import { Button, Text } from '@vpp/shared-ui';
 import ChattingHeaderPrompt from './HeaderPrompt';
 import HeaderMoreTooltip from './HeaderMoreTooltip';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useRef, useState } from 'react';
 
 const ChattingHeader = () => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const moreAnchorRef = useRef<HTMLDivElement | null>(null);
+  const { authUser } = useAuth();
 
   const handleMoreButtonClick = () => {
     setIsTooltipOpen((prev) => !prev);
@@ -44,7 +46,7 @@ const ChattingHeader = () => {
               전력시장 AI
             </Text>
             <Text variant="body2" className="text-secondary-dark">
-              전문가 어시스턴트
+              {authUser ? `${authUser.displayName || authUser.email || '사용자'}님` : '전문가 어시스턴트'}
             </Text>
           </div>
         </div>
