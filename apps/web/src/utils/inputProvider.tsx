@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import type { AuthUser } from '@vpp/core-logic';
-import { getFirestore } from '@vpp/core-logic';
+import { getFirestore, createChatSession, updateChatSession } from '@vpp/core-logic';
 import { useAuth } from '../contexts/AuthContext';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -69,12 +69,19 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
             platform: 'web',
             source: 'webview'
           });
+
+          // 첫 번째 메시지인 경우 세션 제목 업데이트
+          if (currentSessionId && isUser && messages.length === 0) {
+            await updateChatSession(currentSessionId, {
+              title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
+            });
+          }
         }
       } catch (error) {
         console.error('[ChatInput] Firebase 저장 실패:', error);
       }
     }
-  }, [authUser, currentSessionId]);
+  }, [authUser, currentSessionId, messages.length]);
 
   const handleSendMessage = () => {
     if (inputText.trim()) {
@@ -90,8 +97,23 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   // 채팅 세션 초기화
   useEffect(() => {
     if (authUser && !currentSessionId) {
-      const sessionId = `session_${Date.now()}_${authUser.uid}`;
-      setCurrentSessionId(sessionId);
+      const initializeSession = async () => {
+        try {
+          const sessionId = await createChatSession({
+            userId: authUser.uid,
+            platform: 'web',
+            source: 'webview'
+          });
+          setCurrentSessionId(sessionId);
+        } catch (error) {
+          console.error('[ChatInput] 세션 생성 실패:', error);
+          // 폴백으로 로컬 세션 ID 사용
+          const fallbackSessionId = `session_${Date.now()}_${authUser.uid}`;
+          setCurrentSessionId(fallbackSessionId);
+        }
+      };
+      
+      initializeSession();
     }
   }, [authUser, currentSessionId]);
 

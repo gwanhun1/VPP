@@ -307,6 +307,64 @@ export async function getUserRecentActivities(uid: string, limitCount = 10): Pro
   })) as RecentActivity[];
 }
 
+// 웹뷰 통합 컬렉션 타입 정의
+export interface ChatMessageDoc {
+  id?: string;
+  userId: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Timestamp;
+  sessionId?: string;
+  platform: 'web' | 'mobile';
+  source: 'webview' | 'native';
+}
+
+export interface ChatSession {
+  id?: string;
+  userId: string;
+  title?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  platform: 'web' | 'mobile';
+  source: 'webview' | 'native';
+}
+
+export interface UserActivity {
+  id?: string;
+  userId: string;
+  type: 'login' | 'logout' | 'chat_message' | 'page_view' | 'quiz_attempt';
+  data: Record<string, unknown>;
+  timestamp: Timestamp;
+  platform: 'web' | 'mobile';
+  source: 'webview' | 'native';
+}
+
+// 채팅 세션 관리
+export async function createChatSession(session: Omit<ChatSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const sessionCollection = collection(db, 'chatSessions');
+  const docRef = await addDoc(sessionCollection, {
+    ...session,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  
+  return docRef.id;
+}
+
+export async function updateChatSession(sessionId: string, updates: Partial<ChatSession>): Promise<void> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const sessionDoc = doc(db, 'chatSessions', sessionId);
+  await updateDoc(sessionDoc, {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 // 실시간 리스너 설정
 export function subscribeToUserStats(uid: string, callback: (stats: UserStats | null) => void): () => void {
   const db = getFirebaseFirestore();
