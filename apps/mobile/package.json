@@ -1,6 +1,6 @@
 {
   "name": "vpp-mobile",
-  "main": "../../node_modules/expo-router/entry",
+  "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
@@ -21,7 +21,7 @@
     "@vpp/core-logic": "workspace:*",
     "@vpp/shared-ui": "workspace:*",
     "date-fns": "^4.1.0",
-    "expo": "~53.0.20",
+    "expo": "^54.0.0",
     "expo-auth-session": "^6.2.1",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",

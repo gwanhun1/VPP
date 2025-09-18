@@ -21,14 +21,4 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, 'node_modules'),
 ];
 
-// 패키지 exports 사용 및 조건 우선순위 설정
-config.resolver.unstable_enablePackageExports = true;
-config.resolver.unstable_conditionNames = [
-  'react-native',
-  'development',
-  'require',
-  'import',
-  'default',
-];
-
 module.exports = config;
