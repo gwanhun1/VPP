@@ -44,23 +44,129 @@ Both Platforms
 ## 🗄️ Firebase 데이터베이스 구조
 
 ### 데이터베이스 아키텍처 다이어그램
+
 ```
-Firebase Firestore
-├── users/                    # 사용자 프로필
-├── userStats/               # 사용자 통계
-├── chatMessages/            # 채팅 메시지 (웹뷰 통합)
-├── chatSessions/            # 채팅 세션 (웹뷰 통합)  
-├── chatHistory/             # 채팅 기록 (기존 시스템)
-├── userActivities/          # 사용자 활동 로그 (웹뷰 통합)
-├── userStatus/              # 사용자 온라인 상태 (웹뷰 통합)
-├── bookmarks/               # 북마크
-├── quizResults/             # 퀴즈 결과
-└── recentActivities/        # 최근 활동
+/ (root)
+├─ users (collection)
+│  └─ {uid} (doc)
+│     ├─ fields:
+│     │  ├─ uid: string
+│     │  ├─ displayName: string|null
+│     │  ├─ email: string|null
+│     │  ├─ photoURL: string|null
+│     │  ├─ providerId: 'anonymous'|'google'|'naver'|'kakao'|'password'
+│     │  ├─ createdAt: timestamp
+│     │  └─ updatedAt: timestamp
+│     ├─ devices (subcollection)
+│     │  └─ {deviceId} (doc)
+│     │     ├─ expoPushToken: string|null
+│     │     ├─ fcmToken: string|null
+│     │     ├─ platform: 'ios'|'android'|'web'
+│     │     ├─ appVersion: string|null
+│     │     └─ updatedAt: timestamp
+│     ├─ stats (subcollection)
+│     │  └─ summary (doc)
+│     │     ├─ learnedTerms: number
+│     │     ├─ bookmarks: number
+│     │     ├─ quizScore: number            // 정답률(%) 0~100
+│     │     ├─ studyDays: number            // 연속 학습일
+│     │     ├─ totalQuizzes: number
+│     │     ├─ correctAnswers: number
+│     │     ├─ lastStudyDate: timestamp
+│     │     ├─ createdAt: timestamp
+│     │     └─ updatedAt: timestamp
+│     ├─ bookmarks (subcollection)
+│     │  └─ {bookmarkId} (doc)
+│     │     ├─ termId: string
+│     │     ├─ termName: string
+│     │     ├─ definition: string
+│     │     ├─ category: string
+│     │     └─ createdAt: timestamp
+│     ├─ activities (subcollection)
+│     │  └─ {activityId} (doc)
+│     │     ├─ type: 'quiz'|'bookmark'|'chat'|'study'
+│     │     ├─ title: string
+│     │     ├─ description: string
+│     │     └─ createdAt: timestamp
+│     ├─ notifications (subcollection)
+│     │  └─ {notificationId} (doc)
+│     │     ├─ title: string
+│     │     ├─ body: string
+│     │     ├─ data: map<string, any>
+│     │     ├─ status: 'queued'|'sent'|'failed'
+│     │     ├─ createdAt: timestamp
+│     │     ├─ sentAt: timestamp|null
+│     │     └─ readAt: timestamp|null
+│     ├─ chats (subcollection)
+│     │  └─ {sessionId} (doc)
+│     │     ├─ userId: string               // == uid
+│     │     ├─ title: string|null
+│     │     ├─ lastMessage: string|null
+│     │     ├─ messageCount: number
+│     │     ├─ platform: 'web'|'mobile'
+│     │     ├─ source: 'webview'|'native'
+│     │     ├─ createdAt: timestamp
+│     │     └─ updatedAt: timestamp
+│     │     └─ messages (subcollection)
+│     │        └─ {messageId} (doc)
+│     │           ├─ role: 'user'|'assistant'
+│     │           ├─ text: string
+│     │           ├─ timestamp: timestamp
+│     │           ├─ platform: 'web'|'mobile'
+│     │           └─ source: 'webview'|'native'
+│     └─ quizResults (subcollection)
+│        └─ {resultId} (doc)
+│           ├─ quizId: string|null          // 템플릿 연결 시 사용
+│           ├─ quizType: string             // 예: '전력시장 용어 퀴즈'
+│           ├─ score: number                // 0~100
+│           ├─ totalQuestions: number
+│           ├─ correctAnswers: number
+│           ├─ timeSpent: number            // 초 단위
+│           └─ completedAt: timestamp
+│
+├─ terms (collection)                        // AI 사전(글로서리)
+│  └─ {termId} (doc)
+│     ├─ name: string
+│     ├─ slug: string
+│     ├─ definition: string
+│     ├─ category: string
+│     ├─ synonyms: array<string>
+│     └─ updatedAt: timestamp
+│
+├─ quizzes (collection)                      // 퀴즈 템플릿
+│  └─ {quizId} (doc)
+│     ├─ title: string
+│     ├─ category: string
+│     ├─ difficulty: 'easy'|'medium'|'hard'
+│     ├─ isActive: boolean
+│     ├─ createdAt: timestamp
+│     └─ updatedAt: timestamp
+│     └─ questions (subcollection)
+│        └─ {questionId} (doc)
+│           ├─ type: 'multiple'|'ox'|'short'
+│           ├─ question: string
+│           ├─ options: array<string>|null  // multiple에서만
+│           ├─ correctAnswer: string
+│           ├─ description: string
+│           └─ point: number                // 기본 10
+│
+└─ marketTrends (collection)                 // 외부 API 실시간 데이터
+   └─ {trendId} (doc)
+      ├─ type: string                        // 예: 'SMP'
+      ├─ title: string
+      ├─ description: string|null
+      ├─ value: number|null
+      ├─ change: number|null                 // 증감
+      ├─ level: 'green'|'orange'|'red'|null
+      ├─ date: timestamp
+      ├─ source: string|null
+      └─ updatedAt: timestamp
 ```
 
 ### 웹뷰 통합 Collections (신규)
 
 #### `chatMessages` - 실시간 채팅 메시지
+
 ```typescript
 {
   id: string,
@@ -75,6 +181,7 @@ Firebase Firestore
 ```
 
 #### `chatSessions` - 채팅 세션 관리
+
 ```typescript
 {
   id: string,
@@ -88,6 +195,7 @@ Firebase Firestore
 ```
 
 #### `userActivities` - 사용자 활동 추적
+
 ```typescript
 {
   id: string,
@@ -101,6 +209,7 @@ Firebase Firestore
 ```
 
 #### `userStatus` - 실시간 사용자 상태
+
 ```typescript
 {
   id: string, // userId
@@ -116,6 +225,7 @@ Firebase Firestore
 ### 기존 시스템 Collections
 
 #### `users` - 사용자 프로필
+
 ```typescript
 {
   uid: string,
@@ -129,6 +239,7 @@ Firebase Firestore
 ```
 
 #### `userStats` - 사용자 학습 통계
+
 ```typescript
 {
   uid: string,
@@ -145,6 +256,7 @@ Firebase Firestore
 ```
 
 #### `bookmarks` - 용어 북마크
+
 ```typescript
 {
   id: string,
@@ -158,6 +270,7 @@ Firebase Firestore
 ```
 
 #### `chatHistory` - 채팅 기록 (기존)
+
 ```typescript
 {
   id: string,
@@ -171,6 +284,7 @@ Firebase Firestore
 ```
 
 #### `quizResults` - 퀴즈 결과
+
 ```typescript
 {
   id: string,
@@ -185,6 +299,7 @@ Firebase Firestore
 ```
 
 #### `recentActivities` - 최근 활동
+
 ```typescript
 {
   id: string,
@@ -201,6 +316,7 @@ Firebase Firestore
 ### Core Logic Firebase 함수 (@vpp/core-logic)
 
 #### Firebase 초기화 및 설정
+
 ```typescript
 // core-logic/src/firebase/app.ts
 setFirebaseConfig(config: FirebaseConfig): void
@@ -212,6 +328,7 @@ getFirebaseFirestore(): Firestore | null
 ```
 
 #### 사용자 프로필 관리
+
 ```typescript
 // core-logic/src/firebase/firestore.ts
 createUserProfile(userProfile: Omit<UserProfile, 'createdAt' | 'updatedAt'>): Promise<void>
@@ -220,6 +337,7 @@ updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void>
 ```
 
 #### 사용자 통계 관리
+
 ```typescript
 createUserStats(uid: string): Promise<void>
 getUserStats(uid: string): Promise<UserStats | null>
@@ -228,6 +346,7 @@ subscribeToUserStats(uid: string, callback: (stats: UserStats | null) => void): 
 ```
 
 #### 북마크 관리
+
 ```typescript
 addBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Promise<string>
 getUserBookmarks(uid: string): Promise<Bookmark[]>
@@ -236,18 +355,21 @@ subscribeToUserBookmarks(uid: string, callback: (bookmarks: Bookmark[]) => void)
 ```
 
 #### 채팅 기록 관리 (기존 시스템)
+
 ```typescript
 createChatHistory(chatHistory: Omit<ChatHistory, 'id' | 'createdAt' | 'updatedAt'>): Promise<string>
 getUserChatHistory(uid: string, limitCount?: number): Promise<ChatHistory[]>
 ```
 
 #### 퀴즈 결과 관리
+
 ```typescript
 saveQuizResult(quizResult: Omit<QuizResult, 'id' | 'completedAt'>): Promise<string>
 getUserQuizResults(uid: string, limitCount?: number): Promise<QuizResult[]>
 ```
 
 #### 최근 활동 관리
+
 ```typescript
 addRecentActivity(activity: Omit<RecentActivity, 'id' | 'createdAt'>): Promise<string>
 getUserRecentActivities(uid: string, limitCount?: number): Promise<RecentActivity[]>
@@ -256,6 +378,7 @@ getUserRecentActivities(uid: string, limitCount?: number): Promise<RecentActivit
 ### 웹 앱 Firebase 함수 (apps/web)
 
 #### 웹뷰 인증 및 설정
+
 ```typescript
 // hooks/useWebViewAuth.ts
 - Firebase 설정 수신 및 초기화
@@ -265,6 +388,7 @@ getUserRecentActivities(uid: string, limitCount?: number): Promise<RecentActivit
 ```
 
 #### 채팅 서비스 (웹뷰 통합)
+
 ```typescript
 // services/chatService.ts
 saveChatMessage(authUser: AuthUser, text: string, isUser: boolean, sessionId?: string): Promise<string>
@@ -273,6 +397,7 @@ createChatSession(authUser: AuthUser, title?: string): Promise<string>
 ```
 
 #### 사용자 활동 서비스 (웹뷰 통합)
+
 ```typescript
 // services/userActivityService.ts
 logUserActivity(authUser: AuthUser, type: ActivityType, details: Partial<UserActivity['details']>, sessionId?: string): Promise<string>
@@ -288,6 +413,7 @@ logQuizAttempt(authUser: AuthUser, quizType: string, score: number, sessionId?: 
 ```
 
 #### 채팅 입력 프로바이더 (실시간 저장)
+
 ```typescript
 // utils/inputProvider.tsx
 - 채팅 메시지 즉시 Firebase 저장
@@ -298,6 +424,7 @@ logQuizAttempt(authUser: AuthUser, quizType: string, score: number, sessionId?: 
 ### Firebase 연동 플로우
 
 #### 1. 모바일 → 웹 초기화
+
 ```
 1. 모바일: getFirebaseConfig() → Firebase 설정 획득
 2. 모바일: postMessage로 FIREBASE_CONFIG 전송
@@ -306,6 +433,7 @@ logQuizAttempt(authUser: AuthUser, quizType: string, score: number, sessionId?: 
 ```
 
 #### 2. 실시간 채팅 저장
+
 ```
 1. 사용자 메시지 입력
 2. 로컬 상태 즉시 업데이트
@@ -315,6 +443,7 @@ logQuizAttempt(authUser: AuthUser, quizType: string, score: number, sessionId?: 
 ```
 
 #### 3. 사용자 상태 추적
+
 ```
 1. 로그인 시: userStatus 온라인 상태 업데이트
 2. 페이지 뷰: userActivities에 페이지 방문 로그
