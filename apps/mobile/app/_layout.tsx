@@ -12,7 +12,6 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
 import * as WebBrowser from 'expo-web-browser';
 
 // OAuth 리디렉션 완료 처리: auth.expo.io에서 돌아올 때 세션을 마무리
