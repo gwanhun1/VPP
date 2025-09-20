@@ -194,7 +194,7 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
         summary.correctCount,
         timeSpent
       );
-
+      
       return { 
         ok: true, 
         message: `퀴즈 결과가 저장되었습니다. 점수: ${score}점` 

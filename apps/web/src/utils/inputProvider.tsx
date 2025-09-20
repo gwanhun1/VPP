@@ -50,24 +50,15 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
     // Firebase에 메시지 저장 (새로운 구조 사용)
     if (authUser && currentSessionId) {
-      console.log('[ChatInput] 메시지 저장 시도:', { 
-        authUser: authUser.uid, 
-        sessionId: currentSessionId, 
-        text: text.substring(0, 20) + '...', 
-        isUser 
-      });
-      
       try {
         // 채팅 메시지 저장
-        const messageId = await sendChatMessage(
+        await sendChatMessage(
           currentSessionId,
           text,
           isUser ? 'user' : 'assistant',
           'web',
           'webview'
         );
-        
-        console.log('[ChatInput] 메시지 저장 성공:', messageId);
 
         // 사용자 활동 로그 (채팅 메시지인 경우에만)
         if (isUser) {
@@ -104,18 +95,14 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   // 채팅 세션 초기화
   useEffect(() => {
     if (authUser && !currentSessionId) {
-      console.log('[ChatInput] 세션 초기화 시작:', authUser.uid);
-      
       const initializeSession = async () => {
         try {
-          console.log('[ChatInput] createUserChatSession 호출 중...');
           const sessionId = await createUserChatSession(
             '새 채팅',
             'web',
             'webview'
           );
           setCurrentSessionId(sessionId);
-          console.log('[ChatInput] 새 채팅 세션 생성 완료:', sessionId);
         } catch (error) {
           console.error('[ChatInput] 세션 생성 실패:', error);
           // 폴백으로 로컬 세션 ID 사용

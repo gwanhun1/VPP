@@ -18,6 +18,7 @@ const QuizButtonGroup = () => {
     answer,
     getQuizResult,
     resetQuiz,
+    submitResults,
   } = useQuiz();
 
   const handleNextStep = () => {
@@ -40,17 +41,22 @@ const QuizButtonGroup = () => {
     showFinalResult();
   };
 
-  const showFinalResult = () => {
+  const showFinalResult = async () => {
     const result = getQuizResult();
     const percentage = Math.round(
       (result.correctCount / result.totalQuestions) * 100
     );
 
+    // Firebase에 퀴즈 결과 저장
+    const saveResult = await submitResults();
+
     Alert.alert(
       '퀴즈 완료 🙌',
-
-      `총 ${result.totalQuestions}문제 중 ${result.correctCount}문제 맞춤\n정답률: ${percentage}%\n점수: ${result.totalScore}점\n\n오답 ${result.wrongCount}개`,
-      [{ text: '다시 풀기', onPress: () => resetQuiz() }, { text: '확인' }]
+      `총 ${result.totalQuestions}문제 중 ${result.correctCount}문제 맞춤\n정답률: ${percentage}%\n점수: ${result.totalScore}점\n\n오답 ${result.wrongCount}개\n\n${saveResult.message}`,
+      [
+        { text: '다시 풀기', onPress: () => resetQuiz() }, 
+        { text: '확인' }
+      ]
     );
   };
 
