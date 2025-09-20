@@ -7,18 +7,28 @@ import {
   addBookmark,
   getUserBookmarks,
   removeBookmark,
-  getUserChatHistory,
   getUserQuizResults,
   getUserRecentActivities,
   addRecentActivity,
-  saveQuizResult,
+  addQuizResult,
+  initializeNewUser,
+  createChatSession,
+  getChatSession,
+  updateChatSession,
+  getUserChatSessions,
+  deleteChatSession,
+  addChatMessage,
+  getChatMessages,
   subscribeToUserStats,
   subscribeToUserBookmarks,
+  subscribeToUserRecentActivities,
+  subscribeToChatMessages,
   type UserStats,
   type Bookmark,
-  type ChatHistory,
   type QuizResult,
   type RecentActivity,
+  type ChatSession,
+  type ChatMessage,
 } from '../firebase/firestore';
 import { getCurrentUser } from '../firebase/auth';
 
@@ -39,24 +49,13 @@ export async function initializeUser(): Promise<void> {
     const existingProfile = await getUserProfile(currentUser.uid);
     
     if (!existingProfile) {
-      // 새 사용자 프로필 생성
-      await createUserProfile({
+      // 새 사용자 초기화 (프로필, 통계, 첫 활동 모두 포함)
+      await initializeNewUser({
         uid: currentUser.uid,
         displayName: currentUser.displayName || null,
         email: currentUser.email || null,
         photoURL: currentUser.photoURL || null,
         providerId: currentUser.providerId || 'anonymous',
-      });
-
-      // 사용자 통계 초기화
-      await createUserStats(currentUser.uid);
-
-      // 환영 활동 추가
-      await addRecentActivity({
-        uid: currentUser.uid,
-        type: 'study',
-        title: 'VPP 앱 시작',
-        description: '전력시장 AI 학습을 시작했습니다!',
       });
     }
   } catch (error) {
@@ -88,8 +87,7 @@ export async function addTermBookmark(termId: string, termName: string, definiti
   }
 
   try {
-    await addBookmark({
-      uid: currentUser.uid,
+    await addBookmark(currentUser.uid, {
       termId,
       termName,
       definition,
@@ -105,8 +103,7 @@ export async function addTermBookmark(termId: string, termName: string, definiti
     }
 
     // 최근 활동 추가
-    await addRecentActivity({
-      uid: currentUser.uid,
+    await addRecentActivity(currentUser.uid, {
       type: 'bookmark',
       title: '용어 북마크',
       description: `"${termName}" 용어를 북마크했습니다.`,
@@ -138,7 +135,7 @@ export async function removeTermBookmark(bookmarkId: string): Promise<void> {
   }
 
   try {
-    await removeBookmark(bookmarkId);
+    await removeBookmark(currentUser.uid, bookmarkId);
 
     // 통계 업데이트
     const stats = await getUserStats(currentUser.uid);
@@ -168,8 +165,8 @@ export async function saveUserQuizResult(
 
   try {
     // 퀴즈 결과 저장
-    await saveQuizResult({
-      uid: currentUser.uid,
+    await addQuizResult(currentUser.uid, {
+      quizId: null,
       quizType,
       score,
       totalQuestions,
@@ -193,8 +190,7 @@ export async function saveUserQuizResult(
     }
 
     // 최근 활동 추가
-    await addRecentActivity({
-      uid: currentUser.uid,
+    await addRecentActivity(currentUser.uid, {
       type: 'quiz',
       title: '퀴즈 완료',
       description: `${quizType} 퀴즈에서 ${score}점을 획득했습니다.`,
@@ -205,18 +201,95 @@ export async function saveUserQuizResult(
   }
 }
 
-// 채팅 기록 조회
-export async function fetchUserChatHistory(): Promise<ChatHistory[]> {
+// 채팅 세션 관리
+export async function createUserChatSession(title: string | null, platform: 'web' | 'mobile', source: 'webview' | 'native'): Promise<string> {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    throw new Error('로그인이 필요합니다.');
+  }
+
+  try {
+    const sessionId = await createChatSession(currentUser.uid, {
+      userId: currentUser.uid,
+      title,
+      lastMessage: null,
+      messageCount: 0,
+      platform,
+      source,
+    });
+
+    // 최근 활동 추가
+    await addRecentActivity(currentUser.uid, {
+      type: 'chat',
+      title: '새 채팅 시작',
+      description: 'AI와 새로운 대화를 시작했습니다.',
+    });
+
+    return sessionId;
+  } catch (error) {
+    console.error('채팅 세션 생성 실패:', error);
+    throw error;
+  }
+}
+
+export async function fetchUserChatSessions(): Promise<Array<ChatSession & { id: string }>> {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     return [];
   }
 
   try {
-    return await getUserChatHistory(currentUser.uid);
+    return await getUserChatSessions(currentUser.uid);
   } catch (error) {
-    console.error('채팅 기록 조회 실패:', error);
+    console.error('채팅 세션 조회 실패:', error);
     return [];
+  }
+}
+
+export async function fetchChatMessages(sessionId: string): Promise<Array<ChatMessage & { id: string }>> {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    return [];
+  }
+
+  try {
+    return await getChatMessages(currentUser.uid, sessionId);
+  } catch (error) {
+    console.error('채팅 메시지 조회 실패:', error);
+    return [];
+  }
+}
+
+export async function sendChatMessage(sessionId: string, text: string, role: 'user' | 'assistant', platform: 'web' | 'mobile', source: 'webview' | 'native'): Promise<string> {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    throw new Error('로그인이 필요합니다.');
+  }
+
+  try {
+    return await addChatMessage(currentUser.uid, sessionId, {
+      role,
+      text,
+      platform,
+      source,
+    });
+  } catch (error) {
+    console.error('채팅 메시지 전송 실패:', error);
+    throw error;
+  }
+}
+
+export async function deleteUserChatSession(sessionId: string): Promise<void> {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    throw new Error('로그인이 필요합니다.');
+  }
+
+  try {
+    await deleteChatSession(currentUser.uid, sessionId);
+  } catch (error) {
+    console.error('채팅 세션 삭제 실패:', error);
+    throw error;
   }
 }
 
@@ -271,7 +344,7 @@ export function subscribeToUserStatsUpdates(callback: (stats: UserStats | null) 
   }
 }
 
-export function subscribeToUserBookmarksUpdates(callback: (bookmarks: Bookmark[]) => void): () => void {
+export function subscribeToUserBookmarksUpdates(callback: (bookmarks: Array<Bookmark & { id: string }>) => void): () => void {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     callback([]);
@@ -288,5 +361,37 @@ export function subscribeToUserBookmarksUpdates(callback: (bookmarks: Bookmark[]
     return () => {
       // 오류 발생 시 구독 해제할 것이 없음
     };
+  }
+}
+
+export function subscribeToUserActivitiesUpdates(callback: (activities: Array<RecentActivity & { id: string }>) => void): () => void {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    callback([]);
+    return () => {};
+  }
+
+  try {
+    return subscribeToUserRecentActivities(currentUser.uid, callback);
+  } catch (error) {
+    console.error('최근 활동 구독 실패:', error);
+    callback([]);
+    return () => {};
+  }
+}
+
+export function subscribeToChatMessagesUpdates(sessionId: string, callback: (messages: Array<ChatMessage & { id: string }>) => void): () => void {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    callback([]);
+    return () => {};
+  }
+
+  try {
+    return subscribeToChatMessages(currentUser.uid, sessionId, callback);
+  } catch (error) {
+    console.error('채팅 메시지 구독 실패:', error);
+    callback([]);
+    return () => {};
   }
 }
