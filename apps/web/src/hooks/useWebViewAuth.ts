@@ -72,7 +72,9 @@ export function useWebViewAuth() {
             (async () => {
               try {
                 // Firebase 초기화 확인
+                console.log('[WebViewAuth] Firebase 초기화 시도');
                 initializeFirebase();
+                console.log('[WebViewAuth] Firebase 초기화 완료');
                 
                 // 웹 디바이스 정보 업데이트
                 const deviceId = `webview_${Date.now()}`;
