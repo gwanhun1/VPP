@@ -26,6 +26,7 @@ import {
   type ChatSession,
   type ChatMessage,
 } from '../firebase/firestore';
+import { serverTimestamp } from 'firebase/firestore';
 
 // 모바일 앱 호환성을 위한 타입 별칭
 export type ChatHistory = ChatSession;
@@ -157,43 +158,54 @@ export async function saveUserQuizResult(
   correctAnswers: number,
   timeSpent: number
 ): Promise<void> {
+  console.log('[UserService] saveUserQuizResult 호출:', { quizType, score, totalQuestions, correctAnswers, timeSpent });
+  
   const currentUser = getCurrentUser();
+  console.log('[UserService] 퀴즈 저장 - 현재 사용자:', currentUser);
+  
   if (!currentUser || currentUser.providerId === 'anonymous') {
+    console.error('[UserService] 퀴즈 저장 - 로그인되지 않은 사용자 또는 익명 사용자');
     throw new Error('로그인이 필요합니다.');
   }
 
   try {
-    // 퀴즈 결과 저장
+    console.log('[UserService] addQuizResult 호출 중...', { uid: currentUser.uid });
     await addQuizResult(currentUser.uid, {
-      quizId: null,
+      quizId: null, // 템플릿 연결 시 사용
       quizType,
       score,
       totalQuestions,
       correctAnswers,
       timeSpent,
     });
+    console.log('[UserService] 퀴즈 결과 저장 성공');
 
     // 사용자 통계 업데이트
-    const stats = await getUserStats(currentUser.uid);
-    if (stats) {
-      const newTotalQuizzes = stats.totalQuizzes + 1;
-      const newCorrectAnswers = stats.correctAnswers + correctAnswers;
+    console.log('[UserService] 사용자 통계 업데이트 중...');
+    const currentStats = await getUserStats(currentUser.uid);
+    if (currentStats) {
+      const newTotalQuizzes = (currentStats.totalQuizzes || 0) + 1;
+      const newCorrectAnswers = (currentStats.correctAnswers || 0) + correctAnswers;
       const newQuizScore = Math.round((newCorrectAnswers / (newTotalQuizzes * totalQuestions)) * 100);
-
+      
       await updateUserStats(currentUser.uid, {
         totalQuizzes: newTotalQuizzes,
         correctAnswers: newCorrectAnswers,
         quizScore: newQuizScore,
-        learnedTerms: stats.learnedTerms + correctAnswers, // 정답 개수만큼 학습한 용어 증가
+        lastStudyDate: serverTimestamp() as any,
       });
+      console.log('[UserService] 사용자 통계 업데이트 완료');
     }
 
     // 최근 활동 추가
+    console.log('[UserService] 최근 활동 추가 중...');
     await addRecentActivity(currentUser.uid, {
       type: 'quiz',
       title: '퀴즈 완료',
-      description: `${quizType} 퀴즈에서 ${score}점을 획득했습니다.`,
+      description: `${quizType}에서 ${score}점을 획득했습니다.`,
     });
+
+    console.log('[UserService] 퀴즈 결과 저장 완료:', { quizType, score });
   } catch (error) {
     console.error('퀴즈 결과 저장 실패:', error);
     throw error;
@@ -267,18 +279,26 @@ export async function fetchChatMessages(sessionId: string): Promise<Array<ChatMe
 }
 
 export async function sendChatMessage(sessionId: string, text: string, role: 'user' | 'assistant', platform: 'web' | 'mobile', source: 'webview' | 'native'): Promise<string> {
+  console.log('[UserService] sendChatMessage 호출:', { sessionId, text: text.substring(0, 20) + '...', role, platform, source });
+  
   const currentUser = getCurrentUser();
+  console.log('[UserService] 현재 사용자:', currentUser);
+  
   if (!currentUser || currentUser.providerId === 'anonymous') {
+    console.error('[UserService] 로그인되지 않은 사용자 또는 익명 사용자');
     throw new Error('로그인이 필요합니다.');
   }
 
   try {
-    return await addChatMessage(currentUser.uid, sessionId, {
+    console.log('[UserService] addChatMessage 호출 중...', { uid: currentUser.uid, sessionId });
+    const messageId = await addChatMessage(currentUser.uid, sessionId, {
       role,
       text,
       platform,
       source,
     });
+    console.log('[UserService] 메시지 저장 성공:', messageId);
+    return messageId;
   } catch (error) {
     console.error('채팅 메시지 전송 실패:', error);
     throw error;
