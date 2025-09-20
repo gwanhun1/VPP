@@ -1,8 +1,12 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import type { AuthUser } from '@vpp/core-logic';
-import { getFirestore, createChatSession, updateChatSession } from '@vpp/core-logic';
+import { 
+  createUserChatSession,
+  sendChatMessage,
+  updateChatSession,
+  addRecentActivity
+} from '@vpp/core-logic';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export type Message = {
   id: number;
@@ -44,38 +48,32 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     };
     setMessages((prev) => [...prev, newMessage]);
 
-    // Firebase에 메시지 저장
-    if (authUser) {
+    // Firebase에 메시지 저장 (새로운 구조 사용)
+    if (authUser && currentSessionId) {
       try {
-        const db = getFirestore();
-        if (db) {
-          // 채팅 메시지 저장
-          await addDoc(collection(db, 'chatMessages'), {
-            userId: authUser.uid,
-            text,
-            isUser,
-            timestamp: serverTimestamp(),
-            sessionId: currentSessionId,
-            platform: 'web',
-            source: 'webview'
-          });
+        // 채팅 메시지 저장
+        await sendChatMessage(
+          currentSessionId,
+          text,
+          isUser ? 'user' : 'assistant',
+          'web',
+          'webview'
+        );
 
-          // 사용자 활동 로그
-          await addDoc(collection(db, 'userActivities'), {
-            userId: authUser.uid,
-            type: 'chat_message',
-            data: { text, isUser, sessionId: currentSessionId },
-            timestamp: serverTimestamp(),
-            platform: 'web',
-            source: 'webview'
+        // 사용자 활동 로그 (채팅 메시지인 경우에만)
+        if (isUser) {
+          await addRecentActivity(authUser.uid, {
+            type: 'chat',
+            title: '채팅 메시지',
+            description: text.length > 50 ? `${text.substring(0, 50)}...` : text,
           });
+        }
 
-          // 첫 번째 메시지인 경우 세션 제목 업데이트
-          if (currentSessionId && isUser && messages.length === 0) {
-            await updateChatSession(currentSessionId, {
-              title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
-            });
-          }
+        // 첫 번째 사용자 메시지인 경우 세션 제목 업데이트
+        if (isUser && messages.length === 0) {
+          await updateChatSession(authUser.uid, currentSessionId, {
+            title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
+          });
         }
       } catch (error) {
         console.error('[ChatInput] Firebase 저장 실패:', error);
@@ -99,12 +97,13 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     if (authUser && !currentSessionId) {
       const initializeSession = async () => {
         try {
-          const sessionId = await createChatSession({
-            userId: authUser.uid,
-            platform: 'web',
-            source: 'webview'
-          });
+          const sessionId = await createUserChatSession(
+            '새 채팅',
+            'web',
+            'webview'
+          );
           setCurrentSessionId(sessionId);
+          console.log('[ChatInput] 새 채팅 세션 생성:', sessionId);
         } catch (error) {
           console.error('[ChatInput] 세션 생성 실패:', error);
           // 폴백으로 로컬 세션 ID 사용

@@ -1,7 +1,5 @@
 import { 
-  createUserProfile, 
   getUserProfile,
-  createUserStats,
   getUserStats,
   updateUserStats,
   addBookmark,
@@ -12,13 +10,11 @@ import {
   addRecentActivity,
   addQuizResult,
   initializeNewUser,
-  createChatSession,
-  getChatSession,
-  updateChatSession,
   getUserChatSessions,
   deleteChatSession,
   addChatMessage,
   getChatMessages,
+  updateChatSession,
   subscribeToUserStats,
   subscribeToUserBookmarks,
   subscribeToUserRecentActivities,
@@ -30,6 +26,9 @@ import {
   type ChatSession,
   type ChatMessage,
 } from '../firebase/firestore';
+
+// 모바일 앱 호환성을 위한 타입 별칭
+export type ChatHistory = ChatSession;
 import { getCurrentUser } from '../firebase/auth';
 
 // 사용자 프로필 초기화 (Auth 상태 변경 시 호출)
@@ -209,6 +208,8 @@ export async function createUserChatSession(title: string | null, platform: 'web
   }
 
   try {
+    // firestore.ts의 createChatSession 함수를 import해서 사용해야 함
+    const { createChatSession } = await import('../firebase/firestore');
     const sessionId = await createChatSession(currentUser.uid, {
       userId: currentUser.uid,
       title,
@@ -244,6 +245,11 @@ export async function fetchUserChatSessions(): Promise<Array<ChatSession & { id:
     console.error('채팅 세션 조회 실패:', error);
     return [];
   }
+}
+
+// 모바일 앱 호환성을 위한 별칭 함수
+export async function fetchUserChatHistory(): Promise<Array<ChatSession & { id: string }>> {
+  return fetchUserChatSessions();
 }
 
 export async function fetchChatMessages(sessionId: string): Promise<Array<ChatMessage & { id: string }>> {
@@ -368,7 +374,9 @@ export function subscribeToUserActivitiesUpdates(callback: (activities: Array<Re
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     callback([]);
-    return () => {};
+    return () => {
+      // 익명 사용자의 경우 구독 해제할 것이 없음
+    };
   }
 
   try {
@@ -376,7 +384,9 @@ export function subscribeToUserActivitiesUpdates(callback: (activities: Array<Re
   } catch (error) {
     console.error('최근 활동 구독 실패:', error);
     callback([]);
-    return () => {};
+    return () => {
+      // 오류 발생 시 구독 해제할 것이 없음
+    };
   }
 }
 
@@ -384,7 +394,9 @@ export function subscribeToChatMessagesUpdates(sessionId: string, callback: (mes
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     callback([]);
-    return () => {};
+    return () => {
+      // 익명 사용자의 경우 구독 해제할 것이 없음
+    };
   }
 
   try {
@@ -392,6 +404,8 @@ export function subscribeToChatMessagesUpdates(sessionId: string, callback: (mes
   } catch (error) {
     console.error('채팅 메시지 구독 실패:', error);
     callback([]);
-    return () => {};
+    return () => {
+      // 오류 발생 시 구독 해제할 것이 없음
+    };
   }
 }

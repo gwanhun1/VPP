@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { AuthUser } from '@vpp/core-logic';
-import { setFirebaseConfig, getFirestore } from '@vpp/core-logic';
-import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { 
+  setFirebaseConfig, 
+  initializeFirebase,
+  updateUserDevice,
+  addRecentActivity
+} from '@vpp/core-logic';
 
 interface WebViewMessage {
   type: string;
@@ -39,7 +43,7 @@ export function useWebViewAuth() {
 
   useEffect(() => {
     // 웹뷰 환경 감지
-    const detectWebView = () => {
+    const detectWebView = (): boolean => {
       // User Agent 기반 웹뷰 감지
       const userAgent = navigator.userAgent;
       const isWebViewUA = /wv|WebView|Version.*Chrome/i.test(userAgent);
@@ -62,42 +66,38 @@ export function useWebViewAuth() {
           console.log('[WebView] 인증 정보 수신:', authData.payload);
           setAuthUser(authData.payload || null);
           
-          // 인증 정보 수신 시 사용자 상태 업데이트 및 로그인 활동 기록
+          // 인증 정보 수신 시 사용자 상태 업데이트 및 로그인 활동 기록 (새로운 구조 사용)
           if (authData.payload) {
+            const userPayload = authData.payload;
             (async () => {
               try {
-                const db = getFirestore();
-                if (db) {
-                  // 사용자 온라인 상태 업데이트
-                  await setDoc(doc(db, 'userStatus', authData.payload.uid), {
-                    userId: authData.payload.uid,
-                    isOnline: true,
-                    lastSeen: serverTimestamp(),
-                    platform: 'web',
-                    source: 'webview',
-                    activeSession: `webview_${Date.now()}`
-                  }, { merge: true });
+                // Firebase 초기화 확인
+                initializeFirebase();
+                
+                // 웹 디바이스 정보 업데이트
+                const deviceId = `webview_${Date.now()}`;
+                await updateUserDevice(userPayload.uid, deviceId, {
+                  expoPushToken: null,
+                  fcmToken: null,
+                  platform: 'web',
+                  appVersion: '1.0.0',
+                });
 
-                  // 로그인 활동 기록
-                  await addDoc(collection(db, 'userActivities'), {
-                    userId: authData.payload.uid,
-                    type: 'login',
-                    data: { platform: 'web', source: 'webview' },
-                    timestamp: serverTimestamp(),
-                    platform: 'web',
-                    source: 'webview'
-                  });
+                // 로그인 활동 기록
+                await addRecentActivity(userPayload.uid, {
+                  type: 'study',
+                  title: '웹에서 로그인',
+                  description: 'VPP 웹 서비스에 접속했습니다.',
+                });
 
-                  // 페이지 뷰 기록
-                  await addDoc(collection(db, 'userActivities'), {
-                    userId: authData.payload.uid,
-                    type: 'page_view',
-                    data: { page: 'chat', url: window.location.href },
-                    timestamp: serverTimestamp(),
-                    platform: 'web',
-                    source: 'webview'
-                  });
-                }
+                // 페이지 뷰 기록
+                await addRecentActivity(userPayload.uid, {
+                  type: 'study',
+                  title: '채팅 페이지 방문',
+                  description: 'AI 채팅 페이지를 방문했습니다.',
+                });
+                
+                console.log('[WebViewAuth] 사용자 활동 로그 완료');
               } catch (error) {
                 console.error('[WebViewAuth] 사용자 활동 로그 실패:', error);
               }
@@ -107,6 +107,13 @@ export function useWebViewAuth() {
           const configData = data as FirebaseConfigMessage;
           console.log('[WebView] Firebase 설정 수신');
           setFirebaseConfig(configData.payload);
+          // Firebase 설정 후 즉시 초기화
+          try {
+            initializeFirebase();
+            console.log('[WebView] Firebase 초기화 완료');
+          } catch (error) {
+            console.error('[WebView] Firebase 초기화 실패:', error);
+          }
         }
       } catch (error) {
         // JSON 파싱 실패는 무시 (다른 메시지일 수 있음)
@@ -137,7 +144,32 @@ export function useWebViewAuth() {
       };
 
       // Fallback: 환경변수로 Firebase 초기화 시도
-      // initializeFirebaseFromEnv(); // TODO: 환경변수 초기화 함수 구현 필요
+      const initializeFromEnv = () => {
+        try {
+          const config = {
+            apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+            authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+            projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+            storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+            messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+            appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+          };
+          
+          // 필수 설정이 있으면 초기화
+          if (config.apiKey && config.projectId) {
+            setFirebaseConfig(config);
+            initializeFirebase();
+            console.log('[WebView] 환경변수로 Firebase 초기화 완료');
+          }
+        } catch (error) {
+          console.warn('[WebView] 환경변수 Firebase 초기화 실패:', error);
+        }
+      };
+      
+      // 웹뷰가 아닌 경우 환경변수로 초기화 시도
+      if (!detectWebView()) {
+        initializeFromEnv();
+      }
 
       // 페이지 로드 후 약간의 지연을 두고 인증 정보 요청
       const timer = setTimeout(requestAuth, 100);
