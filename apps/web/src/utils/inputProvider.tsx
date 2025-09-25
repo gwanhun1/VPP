@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import type { AuthUser } from '@vpp/core-logic';
-import { 
-  createUserChatSession,
-  sendChatMessage,
+import {
+  createChatSession,
+  addChatMessage,
   updateChatSession,
-  addRecentActivity
+  addRecentActivity,
 } from '@vpp/core-logic';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -49,37 +49,35 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     setMessages((prev) => [...prev, newMessage]);
 
     // Firebase에 메시지 저장 (새로운 구조 사용)
-    if (authUser && currentSessionId) {
+    if (authUser?.uid && currentSessionId) {
+      const uid = authUser.uid;
       console.log('[ChatInput] 메시지 저장 시도:', {
-        userId: authUser.uid,
+        userId: uid,
         sessionId: currentSessionId,
         text: text.substring(0, 30) + '...',
-        isUser
+        isUser,
       });
-      
+
       try {
-        // 채팅 메시지 저장
-        const messageId = await sendChatMessage(
-          currentSessionId,
+        const messageId = await addChatMessage(uid, currentSessionId, {
+          role: isUser ? 'user' : 'assistant',
           text,
-          isUser ? 'user' : 'assistant',
-          'web',
-          'webview'
-        );
+          platform: 'web',
+          source: 'webview',
+        });
         console.log('[ChatInput] 메시지 저장 성공:', messageId);
 
-        // 사용자 활동 로그 (채팅 메시지인 경우에만)
         if (isUser) {
-          await addRecentActivity(authUser.uid, {
+          await addRecentActivity(uid, {
             type: 'chat',
             title: '채팅 메시지',
-            description: text.length > 50 ? `${text.substring(0, 50)}...` : text,
+            description:
+              text.length > 50 ? `${text.substring(0, 50)}...` : text,
           });
         }
 
-        // 첫 번째 사용자 메시지인 경우 세션 제목 업데이트
         if (isUser && messages.length === 0) {
-          await updateChatSession(authUser.uid, currentSessionId, {
+          await updateChatSession(uid, currentSessionId, {
             title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
           });
         }
@@ -87,7 +85,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         console.error('[ChatInput] Firebase 저장 실패:', error);
       }
     }
-  }, [authUser, currentSessionId, messages.length]);
+  }, [authUser?.uid, currentSessionId, messages.length]);
 
   const handleSendMessage = () => {
     if (inputText.trim()) {
@@ -106,13 +104,23 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       const initializeSession = async () => {
         try {
           console.log('[ChatInput] 세션 생성 시도 - 사용자:', authUser.uid);
-          const sessionId = await createUserChatSession(
-            '새 채팅',
-            'web',
-            'webview'
-          );
+          const uid = authUser.uid;
+          const sessionId = await createChatSession(uid, {
+            userId: uid,
+            title: '새 채팅',
+            lastMessage: null,
+            messageCount: 0,
+            platform: 'web',
+            source: 'webview',
+          });
           setCurrentSessionId(sessionId);
           console.log('[ChatInput] 세션 생성 성공:', sessionId);
+
+          await addRecentActivity(uid, {
+            type: 'chat',
+            title: '새 채팅 시작',
+            description: 'AI와 새로운 대화를 시작했습니다.',
+          });
         } catch (error) {
           console.error('[ChatInput] 세션 생성 실패:', error);
           // 폴백으로 로컬 세션 ID 사용
