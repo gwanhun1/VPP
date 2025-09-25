@@ -434,16 +434,6 @@ export async function getUserChatSessions(
   }));
 }
 
-export async function deleteChatSession(
-  uid: string,
-  sessionId: string
-): Promise<void> {
-  const db = getFirebaseFirestore();
-  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
-
-  const sessionDoc = doc(db, 'users', uid, 'chats', sessionId);
-  await deleteDoc(sessionDoc);
-}
 
 // ===== 채팅 메시지 관리 =====
 export async function addChatMessage(
@@ -632,7 +622,9 @@ export function subscribeToUserStats(
   const db = getFirebaseFirestore();
   if (!db) {
     callback(null);
-    return () => {};
+    return function unsubscribe() {
+      // Firestore가 초기화되지 않은 경우 구독할 것이 없음
+    };
   }
 
   const statsDoc = doc(db, 'users', uid, 'stats', 'summary');
@@ -659,7 +651,9 @@ export function subscribeToUserBookmarks(
   const db = getFirebaseFirestore();
   if (!db) {
     callback([]);
-    return () => {};
+    return function unsubscribe() {
+      // Firestore가 초기화되지 않은 경우 구독할 것이 없음
+    };
   }
 
   const bookmarksCol = collection(db, 'users', uid, 'bookmarks');
@@ -689,7 +683,9 @@ export function subscribeToUserRecentActivities(
   const db = getFirebaseFirestore();
   if (!db) {
     callback([]);
-    return () => {};
+    return function unsubscribe() {
+      // Firestore가 초기화되지 않은 경우 구독할 것이 없음
+    };
   }
 
   const activitiesCol = collection(db, 'users', uid, 'activities');
@@ -723,7 +719,9 @@ export function subscribeToChatMessages(
   const db = getFirebaseFirestore();
   if (!db) {
     callback([]);
-    return () => {};
+    return function unsubscribe() {
+      // Firestore가 초기화되지 않은 경우 구독할 것이 없음
+    };
   }
 
   const messagesCol = collection(
@@ -759,7 +757,9 @@ export function subscribeToUserNotifications(
   const db = getFirebaseFirestore();
   if (!db) {
     callback([]);
-    return () => {};
+    return function unsubscribe() {
+      // Firestore가 초기화되지 않은 경우 구독할 것이 없음
+    };
   }
 
   const notificationsCol = collection(db, 'users', uid, 'notifications');
@@ -783,4 +783,167 @@ export function subscribeToUserNotifications(
       callback([]);
     }
   );
+}
+
+// ===== 채팅 세션 관리 =====
+export async function createUserChatSession(
+  uid: string,
+  title = '새 채팅',
+  platform: 'web' | 'mobile' = 'web',
+  source: 'webview' | 'native' = 'webview'
+): Promise<string> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const chatsCol = collection(db, 'users', uid, 'chats');
+  const sessionDoc = await addDoc(chatsCol, {
+    userId: uid,
+    title,
+    lastMessage: null,
+    messageCount: 0,
+    platform,
+    source,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  return sessionDoc.id;
+}
+
+export async function fetchUserChatSessions(
+  uid: string
+): Promise<Array<ChatSession & { id: string }>> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const chatsCol = collection(db, 'users', uid, 'chats');
+  const q = query(chatsCol, orderBy('updatedAt', 'desc'));
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as ChatSession),
+  }));
+}
+
+export async function sendChatMessage(
+  uid: string,
+  sessionId: string,
+  text: string,
+  role: 'user' | 'assistant',
+  platform: 'web' | 'mobile' = 'web',
+  source: 'webview' | 'native' = 'webview'
+): Promise<string> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  // 메시지 추가
+  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const messageDoc = await addDoc(messagesCol, {
+    role,
+    text,
+    timestamp: serverTimestamp(),
+    platform,
+    source,
+  });
+
+  // 세션 업데이트 (마지막 메시지, 메시지 카운트)
+  const sessionDoc = doc(db, 'users', uid, 'chats', sessionId);
+  const sessionSnap = await getDoc(sessionDoc);
+  
+  if (sessionSnap.exists()) {
+    const currentData = sessionSnap.data() as ChatSession;
+    await updateDoc(sessionDoc, {
+      lastMessage: text,
+      messageCount: (currentData.messageCount || 0) + 1,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  return messageDoc.id;
+}
+
+export async function fetchChatMessages(
+  uid: string,
+  sessionId: string
+): Promise<Array<ChatMessage & { id: string }>> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const q = query(messagesCol, orderBy('timestamp', 'asc'));
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as ChatMessage),
+  }));
+}
+
+export function subscribeToChatMessagesUpdates(
+  uid: string,
+  sessionId: string,
+  callback: (messages: Array<ChatMessage & { id: string }>) => void
+): () => void {
+  const db = getFirebaseFirestore();
+  if (!db) {
+    callback([]);
+    return function unsubscribe() {
+      // Firestore가 초기화되지 않은 경우 구독할 것이 없음
+    };
+  }
+
+  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const q = query(messagesCol, orderBy('timestamp', 'asc'));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const messages = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as ChatMessage),
+      }));
+      callback(messages);
+    },
+    (error) => {
+      console.error('채팅 메시지 실시간 구독 오류:', error);
+      callback([]);
+    }
+  );
+}
+
+export async function updateChatSessionTitle(
+  uid: string,
+  sessionId: string,
+  title: string
+): Promise<void> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const sessionDoc = doc(db, 'users', uid, 'chats', sessionId);
+  await updateDoc(sessionDoc, {
+    title,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteChatSession(
+  uid: string,
+  sessionId: string
+): Promise<void> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  // 먼저 모든 메시지 삭제
+  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const messagesSnapshot = await getDocs(messagesCol);
+  
+  const deletePromises = messagesSnapshot.docs.map((messageDoc) =>
+    deleteDoc(messageDoc.ref)
+  );
+  await Promise.all(deletePromises);
+
+  // 세션 삭제
+  const sessionDoc = doc(db, 'users', uid, 'chats', sessionId);
+  await deleteDoc(sessionDoc);
 }

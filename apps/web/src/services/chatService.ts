@@ -27,6 +27,7 @@ export async function saveChatMessage(
 
   try {
     const messageId = await sendChatMessage(
+      authUser.uid,
       sessionId,
       text,
       isUser ? 'user' : 'assistant',
@@ -55,7 +56,7 @@ export function subscribeToChatMessages(
   }
 
   try {
-    return subscribeToChatMessagesUpdates(sessionId, (messages) => {
+    return subscribeToChatMessagesUpdates(authUser.uid, sessionId, (messages) => {
       console.log('[ChatService] 메시지 업데이트:', messages.length, '개');
       onMessagesUpdate(messages);
     });
@@ -70,10 +71,10 @@ export function subscribeToChatMessages(
  */
 export async function createChatSession(
   authUser: AuthUser,
-  title: string = '새 채팅'
+  title = '새 채팅'
 ): Promise<string> {
   try {
-    const sessionId = await createUserChatSession(title, 'web', 'webview');
+    const sessionId = await createUserChatSession(authUser.uid, title, 'web', 'webview');
     console.log('[ChatService] 채팅 세션 생성 완료:', sessionId);
     return sessionId;
   } catch (error) {
@@ -87,7 +88,7 @@ export async function createChatSession(
  */
 export async function getChatSessions(authUser: AuthUser): Promise<Array<ChatSession & { id: string }>> {
   try {
-    const sessions = await fetchUserChatSessions();
+    const sessions = await fetchUserChatSessions(authUser.uid);
     console.log('[ChatService] 채팅 세션 조회 완료:', sessions.length, '개');
     return sessions;
   } catch (error) {
@@ -101,7 +102,7 @@ export async function getChatSessions(authUser: AuthUser): Promise<Array<ChatSes
  */
 export async function getSessionMessages(authUser: AuthUser, sessionId: string): Promise<Array<ChatMessage & { id: string }>> {
   try {
-    const messages = await fetchChatMessages(sessionId);
+    const messages = await fetchChatMessages(authUser.uid, sessionId);
     console.log('[ChatService] 세션 메시지 조회 완료:', messages.length, '개');
     return messages;
   } catch (error) {
