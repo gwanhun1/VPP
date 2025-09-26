@@ -48,11 +48,12 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const creatingSessionRef = useRef(false);
   const lastSessionIdRef = useRef<string | null>(null);
-  const { authUser } = useAuth();
+  const { authUser, firebaseReady } = useAuth();
 
   const ensureSession = useCallback(
     async (titleHint: string): Promise<string | null> => {
-      if (!authUser) {
+      // Firebase 초기화 전에는 세션을 만들지 않음
+      if (!authUser || !firebaseReady) {
         return null;
       }
 
@@ -84,6 +85,14 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         lastSessionIdRef.current = sessionId;
         return sessionId;
       } catch (error) {
+        console.error('[ChatInputProvider] 세션 생성 실패:', error);
+        try {
+          if (typeof window !== 'undefined' && (window as any).ReactNativeWebView) {
+            (window as any).ReactNativeWebView.postMessage(
+              JSON.stringify({ type: 'WEB_ERROR', payload: `세션 생성 실패: ${String(error)}` })
+            );
+          }
+        } catch { /* no-op: RN bridge may be unavailable */ }
         return null;
       } finally {
         creatingSessionRef.current = false;
@@ -103,7 +112,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       setMessages((prev) => [...prev, newMessage]);
 
       // Firebase에 메시지 저장 (새로운 구조 사용)
-      if (authUser) {
+      if (authUser && firebaseReady) {
         let sessionId = currentSessionId ?? lastSessionIdRef.current;
 
         if (!sessionId && isUser) {
@@ -142,7 +151,14 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
             });
           }
         } catch (error) {
-          // no-op
+          console.error('[ChatInputProvider] 메시지 저장/활동/제목 업데이트 중 오류:', error);
+          try {
+            if (typeof window !== 'undefined' && (window as any).ReactNativeWebView) {
+              (window as any).ReactNativeWebView.postMessage(
+                JSON.stringify({ type: 'WEB_ERROR', payload: `메시지 저장 오류: ${String(error)}` })
+              );
+            }
+          } catch { /* no-op: RN bridge may be unavailable */ }
         }
       }
     },

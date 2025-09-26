@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AuthUser } from '@vpp/core-logic';
 import {
   setFirebaseConfig,
   initializeFirebase,
   updateUserDevice,
   addRecentActivity,
+  getFirebaseAuth,
 } from '@vpp/core-logic';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 interface WebViewMessage {
   type: string;
@@ -42,6 +44,8 @@ declare global {
 export function useWebViewAuth() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [isWebView, setIsWebView] = useState(false);
+  const [firebaseReady, setFirebaseReady] = useState(false);
+  const firebaseReadyRef = useRef(false);
 
   useEffect(() => {
     // 웹뷰 환경 감지
@@ -70,12 +74,30 @@ export function useWebViewAuth() {
             const userPayload = authData.payload;
             (async () => {
               try {
-                // Firebase 초기화 (FIREBASE_CONFIG 수신 이후에도 idempotent 하게 동작)
-                initializeFirebase();
+                // Firebase 설정이 준비될 때까지 대기 (최대 20 * 50ms = 1s)
+                if (!firebaseReadyRef.current) {
+                  for (let i = 0; i < 20 && !firebaseReadyRef.current; i += 1) {
+                    await new Promise((r) => setTimeout(r, 50));
+                  }
+                }
+                // 준비 상태에서만 진행
+                if (!firebaseReadyRef.current) return;
 
-                // 웹뷰에서는 Firebase Auth 로그인을 하지 않고, 
-                // 모바일 앱에서 전달받은 사용자 정보만 사용합니다.
-                // Firebase 함수들은 전달받은 uid를 직접 사용하여 동작합니다.
+                // 개발 편의: 테스트 계정(password provider)일 때만, 개발 모드에서 이메일/비밀번호 로그인
+                if (
+                  import.meta.env.DEV &&
+                  userPayload.providerId === 'password' &&
+                  userPayload.email === 'test@test.com'
+                ) {
+                  const auth = getFirebaseAuth();
+                  if (auth && auth.currentUser?.uid !== userPayload.uid) {
+                    try {
+                      await signInWithEmailAndPassword(auth, 'test@test.com', 'testtest');
+                    } catch {
+                      // dev 로그인 실패는 무시하고 진행
+                    }
+                  }
+                }
                 
                 // 웹 디바이스 정보 업데이트
                 const deviceId = `webview_${Date.now()}`;
@@ -110,6 +132,8 @@ export function useWebViewAuth() {
           // Firebase 설정 후 즉시 초기화
           try {
             initializeFirebase();
+            setFirebaseReady(true);
+            firebaseReadyRef.current = true;
           } catch {
             // no-op
           }
@@ -157,6 +181,7 @@ export function useWebViewAuth() {
   return {
     authUser,
     isWebView,
+    firebaseReady,
     // 웹뷰에서 모바일 앱에 인증 정보 재요청
     requestAuth: () => {
       if (isWebView && window.ReactNativeWebView) {

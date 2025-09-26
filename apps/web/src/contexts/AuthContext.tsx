@@ -5,6 +5,7 @@ import type { AuthUser } from '@vpp/core-logic';
 interface AuthContextType {
   authUser: AuthUser | null;
   isWebView: boolean;
+  firebaseReady: boolean;
   requestAuth: () => void;
 }
 
@@ -22,7 +23,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const webViewAuth = useWebViewAuth();
 
   return (
-    <AuthContext.Provider value={webViewAuth}>
+    <AuthContext.Provider value={webViewAuth as unknown as AuthContextType}>
       {children}
     </AuthContext.Provider>
   );
