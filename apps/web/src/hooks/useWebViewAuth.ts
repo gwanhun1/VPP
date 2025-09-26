@@ -5,9 +5,7 @@ import {
   initializeFirebase,
   updateUserDevice,
   addRecentActivity,
-  getFirebaseAuth,
 } from '@vpp/core-logic';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 interface WebViewMessage {
   type: string;
@@ -75,16 +73,9 @@ export function useWebViewAuth() {
                 // Firebase 초기화 (FIREBASE_CONFIG 수신 이후에도 idempotent 하게 동작)
                 initializeFirebase();
 
-                // 테스트 모드: password/provider 계정(test@test.com)인 경우 웹에서도 이메일/비밀번호로 로그인
-                if (
-                  userPayload.providerId === 'password' &&
-                  userPayload.email === 'test@test.com'
-                ) {
-                  const auth = getFirebaseAuth();
-                  if (auth && auth.currentUser?.uid !== userPayload.uid) {
-                    await signInWithEmailAndPassword(auth, 'test@test.com', 'testtest');
-                  }
-                }
+                // 웹뷰에서는 Firebase Auth 로그인을 하지 않고, 
+                // 모바일 앱에서 전달받은 사용자 정보만 사용합니다.
+                // Firebase 함수들은 전달받은 uid를 직접 사용하여 동작합니다.
                 
                 // 웹 디바이스 정보 업데이트
                 const deviceId = `webview_${Date.now()}`;
