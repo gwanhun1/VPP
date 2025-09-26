@@ -4,8 +4,10 @@ import {
   setFirebaseConfig, 
   initializeFirebase,
   updateUserDevice,
-  addRecentActivity
+  addRecentActivity,
+  getFirebaseAuth
 } from '@vpp/core-logic';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 interface WebViewMessage {
   type: string;
@@ -34,6 +36,42 @@ declare global {
 }
 
 /**
+ * 자동 테스트 로그인 함수
+ */
+async function autoTestLogin(): Promise<AuthUser> {
+  try {
+    console.log('[WebView] 자동 테스트 로그인 시도...');
+    
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      throw new Error('Firebase Auth가 초기화되지 않았습니다.');
+    }
+
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      'test@test.com',
+      'testtest'
+    );
+    
+    console.log('✅ 자동 로그인 성공:', userCredential.user.email);
+    
+    // AuthUser 형태로 변환
+    const authUser: AuthUser = {
+      uid: userCredential.user.uid,
+      email: userCredential.user.email,
+      displayName: userCredential.user.displayName,
+      photoURL: userCredential.user.photoURL,
+      providerId: 'password',
+    };
+    
+    return authUser;
+  } catch (error) {
+    console.warn('자동 테스트 로그인 실패:', error);
+    throw error;
+  }
+}
+
+/**
  * 웹뷰에서 모바일 앱으로부터 인증 정보를 받아 처리하는 훅
  * 모바일 앱에서 postMessage로 전송한 AUTH 메시지를 수신하여 상태를 업데이트
  */
@@ -44,17 +82,15 @@ export function useWebViewAuth() {
   useEffect(() => {
     // 웹뷰 환경 감지
     const detectWebView = (): boolean => {
-      // User Agent 기반 웹뷰 감지
       const userAgent = navigator.userAgent;
       const isWebViewUA = /wv|WebView|Version.*Chrome/i.test(userAgent);
-      
-      // React Native WebView의 경우 window.ReactNativeWebView 객체가 존재
       const hasReactNativeWebView = !!window.ReactNativeWebView;
-      
+
       return isWebViewUA || hasReactNativeWebView;
     };
 
-    setIsWebView(detectWebView());
+    const isWebViewEnv = detectWebView();
+    setIsWebView(isWebViewEnv);
 
     // 모바일 앱으로부터 메시지 수신 처리
     const handleMessage = (event: MessageEvent) => {
@@ -123,19 +159,46 @@ export function useWebViewAuth() {
       }
     };
 
-    // 웹뷰 환경에서만 메시지 리스너 등록
-    if (detectWebView()) {
+    const initializeFromEnv = async () => {
+      try {
+        const config = {
+          apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+          authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+          projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+          storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+          messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+          appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+        };
+
+        if (config.apiKey && config.projectId) {
+          setFirebaseConfig(config);
+          initializeFirebase();
+          console.log('[WebView] 환경변수로 Firebase 초기화 완료');
+
+          try {
+            const testUser = await autoTestLogin();
+            setAuthUser(testUser);
+            console.log('[WebView] 자동 로그인 완료, 사용자 설정됨');
+          } catch (error) {
+            console.warn('[WebView] 자동 로그인 실패:', error);
+          }
+        } else {
+          console.warn('[WebView] 환경변수 Firebase 설정이 부족합니다.');
+        }
+      } catch (error) {
+        console.warn('[WebView] 환경변수 Firebase 초기화 실패:', error);
+      }
+    };
+
+    if (isWebViewEnv) {
       window.addEventListener('message', handleMessage);
-      
-      // 모바일 앱에 인증 정보 및 Firebase 설정 요청
+
       const requestAuth = () => {
         try {
           if (window.ReactNativeWebView) {
-            // 인증 정보 요청
             window.ReactNativeWebView.postMessage(
               JSON.stringify({ type: 'REQUEST_AUTH' })
             );
-            // Firebase 설정 요청
             window.ReactNativeWebView.postMessage(
               JSON.stringify({ type: 'REQUEST_FIREBASE_CONFIG' })
             );
@@ -145,35 +208,6 @@ export function useWebViewAuth() {
         }
       };
 
-      // Fallback: 환경변수로 Firebase 초기화 시도
-      const initializeFromEnv = () => {
-        try {
-          const config = {
-            apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-            authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-            projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-            storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-            messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-            appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-          };
-          
-          // 필수 설정이 있으면 초기화
-          if (config.apiKey && config.projectId) {
-            setFirebaseConfig(config);
-            initializeFirebase();
-            console.log('[WebView] 환경변수로 Firebase 초기화 완료');
-          }
-        } catch (error) {
-          console.warn('[WebView] 환경변수 Firebase 초기화 실패:', error);
-        }
-      };
-      
-      // 웹뷰가 아닌 경우 환경변수로 초기화 시도
-      if (!detectWebView()) {
-        initializeFromEnv();
-      }
-
-      // 페이지 로드 후 약간의 지연을 두고 인증 정보 요청
       const timer = setTimeout(requestAuth, 100);
 
       return () => {
@@ -181,6 +215,13 @@ export function useWebViewAuth() {
         clearTimeout(timer);
       };
     }
+
+    // 웹뷰가 아닌 환경에서는 즉시 Firebase 초기화
+    void initializeFromEnv();
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   return {

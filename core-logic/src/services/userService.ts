@@ -10,16 +10,9 @@ import {
   addRecentActivity,
   addQuizResult,
   initializeNewUser,
-  createChatSession,
-  getUserChatSessions,
-  deleteChatSession,
-  addChatMessage,
-  getChatMessages,
-  updateChatSession,
   subscribeToUserStats,
   subscribeToUserBookmarks,
   subscribeToUserRecentActivities,
-  subscribeToChatMessages,
   type UserStats,
   type Bookmark,
   type QuizResult,
@@ -201,103 +194,8 @@ export async function saveUserQuizResult(
   }
 }
 
-// 채팅 세션 관리
-export async function createUserChatSession(title: string | null, platform: 'web' | 'mobile', source: 'webview' | 'native'): Promise<string> {
-  const currentUser = getCurrentUser();
-  if (!currentUser || currentUser.providerId === 'anonymous') {
-    throw new Error('로그인이 필요합니다.');
-  }
-
-  try {
-    const sessionId = await createChatSession(currentUser.uid, {
-      userId: currentUser.uid,
-      title,
-      lastMessage: null,
-      messageCount: 0,
-      platform,
-      source,
-    });
-
-    // 최근 활동 추가
-    await addRecentActivity(currentUser.uid, {
-      type: 'chat',
-      title: '새 채팅 시작',
-      description: 'AI와 새로운 대화를 시작했습니다.',
-    });
-
-    return sessionId;
-  } catch (error) {
-    console.error('채팅 세션 생성 실패:', error);
-    throw error;
-  }
-}
-
-export async function fetchUserChatSessions(): Promise<Array<ChatSession & { id: string }>> {
-  const currentUser = getCurrentUser();
-  if (!currentUser || currentUser.providerId === 'anonymous') {
-    return [];
-  }
-
-  try {
-    return await getUserChatSessions(currentUser.uid);
-  } catch (error) {
-    console.error('채팅 세션 조회 실패:', error);
-    return [];
-  }
-}
-
-// 모바일 앱 호환성을 위한 별칭 함수
-export async function fetchUserChatHistory(): Promise<Array<ChatSession & { id: string }>> {
-  return fetchUserChatSessions();
-}
-
-export async function fetchChatMessages(sessionId: string): Promise<Array<ChatMessage & { id: string }>> {
-  const currentUser = getCurrentUser();
-  if (!currentUser || currentUser.providerId === 'anonymous') {
-    return [];
-  }
-
-  try {
-    return await getChatMessages(currentUser.uid, sessionId);
-  } catch (error) {
-    console.error('채팅 메시지 조회 실패:', error);
-    return [];
-  }
-}
-
-export async function sendChatMessage(sessionId: string, text: string, role: 'user' | 'assistant', platform: 'web' | 'mobile', source: 'webview' | 'native'): Promise<string> {
-  const currentUser = getCurrentUser();
-  if (!currentUser || currentUser.providerId === 'anonymous') {
-    throw new Error('로그인이 필요합니다.');
-  }
-
-  try {
-    const messageId = await addChatMessage(currentUser.uid, sessionId, {
-      role,
-      text,
-      platform,
-      source,
-    });
-    return messageId;
-  } catch (error) {
-    console.error('채팅 메시지 전송 실패:', error);
-    throw error;
-  }
-}
-
-export async function deleteUserChatSession(sessionId: string): Promise<void> {
-  const currentUser = getCurrentUser();
-  if (!currentUser || currentUser.providerId === 'anonymous') {
-    throw new Error('로그인이 필요합니다.');
-  }
-
-  try {
-    await deleteChatSession(currentUser.uid, sessionId);
-  } catch (error) {
-    console.error('채팅 세션 삭제 실패:', error);
-    throw error;
-  }
-}
+// 채팅 관련 함수들은 firestore.ts로 이동됨
+// 웹에서는 직접 firestore 함수들을 사용하세요
 
 // 최근 활동 조회
 export async function fetchUserRecentActivities(): Promise<RecentActivity[]> {
