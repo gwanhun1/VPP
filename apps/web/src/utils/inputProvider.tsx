@@ -61,6 +61,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [historyMode, setHistoryMode] = useState<boolean>(false);
   const creatingSessionRef = useRef(false);
   const lastSessionIdRef = useRef<string | null>(null);
+  // 새 채팅 의도 시, 최근 세션 자동 로드를 잠시 비활성화하기 위한 플래그
+  const suppressAutoLoadRef = useRef(false);
   const { authUser, firebaseReady } = useAuth();
 
   const ensureSession = useCallback(
@@ -78,7 +80,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       // 세션 생성 중이면 잠시 대기하여 race condition 방지
       if (creatingSessionRef.current) {
         const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-        for (let i = 0; i < 40; i++) { // 최대 ~2초 대기
+        for (let i = 0; i < 40; i++) {
+          // 최대 ~2초 대기
           const sid = currentSessionId ?? lastSessionIdRef.current;
           if (sid) return sid;
           await wait(50);
@@ -99,6 +102,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         );
         setCurrentSessionId(sessionId);
         lastSessionIdRef.current = sessionId;
+        // 새 세션이 만들어졌으므로 자동 로드 억제 해제
+        suppressAutoLoadRef.current = false;
         return sessionId;
       } catch (error) {
         console.error('[ChatInputProvider] 세션 생성 실패:', error);
@@ -106,10 +111,15 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
           if (typeof window !== 'undefined') {
             const rnwv = getRNWebView();
             rnwv?.postMessage(
-              JSON.stringify({ type: 'WEB_ERROR', payload: `세션 생성 실패: ${String(error)}` })
+              JSON.stringify({
+                type: 'WEB_ERROR',
+                payload: `세션 생성 실패: ${String(error)}`,
+              })
             );
           }
-        } catch { /* no-op: RN bridge may be unavailable */ }
+        } catch {
+          /* no-op: RN bridge may be unavailable */
+        }
         return null;
       } finally {
         creatingSessionRef.current = false;
@@ -170,19 +180,34 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
             });
           }
         } catch (error) {
-          console.error('[ChatInputProvider] 메시지 저장/활동/제목 업데이트 중 오류:', error);
+          console.error(
+            '[ChatInputProvider] 메시지 저장/활동/제목 업데이트 중 오류:',
+            error
+          );
           try {
             if (typeof window !== 'undefined') {
               const rnwv = getRNWebView();
               rnwv?.postMessage(
-                JSON.stringify({ type: 'WEB_ERROR', payload: `메시지 저장 오류: ${String(error)}` })
+                JSON.stringify({
+                  type: 'WEB_ERROR',
+                  payload: `메시지 저장 오류: ${String(error)}`,
+                })
               );
             }
-          } catch { /* no-op: RN bridge may be unavailable */ }
+          } catch {
+            /* no-op: RN bridge may be unavailable */
+          }
         }
       }
     },
-    [authUser, currentSessionId, ensureSession, messages.length, firebaseReady, historyMode]
+    [
+      authUser,
+      currentSessionId,
+      ensureSession,
+      messages.length,
+      firebaseReady,
+      historyMode,
+    ]
   );
 
   const generateMockAiAnswer = useCallback(
@@ -222,6 +247,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
     const loadLatestSession = async () => {
       try {
+        // 새 채팅 의도 시에는 자동 로드 금지
+        if (suppressAutoLoadRef.current) return;
         const sessions = await fetchUserChatSessions(authUser.uid);
         if (sessions.length > 0) {
           setCurrentSessionId(sessions[0].id);
@@ -276,69 +303,48 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   }, [addMessage]);
 
   // 기존 채팅 세션 로드: Firestore의 메시지를 현재 메시지 배열로 매핑
-  const loadSession = useCallback(async (sessionId: string) => {
-    if (!authUser || !firebaseReady) return;
-    try {
-      const rawMessages = await fetchChatMessages(authUser.uid, sessionId);
-      type TimestampLike = { toDate?: () => Date } | Date | undefined;
-      const toDateSafe = (ts: TimestampLike): Date => {
-        if (!ts) return new Date();
-        if (ts instanceof Date) return ts;
-        if (typeof ts.toDate === 'function') return ts.toDate();
-        return new Date();
-      };
+  const loadSession = useCallback(
+    async (sessionId: string) => {
+      if (!authUser || !firebaseReady) return;
+      try {
+        const rawMessages = await fetchChatMessages(authUser.uid, sessionId);
+        type TimestampLike = { toDate?: () => Date } | Date | undefined;
+        const toDateSafe = (ts: TimestampLike): Date => {
+          if (!ts) return new Date();
+          if (ts instanceof Date) return ts;
+          if (typeof ts.toDate === 'function') return ts.toDate();
+          return new Date();
+        };
 
-      const mapped: Message[] = rawMessages.map((m, idx) => ({
-        id: Number(`${Date.now()}${idx}`),
-        text: m.text,
-        isUser: m.role === 'user',
-        timestamp: toDateSafe((m as { timestamp?: TimestampLike }).timestamp),
-      }));
+        const mapped: Message[] = rawMessages.map((m, idx) => ({
+          id: Number(`${Date.now()}${idx}`),
+          text: m.text,
+          isUser: m.role === 'user',
+          timestamp: toDateSafe((m as { timestamp?: TimestampLike }).timestamp),
+        }));
 
-      setMessages(mapped);
-      setCurrentSessionId(sessionId);
-      lastSessionIdRef.current = sessionId;
-      // 히스토리 로드 활성화: 스켈레톤 비활성화용
-      setHistoryMode(true);
-    } catch (e) {
-      console.error('[ChatInputProvider] 세션 로드 실패:', e);
-    }
-  }, [authUser, firebaseReady]);
+        setMessages(mapped);
+        setCurrentSessionId(sessionId);
+        lastSessionIdRef.current = sessionId;
+        // 히스토리 로드 활성화: 스켈레톤 비활성화용
+        setHistoryMode(true);
+      } catch (e) {
+        console.error('[ChatInputProvider] 세션 로드 실패:', e);
+      }
+    },
+    [authUser, firebaseReady]
+  );
 
-  // 새 채팅 시작 함수: 즉시 새 세션 생성 후 전환
+  // 새 채팅 시작 함수: 세션은 생성하지 않고 상태만 초기화
   const startNewChat = useCallback(() => {
+    // 이후 자동 최신 세션 로드를 막아, 첫 사용자 메시지에서 반드시 새 세션을 만들도록 함
+    suppressAutoLoadRef.current = true;
     setMessages([]);
+    setCurrentSessionId(null);
+    lastSessionIdRef.current = null;
     setHistoryMode(false);
     setInputText('');
-
-    // 새로운 세션을 즉시 생성하여 이후 메시지가 기존 세션으로 들어가지 않도록 함
-    if (authUser && firebaseReady) {
-      creatingSessionRef.current = true;
-      (async () => {
-        try {
-          const newSessionId = await createUserChatSession(
-            authUser.uid,
-            null,
-            'web',
-            'webview'
-          );
-          setCurrentSessionId(newSessionId);
-          lastSessionIdRef.current = newSessionId;
-        } catch (e) {
-          console.error('[ChatInputProvider] 새 채팅 세션 생성 실패:', e);
-          // 실패 시 세션은 비워둠. 이후 첫 사용자 메시지에서 ensureSession로 재시도됨
-          setCurrentSessionId(null);
-          lastSessionIdRef.current = null;
-        } finally {
-          creatingSessionRef.current = false;
-        }
-      })();
-    } else {
-      // 인증/파이어베이스 준비 전이면 세션은 비워두고 첫 메시지에서 생성
-      setCurrentSessionId(null);
-      lastSessionIdRef.current = null;
-    }
-  }, [authUser, firebaseReady]);
+  }, []);
 
   return (
     <ChatInputContext.Provider
