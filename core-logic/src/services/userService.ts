@@ -19,6 +19,7 @@ import {
   type RecentActivity,
   type ChatSession,
   type ChatMessage,
+  getUserChatSessions,
 } from '../firebase/firestore';
 import { serverTimestamp, Timestamp } from 'firebase/firestore';
 
@@ -29,6 +30,23 @@ import { getCurrentUser } from '../firebase/auth';
 // 사용자 프로필 초기화 (Auth 상태 변경 시 호출)
 export async function initializeUserProfile(): Promise<void> {
   return initializeUser();
+}
+
+// 채팅 기록 조회 (모바일용): 최근 업데이트 순 정렬된 세션 목록 반환
+export async function fetchUserChatHistory(limitCount = 20): Promise<ChatHistory[]> {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    return [];
+  }
+
+  try {
+    const sessions = await getUserChatSessions(currentUser.uid, limitCount);
+    // 최신 업데이트 순으로 이미 정렬되어 오지만, 방어적으로 정렬 유지
+    return sessions as ChatHistory[];
+  } catch (error) {
+    console.error('채팅 기록 조회 실패:', error);
+    return [];
+  }
 }
 
 // 사용자 초기화 서비스 (기존 함수명 유지)

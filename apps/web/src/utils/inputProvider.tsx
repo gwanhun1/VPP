@@ -31,6 +31,8 @@ export type Message = {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  messageId?: string; // Firestore message doc id
+  isBookmarked?: boolean;
 };
 
 export type ChatInputContextType = {
@@ -43,6 +45,7 @@ export type ChatInputContextType = {
   loadSession: (sessionId: string) => Promise<void>;
   startNewChat: () => void; // 새 채팅 시작
   historyMode: boolean; // 히스토리 로드 시 스켈레톤 비활성화를 위한 플래그
+  currentSessionId: string | null;
 };
 
 type IncomingMessage =
@@ -61,9 +64,12 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [historyMode, setHistoryMode] = useState<boolean>(false);
   const creatingSessionRef = useRef(false);
   const lastSessionIdRef = useRef<string | null>(null);
+  // 마지막 사용자 메시지 정보를 보관하여 assistant 메시지 저장 시 replyTo/preview로 사용
+  const lastUserMsgIdRef = useRef<string | null>(null);
+  const lastUserMsgTextRef = useRef<string | null>(null);
   // 새 채팅 의도 시, 최근 세션 자동 로드를 잠시 비활성화하기 위한 플래그
   const suppressAutoLoadRef = useRef(false);
-  const { authUser, firebaseReady } = useAuth();
+  const { authUser, firebaseReady, openSessionId, clearOpenSessionId } = useAuth();
 
   const ensureSession = useCallback(
     async (titleHint: string): Promise<string | null> => {
@@ -137,6 +143,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         text,
         isUser,
         timestamp: new Date(),
+        isBookmarked: false,
       };
       setMessages((prev) => [...prev, newMessage]);
 
@@ -154,14 +161,45 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
         try {
           // 채팅 메시지 저장
-          await sendChatMessage(
+          const savedMessageId = await sendChatMessage(
             authUser.uid,
             sessionId,
             text,
             isUser ? 'user' : 'assistant',
             'web',
-            'webview'
+            'webview',
+            // assistant일 때만 reply 메타 포함
+            !isUser && lastUserMsgIdRef.current
+              ? {
+                  replyTo: lastUserMsgIdRef.current || undefined,
+                  replyPreview: lastUserMsgTextRef.current
+                    ? {
+                        role: 'user',
+                        text:
+                          lastUserMsgTextRef.current.length > 120
+                            ? `${lastUserMsgTextRef.current.substring(0, 120)}...`
+                            : lastUserMsgTextRef.current,
+                      }
+                    : undefined,
+                }
+              : undefined
           );
+
+          // 방금 추가한 로컬 메시지에 Firestore messageId를 매핑
+          setMessages((prev) => {
+            const next = [...prev];
+            const lastIdx = next.length - 1;
+            if (lastIdx >= 0 && next[lastIdx].text === text && next[lastIdx].timestamp === newMessage.timestamp) {
+              next[lastIdx] = { ...next[lastIdx], messageId: savedMessageId };
+            }
+            return next;
+          });
+
+          // 사용자 메시지 저장 직후에는 마지막 사용자 메시지 참조를 업데이트
+          if (isUser) {
+            lastUserMsgIdRef.current = savedMessageId;
+            lastUserMsgTextRef.current = text;
+          }
 
           // 사용자 활동 로그 (채팅 메시지인 경우에만)
           if (isUser) {
@@ -321,6 +359,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
           text: m.text,
           isUser: m.role === 'user',
           timestamp: toDateSafe((m as { timestamp?: TimestampLike }).timestamp),
+          messageId: (m as { id?: string }).id,
+          isBookmarked: (m as { isBookmarked?: boolean }).isBookmarked ?? false,
         }));
 
         setMessages(mapped);
@@ -346,6 +386,18 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     setInputText('');
   }, []);
 
+  // 모바일에서 전달받은 세션 ID로 특정 채팅방 열기
+  useEffect(() => {
+    if (openSessionId && authUser && firebaseReady) {
+      loadSession(openSessionId).then(() => {
+        // 세션 로드 완료 후 openSessionId 초기화
+        if (clearOpenSessionId) {
+          clearOpenSessionId();
+        }
+      });
+    }
+  }, [openSessionId, authUser, firebaseReady, loadSession, clearOpenSessionId]);
+
   return (
     <ChatInputContext.Provider
       value={{
@@ -358,6 +410,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         loadSession,
         startNewChat,
         historyMode,
+        currentSessionId,
       }}
     >
       {children}

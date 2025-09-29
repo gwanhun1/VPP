@@ -28,6 +28,88 @@ export interface UserProfile {
   updatedAt: Timestamp;
 }
 
+// 사용자의 북마크된 메시지들을 세션 단위로 수집하여 반환
+export async function fetchUserBookmarkedMessages(
+  uid: string,
+  options?: { sessionLimit?: number; perSessionLimit?: number }
+): Promise<ChatBookmarkedMessage[]> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const sessionLimit = options?.sessionLimit ?? 10;
+  const perLimit = options?.perSessionLimit ?? 10;
+
+  const sessions = await getUserChatSessions(uid, sessionLimit);
+  const results: ChatBookmarkedMessage[] = [];
+
+  for (const s of sessions) {
+    const sessionId = (s as ChatSession & { id?: string }).id;
+    if (!sessionId) continue;
+    const messagesCol = collection(
+      db,
+      'users',
+      uid,
+      'chats',
+      sessionId,
+      'messages'
+    );
+    // orderBy를 제거하여 복합 인덱스 요구를 피함. 전체 결과는 아래에서 클라이언트 정렬.
+    const q = query(
+      messagesCol,
+      where('isBookmarked', '==', true),
+      where('role', '==', 'assistant'),
+      limit(perLimit)
+    );
+    const snap = await getDocs(q);
+    snap.forEach((docSnap) => {
+      const data = docSnap.data() as Partial<ChatMessage> & {
+        timestamp?: Timestamp;
+        text?: string;
+        replyTo?: string;
+        replyPreview?: { role: 'user' | 'assistant'; text: string };
+      };
+      results.push({
+        id: docSnap.id,
+        sessionId,
+        text: data.text ?? '',
+        timestamp: data.timestamp ?? null,
+        replyTo: data.replyTo,
+        replyPreview: data.replyPreview,
+      });
+    });
+  }
+
+  // 최신순 정렬
+  results.sort((a, b) => {
+    const ta = a.timestamp?.toMillis?.() ?? 0;
+    const tb = b.timestamp?.toMillis?.() ?? 0;
+    return tb - ta;
+  });
+  return results;
+}
+
+// 메시지 북마크 토글
+export async function updateChatMessageBookmark(
+  uid: string,
+  sessionId: string,
+  messageId: string,
+  isBookmarked: boolean
+): Promise<void> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const messageDoc = doc(
+    db,
+    'users',
+    uid,
+    'chats',
+    sessionId,
+    'messages',
+    messageId
+  );
+  await updateDoc(messageDoc, { isBookmarked, timestamp: serverTimestamp() });
+}
+
 export interface UserDevice {
   expoPushToken: string | null;
   fcmToken: string | null;
@@ -90,6 +172,20 @@ export interface ChatMessage {
   timestamp: Timestamp;
   platform: 'web' | 'mobile';
   source: 'webview' | 'native';
+  isBookmarked?: boolean; // 메시지 단위 북마크 여부
+  // 북마크 UX 향상 및 Q/A 연계용: 답변이 참조하는 질문
+  replyTo?: string; // 질문 messageId
+  replyPreview?: { role: 'user' | 'assistant'; text: string };
+}
+
+// 채팅 북마크 메시지 조회 결과 타입
+export interface ChatBookmarkedMessage {
+  id: string; // messageId
+  sessionId: string;
+  text: string; // assistant 답변
+  timestamp: Timestamp | null;
+  replyTo?: string;
+  replyPreview?: { role: 'user' | 'assistant'; text: string };
 }
 
 export interface QuizResult {
@@ -415,8 +511,8 @@ export async function updateChatSession(
 
 export async function getUserChatSessions(
   uid: string,
-  limitCount?: number
-): Promise<Array<ChatSession & { id: string }>> {
+  limitCount = 20
+): Promise<ChatSession[]> {
   const db = getFirebaseFirestore();
   if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
 
@@ -433,7 +529,6 @@ export async function getUserChatSessions(
     ...(doc.data() as ChatSession),
   }));
 }
-
 
 // ===== 채팅 메시지 관리 =====
 export async function addChatMessage(
@@ -454,6 +549,7 @@ export async function addChatMessage(
   );
   const docRef = await addDoc(messagesCol, {
     ...message,
+    isBookmarked: message.isBookmarked ?? false,
     timestamp: serverTimestamp(),
   });
 
@@ -832,25 +928,35 @@ export async function sendChatMessage(
   text: string,
   role: 'user' | 'assistant',
   platform: 'web' | 'mobile' = 'web',
-  source: 'webview' | 'native' = 'webview'
+  source: 'webview' | 'native' = 'webview',
+  meta?: { replyTo?: string; replyPreview?: { role: 'user' | 'assistant'; text: string } }
 ): Promise<string> {
   const db = getFirebaseFirestore();
   if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
 
   // 메시지 추가
-  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const messagesCol = collection(
+    db,
+    'users',
+    uid,
+    'chats',
+    sessionId,
+    'messages'
+  );
   const messageDoc = await addDoc(messagesCol, {
     role,
     text,
     timestamp: serverTimestamp(),
     platform,
     source,
+    ...(meta?.replyTo ? { replyTo: meta.replyTo } : {}),
+    ...(meta?.replyPreview ? { replyPreview: meta.replyPreview } : {}),
   });
 
   // 세션 업데이트 (마지막 메시지, 메시지 카운트)
   const sessionDoc = doc(db, 'users', uid, 'chats', sessionId);
   const sessionSnap = await getDoc(sessionDoc);
-  
+
   if (sessionSnap.exists()) {
     const currentData = sessionSnap.data() as ChatSession;
     await updateDoc(sessionDoc, {
@@ -870,7 +976,14 @@ export async function fetchChatMessages(
   const db = getFirebaseFirestore();
   if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
 
-  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const messagesCol = collection(
+    db,
+    'users',
+    uid,
+    'chats',
+    sessionId,
+    'messages'
+  );
   const q = query(messagesCol, orderBy('timestamp', 'asc'));
   const snapshot = await getDocs(q);
 
@@ -893,7 +1006,14 @@ export function subscribeToChatMessagesUpdates(
     };
   }
 
-  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const messagesCol = collection(
+    db,
+    'users',
+    uid,
+    'chats',
+    sessionId,
+    'messages'
+  );
   const q = query(messagesCol, orderBy('timestamp', 'asc'));
 
   return onSnapshot(
@@ -935,9 +1055,16 @@ export async function deleteChatSession(
   if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
 
   // 먼저 모든 메시지 삭제
-  const messagesCol = collection(db, 'users', uid, 'chats', sessionId, 'messages');
+  const messagesCol = collection(
+    db,
+    'users',
+    uid,
+    'chats',
+    sessionId,
+    'messages'
+  );
   const messagesSnapshot = await getDocs(messagesCol);
-  
+
   const deletePromises = messagesSnapshot.docs.map((messageDoc) =>
     deleteDoc(messageDoc.ref)
   );

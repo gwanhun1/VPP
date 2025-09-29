@@ -113,7 +113,8 @@ Both Platforms
 │     │           ├─ text: string
 │     │           ├─ timestamp: timestamp
 │     │           ├─ platform: 'web'|'mobile'
-│     │           └─ source: 'webview'|'native'
+│     │           ├─ source: 'webview'|'native'
+│     │           └─ isBookmarked: boolean // 메시지 단위 북마크 여부 (기본 false)
 │     └─ quizResults (subcollection)
 │        └─ {resultId} (doc)
 │           ├─ quizId: string|null          // 템플릿 연결 시 사용

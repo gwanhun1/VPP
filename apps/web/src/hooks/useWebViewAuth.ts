@@ -14,6 +14,13 @@ interface WebViewMessage {
   payload?: AuthUser | null;
 }
 
+interface OpenSessionMessage {
+  type: 'OPEN_SESSION';
+  payload: {
+    sessionId: string;
+  };
+}
+
 interface FirebaseConfigMessage {
   type: 'FIREBASE_CONFIG';
   payload: {
@@ -45,6 +52,7 @@ export function useWebViewAuth() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [isWebView, setIsWebView] = useState(false);
   const [firebaseReady, setFirebaseReady] = useState(false);
+  const [openSessionId, setOpenSessionId] = useState<string | null>(null);
   const firebaseReadyRef = useRef(false);
 
   useEffect(() => {
@@ -63,7 +71,7 @@ export function useWebViewAuth() {
     // 모바일 앱으로부터 메시지 수신 처리
     const handleMessage = (event: MessageEvent) => {
       try {
-        const data: WebViewMessage | FirebaseConfigMessage = JSON.parse(event.data);
+        const data: WebViewMessage | FirebaseConfigMessage | OpenSessionMessage = JSON.parse(event.data);
         
         if (data.type === 'AUTH') {
           const authData = data as WebViewMessage;
@@ -137,6 +145,9 @@ export function useWebViewAuth() {
           } catch {
             // no-op
           }
+        } else if (data.type === 'OPEN_SESSION') {
+          const sessionData = data as OpenSessionMessage;
+          setOpenSessionId(sessionData.payload.sessionId);
         }
       } catch {
         // JSON 파싱 실패는 무시 (다른 메시지일 수 있음)
@@ -182,6 +193,8 @@ export function useWebViewAuth() {
     authUser,
     isWebView,
     firebaseReady,
+    openSessionId,
+    clearOpenSessionId: () => setOpenSessionId(null),
     // 웹뷰에서 모바일 앱에 인증 정보 재요청
     requestAuth: () => {
       if (isWebView && window.ReactNativeWebView) {

@@ -1,4 +1,5 @@
 import { Button, Text } from '@vpp/shared-ui';
+import { useChatInput } from '@/utils/inputProvider';
 import ChattingHeaderPrompt from './HeaderPrompt';
 import HeaderMoreTooltip from './HeaderMoreTooltip';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -6,13 +7,13 @@ import { useRef, useState } from 'react';
 
 const ChattingHeader = () => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
-  const moreAnchorRef = useRef<HTMLDivElement | null>(null);
+  const moreAnchorRef = useRef<HTMLDivElement>(null);
+  const { currentSessionId } = useChatInput();
   const { authUser } = useAuth();
 
   const handleMoreButtonClick = () => {
     setIsTooltipOpen((prev) => !prev);
   };
-
   const closeTooltip = () => {
     setIsTooltipOpen(false);
   };
@@ -53,36 +54,38 @@ const ChattingHeader = () => {
           </div>
         </div>
 
-        {/* 더보기 섹션 */}
-        <div className="relative" ref={moreAnchorRef}>
-          <Button
-            size="sm"
-            isIconOnly
-            rounded="full"
-            onClick={handleMoreButtonClick}
-            aria-expanded={isTooltipOpen}
-            aria-label="더보기 메뉴"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="relative z-10 w-6 h-6 text-white"
-              aria-hidden="true"
+        {/* 더보기 섹션: 채팅방 진입 시에만 표시 */}
+        {currentSessionId ? (
+          <div className="relative" ref={moreAnchorRef}>
+            <Button
+              size="sm"
+              isIconOnly
+              rounded="full"
+              onClick={handleMoreButtonClick}
+              aria-expanded={isTooltipOpen}
+              aria-label="더보기 메뉴"
             >
-              <path
-                fillRule="evenodd"
-                d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </Button>
-          <HeaderMoreTooltip
-            isOpen={isTooltipOpen}
-            onClose={closeTooltip}
-            anchorRef={moreAnchorRef}
-          />
-        </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="relative z-10 w-6 h-6 text-white"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Button>
+            <HeaderMoreTooltip
+              isOpen={isTooltipOpen}
+              onClose={closeTooltip}
+              anchorRef={moreAnchorRef}
+            />
+          </div>
+        ) : null}
       </div>
 
       <ChattingHeaderPrompt />

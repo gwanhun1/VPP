@@ -48,7 +48,7 @@ const RecentQuestionContainer = () => {
   );
 
   // 데이터가 없거나 못 불러온 경우: 컴포넌트 자체를 숨김
-  if (sessionsWithTitle.length === 0) {
+  if (!loading && sessionsWithTitle.length === 0) {
     return null;
   }
 
@@ -73,7 +73,7 @@ const RecentQuestionContainer = () => {
           최근 질문
         </Text>
       </div>
-      <Skeleton isLoading={!loading} rounded={true} className="w-20 h-7">
+      <Skeleton isLoading={loading} rounded={true} className="w-20 h-7">
         <div className="flex overflow-x-auto gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {sessionsWithTitle.map((s) => (
             <RecentQuestionBadge

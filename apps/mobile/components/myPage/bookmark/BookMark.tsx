@@ -1,22 +1,26 @@
 import {
-  fetchUserBookmarks,
+  fetchUserBookmarkedMessages,
   getCurrentUser,
-  type Bookmark,
+  type ChatBookmarkedMessage,
 } from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useEffect, useState } from 'react';
 import { ScrollView, View, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import tw from '../../../utils/tailwind';
 
 import BookmarkCard from './BookmarkCard';
 
 const BookMark = () => {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [chatBookmarks, setChatBookmarks] = useState<ChatBookmarkedMessage[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
   const [user] = useState(() => getCurrentUser());
   const primaryColor = tw.color('primary');
+  const router = useRouter();
 
   useEffect(() => {
     if (user && user.providerId !== 'anonymous') {
@@ -27,8 +31,13 @@ const BookMark = () => {
   const loadBookmarks = async () => {
     setLoading(true);
     try {
-      const userBookmarks = await fetchUserBookmarks();
-      setBookmarks(userBookmarks);
+      const userChatBookmarks = user
+        ? await fetchUserBookmarkedMessages(user.uid, {
+            sessionLimit: 20,
+            perSessionLimit: 20,
+          })
+        : [];
+      setChatBookmarks(userChatBookmarks);
     } catch (error) {
       console.error('북마크 로드 실패:', error);
     } finally {
@@ -46,11 +55,11 @@ const BookMark = () => {
             <MaterialIcons name="bookmark" size={16} color={primaryColor} />
           </View>
           <Text variant="h6" weight="semibold" color="primary">
-            북마크한 용어
+            북마크한 답변
           </Text>
         </View>
       </CardHeader>
-      <View style={tw`h-40`}>
+      <View style={tw`max-h-80`}>
         {!user || user.providerId === 'anonymous' ? (
           <View style={tw`flex-1 items-center justify-center`}>
             <Text variant="body2" color="muted">
@@ -69,25 +78,37 @@ const BookMark = () => {
               </Text>
             </View>
           </View>
-        ) : bookmarks.length > 0 ? (
-          <ScrollView style={tw`h-60`}>
+        ) : (
+          <ScrollView style={tw`max-h-72`}>
             <View style={tw`flex-col`}>
-              {bookmarks.map((bookmark, idx) => (
-                <View
-                  key={bookmark.id}
-                  style={idx !== bookmarks.length - 1 ? tw`mb-1` : undefined}
-                >
-                  <BookmarkCard text={bookmark.termName} />
+              {chatBookmarks.length > 0 ? (
+                chatBookmarks.map((bm, idx) => (
+                  <View
+                    key={`${bm.sessionId}_${bm.id}`}
+                    style={
+                      idx !== chatBookmarks.length - 1 ? tw`mb-1` : undefined
+                    }
+                  >
+                    <BookmarkCard
+                      text={bm.text}
+                      onPress={() => {
+                        router.push({
+                          pathname: '/(tabs)/index',
+                          params: { openSessionId: bm.sessionId },
+                        });
+                      }}
+                    />
+                  </View>
+                ))
+              ) : (
+                <View style={tw`flex-1 items-center justify-center py-4`}>
+                  <Text variant="body2" color="muted">
+                    아직 북마크한 답변이 없습니다
+                  </Text>
                 </View>
-              ))}
+              )}
             </View>
           </ScrollView>
-        ) : (
-          <View style={tw`flex-1 items-center justify-center py-8`}>
-            <Text variant="body2" color="muted">
-              아직 북마크한 용어가 없습니다
-            </Text>
-          </View>
         )}
       </View>
     </Card>

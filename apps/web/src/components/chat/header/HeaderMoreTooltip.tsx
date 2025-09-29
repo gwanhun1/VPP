@@ -7,6 +7,8 @@ import {
   useState,
 } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useChatInput } from '@/utils/inputProvider';
+import { updateChatSession, deleteChatSession } from '@vpp/core-logic';
 
 type HeaderMoreTooltipProps = {
   isOpen: boolean;
@@ -31,6 +33,7 @@ const HeaderMoreTooltip = ({
     left: 0,
   });
   const { authUser } = useAuth();
+  const { currentSessionId, startNewChat } = useChatInput();
 
   // anchor 위치에 따라 툴팁 위치 계산
   const computePosition = useCallback(() => {
@@ -82,6 +85,34 @@ const HeaderMoreTooltip = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
+  const handleRename = async () => {
+    if (!authUser || !currentSessionId) return;
+    const next = window.prompt('새 대화명 입력');
+    if (!next) return;
+    try {
+      await updateChatSession(authUser.uid, currentSessionId, {
+        title: next.length > 30 ? `${next.substring(0, 30)}...` : next,
+      });
+      onClose();
+    } catch (e) {
+      console.error('[HeaderMoreTooltip] 대화명 수정 실패:', e);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!authUser || !currentSessionId) return;
+    const ok = window.confirm('이 대화를 삭제하시겠습니까? 되돌릴 수 없습니다.');
+    if (!ok) return;
+    try {
+      await deleteChatSession(authUser.uid, currentSessionId);
+      // 삭제 후 현재 채팅방에서 나가기: 새 채팅 상태로 초기화
+      startNewChat();
+      onClose();
+    } catch (e) {
+      console.error('[HeaderMoreTooltip] 대화 삭제 실패:', e);
+    }
+  };
+
   const tooltipItems: TooltipItem[] = [
     {
       icon: (
@@ -96,9 +127,7 @@ const HeaderMoreTooltip = ({
         </svg>
       ),
       label: '대화명 수정',
-      onClick: () => {
-        console.log('대화명 수정 클릭');
-      },
+      onClick: handleRename,
     },
     {
       icon: (
@@ -116,10 +145,8 @@ const HeaderMoreTooltip = ({
           />
         </svg>
       ),
-      label: '대화 초기화',
-      onClick: () => {
-        console.log('대화 초기화 클릭');
-      },
+      label: '대화 삭제',
+      onClick: handleDelete,
     },
   ];
 

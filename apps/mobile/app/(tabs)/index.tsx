@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Platform } from 'react-native';
 import { Spinner } from '@vpp/shared-ui';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { useLocalSearchParams } from 'expo-router';
 
 /**
  * AI 채팅 화면
@@ -32,6 +33,7 @@ export default function ChatScreen() {
   const [webViewReady, setWebViewReady] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [devUrlIndex, setDevUrlIndex] = useState(0);
+  const { openSessionId } = useLocalSearchParams<{ openSessionId?: string }>();
 
   const currentUrl = __DEV__
     ? DEV_URL_CANDIDATES?.[devUrlIndex] ?? DEV_URL_CANDIDATES?.[0] ?? PROD_URL
@@ -127,6 +129,18 @@ export default function ChatScreen() {
     // Firebase 설정을 먼저 전달하여 Web이 초기화된 뒤 AUTH를 처리하도록 보장
     postFirebaseConfigToWeb();
     postAuthToWeb(user);
+    // 북마크에서 넘어온 세션 자동 오픈
+    if (openSessionId && webViewRef.current) {
+      try {
+        const payload = JSON.stringify({
+          type: 'OPEN_SESSION',
+          payload: { sessionId: String(openSessionId) },
+        });
+        webViewRef.current.postMessage(payload);
+      } catch (e) {
+        console.warn('세션 오픈 전달 실패:', e);
+      }
+    }
     setIsLoading(false);
   };
 

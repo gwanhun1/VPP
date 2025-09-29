@@ -8,6 +8,8 @@ interface AuthContextType {
   isWebView: boolean;
   firebaseReady: boolean;
   isLoading?: boolean;
+  openSessionId?: string | null;
+  clearOpenSessionId?: () => void;
   requestAuth: () => void;
   login?: (user: AuthUser) => void;
   logout?: () => Promise<void>;
@@ -36,6 +38,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         authUser: webViewAuth.authUser,
         isWebView: true,
         firebaseReady: webViewAuth.firebaseReady,
+        openSessionId: webViewAuth.openSessionId,
+        clearOpenSessionId: webViewAuth.clearOpenSessionId,
         requestAuth: webViewAuth.requestAuth,
       }
     : {
@@ -43,6 +47,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isWebView: false,
         firebaseReady: webAuth.firebaseReady,
         isLoading: webAuth.isLoading,
+        openSessionId: null,
+        clearOpenSessionId: undefined,
         requestAuth: () => { /* 웹에서는 사용하지 않음 */ },
         login: webAuth.login,
         logout: webAuth.logout,

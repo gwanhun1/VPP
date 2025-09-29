@@ -1,6 +1,7 @@
 import { Badge, Skeleton, Text } from '@vpp/shared-ui';
 import AiChattingBoxButtonGroup from './AiChattingBoxButtonGroup';
 import { useEffect, useState } from 'react';
+import { useChatInput } from '@/utils/inputProvider';
 
 type AiChattingBoxProps = {
   message: {
@@ -8,12 +9,15 @@ type AiChattingBoxProps = {
     text: string;
     isUser: boolean;
     timestamp: Date;
+    messageId?: string;
+    isBookmarked?: boolean;
   };
   layout?: boolean;
 };
 
 const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const { currentSessionId } = useChatInput();
 
   // 메시지가 표시될 때 로딩 효과를 위한 타이머 설정
   useEffect(() => {
@@ -55,7 +59,7 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
         isOverlay={true}
         rounded={true}
         isLoading={layout ? false : isLoading}
-        className="rounded-2xl rounded-tl-sm transition-opacity duration-300"
+        className="rounded-tl-sm transition-opacity duration-300 rounded-4xl"
       >
         <div
           className="p-4 text-gray-800 bg-white rounded-2xl rounded-tl-sm border shadow-sm border-primary-50 
@@ -85,7 +89,12 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
             </Text>
 
             <div className="transition-transform duration-300 group-hover:translate-x-1">
-              <AiChattingBoxButtonGroup messageText={message.text} />
+              <AiChattingBoxButtonGroup
+                messageText={message.text}
+                sessionId={currentSessionId}
+                messageId={message.messageId}
+                isBookmarked={message.isBookmarked}
+              />
             </div>
           </div>
         </div>

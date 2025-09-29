@@ -6,6 +6,7 @@ import {
 import {
   onAuthStateChanged,
   setFirebaseConfig,
+  initializeFirebase,
   type AuthUser,
 } from '@vpp/core-logic';
 import { useFonts } from 'expo-font';
@@ -47,6 +48,12 @@ WebBrowser.maybeCompleteAuthSession();
       storageBucket,
       messagingSenderId,
     });
+    try {
+      // Firestore/Auth 사용 전 반드시 초기화
+      initializeFirebase();
+    } catch (e) {
+      console.warn('Firebase initialize 실패:', e);
+    }
   } else {
     console.warn(
       'Firebase env not set. Set EXPO_PUBLIC_FIREBASE_* (or EXPO_PUBLIC_FB_*) variables to enable auth.'
