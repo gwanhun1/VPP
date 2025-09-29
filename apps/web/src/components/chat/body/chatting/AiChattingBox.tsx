@@ -25,6 +25,9 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
     return () => clearTimeout(loadingTimer);
   }, []);
 
+  // assistant 역할의 메시지만 렌더링
+  if (message.isUser) return null;
+
   return (
     <div className="max-w-[80%] group">
       <div className="flex gap-2 items-center mb-1 w-full">

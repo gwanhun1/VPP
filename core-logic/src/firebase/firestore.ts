@@ -788,7 +788,7 @@ export function subscribeToUserNotifications(
 // ===== 채팅 세션 관리 =====
 export async function createUserChatSession(
   uid: string,
-  title = '새 채팅',
+  title: string | null = null,
   platform: 'web' | 'mobile' = 'web',
   source: 'webview' | 'native' = 'webview'
 ): Promise<string> {
@@ -798,7 +798,7 @@ export async function createUserChatSession(
   const chatsCol = collection(db, 'users', uid, 'chats');
   const sessionDoc = await addDoc(chatsCol, {
     userId: uid,
-    title,
+    title: title ?? null,
     lastMessage: null,
     messageCount: 0,
     platform,

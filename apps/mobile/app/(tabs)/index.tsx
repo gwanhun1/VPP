@@ -94,7 +94,10 @@ export default function ChatScreen() {
         return;
       }
       if (data.type === 'WEB_ERROR') {
-        console.warn('[WebView][WEB_ERROR]:', (data as { payload?: string }).payload);
+        console.warn(
+          '[WebView][WEB_ERROR]:',
+          (data as { payload?: string }).payload
+        );
         return;
       }
     } catch (e) {

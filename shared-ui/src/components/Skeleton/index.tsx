@@ -53,7 +53,7 @@ const WebSkeleton = ({
   if (isOverlay && children) {
     // 로딩 중이고, 오버레이 방식이면 children 위에 덮기
     return (
-      <div className="relative overflow-hidden">
+      <div className="overflow-hidden relative">
         {children}
         <div className={`absolute inset-0 w-full h-full bg-white`} />
         <div className={`absolute inset-0 w-full h-full ${skeletonClass}`} />
@@ -86,37 +86,37 @@ const NativeSkeleton = ({
 }: SkeletonProps) => {
   try {
     const { View } = require('react-native');
-    
+
     if (!isLoading) {
       return children;
     }
-    
+
     const skeletonStyle = {
       width: typeof width === 'string' ? width : width,
       height: typeof height === 'string' ? height : height,
       backgroundColor: '#e2e8f0',
       borderRadius: rounded ? 6 : 0,
-      opacity: 0.7
+      opacity: 0.7,
     };
-    
+
     if (isOverlay && children) {
       return (
         <View style={{ position: 'relative' }}>
           {children}
-          <View 
+          <View
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              ...skeletonStyle
-            }} 
+              ...skeletonStyle,
+            }}
           />
         </View>
       );
     }
-    
+
     return <View style={skeletonStyle} />;
   } catch {
     return null;

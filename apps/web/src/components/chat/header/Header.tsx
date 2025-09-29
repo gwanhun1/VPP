@@ -22,7 +22,7 @@ const ChattingHeader = () => {
       <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full -translate-x-1/2 translate-y-1/2 bg-secondary/10"></div>
 
       <div className="flex justify-between items-center">
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
           {/* AI 아이콘 */}
           <div className="flex justify-center items-center p-3 rounded-xl backdrop-blur-sm bg-white/20">
             <svg
@@ -46,7 +46,9 @@ const ChattingHeader = () => {
               전력시장 AI
             </Text>
             <Text variant="body2" className="text-secondary-dark">
-              {authUser ? `${authUser.displayName || authUser.email || '사용자'}님` : '전문가 어시스턴트'}
+              {authUser
+                ? `${authUser.displayName || authUser.email || '사용자'}님`
+                : '전문가 어시스턴트'}
             </Text>
           </div>
         </div>

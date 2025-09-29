@@ -71,7 +71,7 @@ export function subscribeToChatMessages(
  */
 export async function createChatSession(
   authUser: AuthUser,
-  title = '새 채팅'
+  title: string | null = null
 ): Promise<string> {
   try {
     const sessionId = await createUserChatSession(authUser.uid, title, 'web', 'webview');

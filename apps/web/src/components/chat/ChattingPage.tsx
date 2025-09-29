@@ -1,12 +1,15 @@
 import Chatting from './body/Chatting';
 import ChattingHeader from './header/Header';
+import { ChatInputProvider } from '../../utils/inputProvider';
 
 const ChattingPage = () => {
   return (
-    <div>
-      <ChattingHeader />
-      <Chatting />
-    </div>
+    <ChatInputProvider>
+      <div>
+        <ChattingHeader />
+        <Chatting />
+      </div>
+    </ChatInputProvider>
   );
 };
 export default ChattingPage;

@@ -7,7 +7,7 @@ import { useChatInput } from '@/utils/inputProvider';
 import { useAuth } from '../../../../contexts/AuthContext';
 
 const ChattingMessage = () => {
-  const { messages } = useChatInput();
+  const { messages, historyMode } = useChatInput();
   const { authUser } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,7 +26,13 @@ const ChattingMessage = () => {
             <AiChattingBox
               message={{
                 id: 1752583353312,
-                text: `안녕하세요${authUser ? `, ${authUser.displayName || authUser.email || '사용자'}님` : ''}! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!`,
+                text: `안녕하세요${
+                  authUser
+                    ? `, ${
+                        authUser.displayName || authUser.email || '사용자'
+                      }님`
+                    : ''
+                }! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!`,
                 isUser: false,
                 timestamp: new Date('2025-07-15T12:42:33.312Z'),
               }}
@@ -47,7 +53,7 @@ const ChattingMessage = () => {
                 {message.isUser ? (
                   <UserChattingBox message={message} />
                 ) : (
-                  <AiChattingBox message={message} />
+                  <AiChattingBox message={message} layout={historyMode ? true : undefined} />
                 )}
               </div>
             ))}

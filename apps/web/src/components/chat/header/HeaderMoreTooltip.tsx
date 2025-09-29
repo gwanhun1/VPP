@@ -11,7 +11,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 type HeaderMoreTooltipProps = {
   isOpen: boolean;
   onClose: () => void;
-  anchorRef: React.RefObject<HTMLElement | HTMLDivElement>;
+  anchorRef: React.RefObject<HTMLElement | null>;
 };
 
 type TooltipItem = {

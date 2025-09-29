@@ -1,8 +1,51 @@
-import { Text } from '@vpp/shared-ui';
+import { Skeleton, Text } from '@vpp/shared-ui';
 import RecentQuestionBadge from './Badge';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchUserChatSessions, type ChatSession } from '@vpp/core-logic';
+import { useAuth } from '@/contexts/AuthContext';
+import { useChatInput } from '@/utils/inputProvider';
 
 const RecentQuestionContainer = () => {
-  if (MOCK.length <= 1) return null;
+  const { authUser, firebaseReady } = useAuth();
+  const { loadSession } = useChatInput();
+  const [sessions, setSessions] = useState<Array<ChatSession & { id: string }>>(
+    []
+  );
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // 중요: Firebase 초기화 및 사용자 인증 이후에만 호출
+    if (!authUser || !firebaseReady) {
+      setSessions([]);
+      return;
+    }
+    let mounted = true;
+    setLoading(true);
+    fetchUserChatSessions(authUser.uid)
+      .then((list) => {
+        if (mounted) setSessions(list);
+      })
+      .catch(() => {
+        if (mounted) setSessions([]);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [authUser, firebaseReady]);
+
+  const sessionsWithTitle = useMemo(
+    () =>
+      sessions
+        .filter(
+          (s) =>
+            typeof s.title === 'string' && (s.title as string).trim().length > 0
+        )
+        .slice(0, 10),
+    [sessions]
+  );
 
   return (
     <div className="flex flex-col gap-2 px-6 py-4 border-b">
@@ -25,19 +68,19 @@ const RecentQuestionContainer = () => {
           최근 질문
         </Text>
       </div>
-      <div className="flex overflow-x-auto gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        {MOCK.map((question) => (
-          <RecentQuestionBadge key={question} question={question} />
-        ))}
-      </div>
+      <Skeleton isLoading={loading} rounded={true} className="w-24 h-6">
+        <div className="flex overflow-x-auto gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {sessionsWithTitle.map((s) => (
+            <RecentQuestionBadge
+              key={s.id}
+              question={s.title as string}
+              onClick={() => loadSession(s.id)}
+            />
+          ))}
+        </div>
+      </Skeleton>
     </div>
   );
 };
 
 export default RecentQuestionContainer;
-
-const MOCK = [
-  '전력시장에 대해 궁금한 것을 자유롭게 물어보세요',
-  '전력시장에 대해 궁금한 것을 자유롭게 물어보세요',
-  '전력시장에 대해 궁금한 것을 자유롭게 물어보세요',
-];
