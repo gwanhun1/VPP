@@ -33,17 +33,20 @@ export type SkeletonProps = {
  * 웹 전용 Skeleton
  */
 const WebSkeleton = ({
-  width = '100%',
-  height = '100%',
+  width,
+  height,
   rounded = true,
   className = '',
   isOverlay = false,
   isLoading = false,
   children,
 }: SkeletonProps) => {
-  const skeletonClass = ` bg-gray-200 rounded-full dark:bg-gray-700 ${
-    rounded ? 'rounded-md' : ''
-  } ${className}`;
+  const baseClass = isLoading
+    ? 'bg-neutral-400 dark:bg-neutral-600 animate-pulse border border-neutral-300 dark:border-neutral-500'
+    : '';
+  const skeletonClass = `${baseClass} ${
+    rounded ? 'rounded-md' : 'rounded-none'
+  } ${className}`.trim();
 
   if (!isLoading) {
     // 로딩 끝난 상태면 children만 보여줌
@@ -62,15 +65,11 @@ const WebSkeleton = ({
   }
 
   // 로딩 중이고, 오버레이 아니면 그냥 스켈레톤 박스만 보여줌
-  return (
-    <div
-      className={skeletonClass}
-      style={{
-        width,
-        height,
-      }}
-    />
-  );
+  // width/height가 명시된 경우에만 인라인 스타일 적용
+  const style: React.CSSProperties | undefined =
+    width !== undefined || height !== undefined ? { width, height } : undefined;
+
+  return <div className={skeletonClass} style={style} />;
 };
 
 /**

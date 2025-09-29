@@ -47,6 +47,11 @@ const RecentQuestionContainer = () => {
     [sessions]
   );
 
+  // 데이터가 없거나 못 불러온 경우: 컴포넌트 자체를 숨김
+  if (sessionsWithTitle.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-2 px-6 py-4 border-b">
       <div className="flex gap-2 items-center">
@@ -68,7 +73,7 @@ const RecentQuestionContainer = () => {
           최근 질문
         </Text>
       </div>
-      <Skeleton isLoading={loading} rounded={true} className="w-24 h-6">
+      <Skeleton isLoading={!loading} rounded={true} className="w-20 h-7">
         <div className="flex overflow-x-auto gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {sessionsWithTitle.map((s) => (
             <RecentQuestionBadge
