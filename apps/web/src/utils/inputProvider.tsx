@@ -42,10 +42,12 @@ export type ChatInputContextType = {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   handleSendMessage: () => Promise<void>;
   addMessage: (text: string, isUser: boolean) => void;
-  loadSession: (sessionId: string) => Promise<void>;
+  loadSession: (sessionId: string, focusMessageId?: string) => Promise<void>;
   startNewChat: () => void; // 새 채팅 시작
   historyMode: boolean; // 히스토리 로드 시 스켈레톤 비활성화를 위한 플래그
   currentSessionId: string | null;
+  focusMessageId: string | null;
+  consumeFocusMessage: () => void;
 };
 
 type IncomingMessage =
@@ -62,6 +64,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [historyMode, setHistoryMode] = useState<boolean>(false);
+  const [focusMessageId, setFocusMessageId] = useState<string | null>(null);
   const creatingSessionRef = useRef(false);
   const lastSessionIdRef = useRef<string | null>(null);
   // 마지막 사용자 메시지 정보를 보관하여 assistant 메시지 저장 시 replyTo/preview로 사용
@@ -69,7 +72,13 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const lastUserMsgTextRef = useRef<string | null>(null);
   // 새 채팅 의도 시, 최근 세션 자동 로드를 잠시 비활성화하기 위한 플래그
   const suppressAutoLoadRef = useRef(false);
-  const { authUser, firebaseReady, openSessionId, clearOpenSessionId } = useAuth();
+  const {
+    authUser,
+    firebaseReady,
+    openSessionId,
+    openMessageId,
+    clearOpenSessionId,
+  } = useAuth();
 
   const ensureSession = useCallback(
     async (titleHint: string): Promise<string | null> => {
@@ -342,7 +351,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
   // 기존 채팅 세션 로드: Firestore의 메시지를 현재 메시지 배열로 매핑
   const loadSession = useCallback(
-    async (sessionId: string) => {
+    async (sessionId: string, targetMessageId?: string) => {
       if (!authUser || !firebaseReady) return;
       try {
         const rawMessages = await fetchChatMessages(authUser.uid, sessionId);
@@ -368,6 +377,10 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         lastSessionIdRef.current = sessionId;
         // 히스토리 로드 활성화: 스켈레톤 비활성화용
         setHistoryMode(true);
+
+        if (targetMessageId) {
+          setFocusMessageId(targetMessageId);
+        }
       } catch (e) {
         console.error('[ChatInputProvider] 세션 로드 실패:', e);
       }
@@ -384,19 +397,27 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     lastSessionIdRef.current = null;
     setHistoryMode(false);
     setInputText('');
+    setFocusMessageId(null);
   }, []);
 
   // 모바일에서 전달받은 세션 ID로 특정 채팅방 열기
   useEffect(() => {
     if (openSessionId && authUser && firebaseReady) {
-      loadSession(openSessionId).then(() => {
+      loadSession(openSessionId, openMessageId ?? undefined).then(() => {
         // 세션 로드 완료 후 openSessionId 초기화
         if (clearOpenSessionId) {
           clearOpenSessionId();
         }
       });
     }
-  }, [openSessionId, authUser, firebaseReady, loadSession, clearOpenSessionId]);
+  }, [
+    openSessionId,
+    openMessageId,
+    authUser,
+    firebaseReady,
+    loadSession,
+    clearOpenSessionId,
+  ]);
 
   return (
     <ChatInputContext.Provider
@@ -411,6 +432,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         startNewChat,
         historyMode,
         currentSessionId,
+        focusMessageId,
+        consumeFocusMessage: () => setFocusMessageId(null),
       }}
     >
       {children}

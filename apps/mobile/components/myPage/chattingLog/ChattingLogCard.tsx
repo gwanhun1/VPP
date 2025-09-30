@@ -5,9 +5,13 @@ import { TouchableOpacity, View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
-type ChattingLogCardProps = { text: string; time: string };
+type ChattingLogCardProps = {
+  text: string;
+  time: string;
+  onPress?: () => void;
+};
 
-const ChattingLogCard = ({ text, time }: ChattingLogCardProps) => {
+const ChattingLogCard = ({ text, time, onPress }: ChattingLogCardProps) => {
   const mutedColor = tw.color('neutral-500');
 
   //시간 계산 함수
@@ -34,7 +38,7 @@ const ChattingLogCard = ({ text, time }: ChattingLogCardProps) => {
   }
 
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
       <Card bordered>
         <View style={tw`flex flex-row justify-between items-center`}>
           <View

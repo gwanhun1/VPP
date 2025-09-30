@@ -1,7 +1,13 @@
 import { getCurrentUser } from '@vpp/core-logic';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 import AppHeader from '../../components/common/AppHeader';
 import MyPage from '../../components/myPage';
@@ -11,8 +17,18 @@ import useResponsive from '../../utils/useResponsive';
 export default function MyPageScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
 
   const user = getCurrentUser();
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // 중요: 마이페이지 데이터 새로고침 로직과 연동 필요
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     // 로딩 완료 후에만 리다이렉트 처리
@@ -47,6 +63,13 @@ export default function MyPageScreen() {
           flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#14287f"
+          />
+        }
       >
         <View
           style={{

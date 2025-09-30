@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 
 import AppHeader from '../../components/common/AppHeader';
 import Trends from '../../components/trends';
@@ -10,12 +11,29 @@ import useResponsive from '../../utils/useResponsive';
  */
 export default function TrendsScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // 중요: 시장 동향 데이터 새로고침 로직과 연동 필요
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
   return (
     <>
       <AppHeader title="시장 동향" subtitle="실시간 시장 정보를 확인하세요" />
       <ScrollView
         contentContainerStyle={{ paddingTop: 12, paddingBottom: 24, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#14287f"
+          />
+        }
       >
         <View
           style={{

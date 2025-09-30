@@ -92,10 +92,9 @@ const BookMark = () => {
                     <BookmarkCard
                       text={bm.text}
                       onPress={() => {
-                        router.push({
-                          pathname: '/(tabs)/index',
-                          params: { openSessionId: bm.sessionId },
-                        });
+                        router.push(
+                          `/(tabs)?openSessionId=${encodeURIComponent(bm.sessionId)}&openMessageId=${encodeURIComponent(bm.id)}`
+                        );
                       }}
                     />
                   </View>

@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 
 import Quiz from '../../components/quiz';
 import QuizHeader from '../../components/quiz/QuizHeader';
@@ -13,6 +14,16 @@ import useResponsive from '../../utils/useResponsive';
  */
 export default function QuizScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // 중요: 퀴즈 데이터 새로고침 로직과 연동 필요
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
   return (
     <QuizProvider>
       <QuizHeader />
@@ -23,6 +34,13 @@ export default function QuizScreen() {
           flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#14287f"
+          />
+        }
       >
         <View
           style={{

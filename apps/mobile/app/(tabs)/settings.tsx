@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 
 import Setting from '../../components/setting';
 import SettingHeader from '../../components/setting/SettingHeader';
@@ -10,6 +11,16 @@ import useResponsive from '../../utils/useResponsive';
  */
 export default function SettingsScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // 중요: 설정 데이터 새로고침 로직과 연동 필요
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   return (
     <>
@@ -21,6 +32,13 @@ export default function SettingsScreen() {
           flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#14287f"
+          />
+        }
       >
         <View
           style={{

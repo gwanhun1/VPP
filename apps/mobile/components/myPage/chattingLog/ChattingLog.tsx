@@ -5,8 +5,9 @@ import {
 } from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ScrollView, View, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import tw from '../../../utils/tailwind';
 
@@ -17,6 +18,7 @@ const ChattingLog = () => {
   const [loading, setLoading] = useState(false);
   const [user] = useState(() => getCurrentUser());
   const primaryColor = tw.color('primary');
+  const router = useRouter();
 
   useEffect(() => {
     if (user && user.providerId !== 'anonymous') {
@@ -35,6 +37,15 @@ const ChattingLog = () => {
       setLoading(false);
     }
   };
+
+  const handleOpenSession = useCallback(
+    (sessionId: string) => {
+      router.push(
+        `/(tabs)?openSessionId=${encodeURIComponent(sessionId)}`
+      );
+    },
+    [router]
+  );
 
   return (
     <Card bordered>
@@ -79,6 +90,7 @@ const ChattingLog = () => {
                 <ChattingLogCard
                   text={chat.title}
                   time={chat.updatedAt.toDate().toString()}
+                  onPress={() => handleOpenSession(chat.id)}
                 />
               </View>
             ))}

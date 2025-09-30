@@ -33,7 +33,8 @@ export default function ChatScreen() {
   const [webViewReady, setWebViewReady] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [devUrlIndex, setDevUrlIndex] = useState(0);
-  const { openSessionId } = useLocalSearchParams<{ openSessionId?: string }>();
+  const { openSessionId, openMessageId } =
+    useLocalSearchParams<{ openSessionId?: string; openMessageId?: string }>();
 
   const currentUrl = __DEV__
     ? DEV_URL_CANDIDATES?.[devUrlIndex] ?? DEV_URL_CANDIDATES?.[0] ?? PROD_URL
@@ -44,6 +45,22 @@ export default function ChatScreen() {
       console.log('[WebView] currentUrl:', currentUrl);
     }
   }, [currentUrl]);
+
+  useEffect(() => {
+    if (!webViewReady || !openSessionId || !webViewRef.current) return;
+    try {
+      const payload = JSON.stringify({
+        type: 'OPEN_SESSION',
+        payload: {
+          sessionId: String(openSessionId),
+          messageId: openMessageId ? String(openMessageId) : undefined,
+        },
+      });
+      webViewRef.current.postMessage(payload);
+    } catch (e) {
+      console.warn('세션 오픈 전달 실패:', e);
+    }
+  }, [webViewReady, openSessionId, openMessageId]);
 
   // RN → Web AUTH 전송 (필요 시 재시도)
   const postAuthToWeb = useCallback(
@@ -129,18 +146,6 @@ export default function ChatScreen() {
     // Firebase 설정을 먼저 전달하여 Web이 초기화된 뒤 AUTH를 처리하도록 보장
     postFirebaseConfigToWeb();
     postAuthToWeb(user);
-    // 북마크에서 넘어온 세션 자동 오픈
-    if (openSessionId && webViewRef.current) {
-      try {
-        const payload = JSON.stringify({
-          type: 'OPEN_SESSION',
-          payload: { sessionId: String(openSessionId) },
-        });
-        webViewRef.current.postMessage(payload);
-      } catch (e) {
-        console.warn('세션 오픈 전달 실패:', e);
-      }
-    }
     setIsLoading(false);
   };
 
