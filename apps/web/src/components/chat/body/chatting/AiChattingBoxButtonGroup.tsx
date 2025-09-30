@@ -41,15 +41,39 @@ const AiChattingBoxButtonGroup = ({
   };
 
   const handleCopyClick = async () => {
-    try {
-      await navigator.clipboard.writeText(messageText);
-      setCopySuccess(true);
-
+    const resetTimer = () =>
       setTimeout(() => {
         setCopySuccess(false);
       }, 2000);
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(messageText);
+        setCopySuccess(true);
+        resetTimer();
+        return;
+      }
+
+      const textArea = document.createElement('textarea');
+      textArea.value = messageText;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      textArea.setAttribute('readonly', '');
+      document.body.appendChild(textArea);
+      textArea.select();
+
+      const succeeded = document.execCommand('copy');
+      document.body.removeChild(textArea);
+
+      if (!succeeded) {
+        throw new Error('document.execCommand("copy") failed');
+      }
+
+      setCopySuccess(true);
+      resetTimer();
     } catch (err) {
       console.error('Failed to copy text: ', err);
+      setCopySuccess(false);
     }
   };
 
