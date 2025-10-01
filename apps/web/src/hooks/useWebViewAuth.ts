@@ -9,20 +9,20 @@ import {
 } from '@vpp/core-logic';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
-interface WebViewMessage {
+type WebViewMessage = {
   type: string;
   payload?: AuthUser | null;
-}
+};
 
-interface OpenSessionMessage {
+type OpenSessionMessage = {
   type: 'OPEN_SESSION';
   payload: {
     sessionId: string;
     messageId?: string;
   };
-}
+};
 
-interface FirebaseConfigMessage {
+type FirebaseConfigMessage = {
   type: 'FIREBASE_CONFIG';
   payload: {
     apiKey: string;
@@ -32,7 +32,7 @@ interface FirebaseConfigMessage {
     messagingSenderId: string;
     appId: string;
   };
-}
+};
 
 // React Native WebView 타입 확장
 declare global {

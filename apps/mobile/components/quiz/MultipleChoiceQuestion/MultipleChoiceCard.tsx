@@ -35,7 +35,6 @@ const MultipleChoiceCard = ({
   const isSelected = answer[questionId] === option;
   const answerState = getAnswerState(questionId);
 
-  // 카드 variant 결정
   const getCardVariant = () => {
     if (!isSelected) return 'default';
     if (answerState === 'correct') return 'primary'; // 정답은 primary

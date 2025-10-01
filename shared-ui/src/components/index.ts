@@ -1,5 +1,3 @@
-// 모든 공통 컴포넌트를 내보냄
-
 export { default as Button } from './Button';
 export type { ButtonProps } from './Button';
 

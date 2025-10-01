@@ -7,11 +7,8 @@ import {
 import { getFirebaseAuth, initializeFirebase } from './app';
 import type { AuthProvider, AuthUser, AuthPersistence } from './types';
 
-// --- 타입은 './types'에서 공유 ---
-
 export type AuthStateCallback = (user: AuthUser | null) => void;
 
-// AsyncStorage에 사용자 정보를 저장할 때 사용할 키입니다.
 const AUTH_USER_STORAGE_KEY = '@Auth/user';
 
 /**

@@ -7,7 +7,6 @@ import {
   type AuthUser,
 } from '@vpp/core-logic';
 
-// 타입들은 @vpp/core-logic에서 가져옴
 export type { RecentActivity as UserActivity } from '@vpp/core-logic';
 
 // 활동 타입 매핑

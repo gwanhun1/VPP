@@ -3,11 +3,11 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirebaseAuth } from '@vpp/core-logic';
 import type { AuthUser } from '@vpp/core-logic';
 
-interface WebLoginModalProps {
+type WebLoginModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onLoginSuccess: (user: AuthUser) => void;
-}
+};
 
 export function WebLoginModal({ isOpen, onClose, onLoginSuccess }: WebLoginModalProps) {
   const [email, setEmail] = useState('');

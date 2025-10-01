@@ -1,4 +1,4 @@
-import { 
+import {
   getUserProfile,
   getUserStats,
   updateUserStats,
@@ -20,6 +20,7 @@ import {
   type ChatSession,
   type ChatMessage,
   getUserChatSessions,
+  subscribeToChatMessages,
 } from '../firebase/firestore';
 import { serverTimestamp, Timestamp } from 'firebase/firestore';
 
@@ -33,7 +34,9 @@ export async function initializeUserProfile(): Promise<void> {
 }
 
 // 채팅 기록 조회 (모바일용): 최근 업데이트 순 정렬된 세션 목록 반환
-export async function fetchUserChatHistory(limitCount = 20): Promise<ChatHistory[]> {
+export async function fetchUserChatHistory(
+  limitCount = 20
+): Promise<ChatHistory[]> {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     return [];
@@ -59,7 +62,7 @@ export async function initializeUser(): Promise<void> {
   try {
     // 기존 프로필 확인
     const existingProfile = await getUserProfile(currentUser.uid);
-    
+
     if (!existingProfile) {
       // 새 사용자 초기화 (프로필, 통계, 첫 활동 모두 포함)
       await initializeNewUser({
@@ -92,7 +95,12 @@ export async function fetchUserStats(): Promise<UserStats | null> {
 }
 
 // 북마크 관리
-export async function addTermBookmark(termId: string, termName: string, definition: string, category: string): Promise<void> {
+export async function addTermBookmark(
+  termId: string,
+  termName: string,
+  definition: string,
+  category: string
+): Promise<void> {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     throw new Error('로그인이 필요합니다.');
@@ -189,9 +197,12 @@ export async function saveUserQuizResult(
     const currentStats = await getUserStats(currentUser.uid);
     if (currentStats) {
       const newTotalQuizzes = (currentStats.totalQuizzes || 0) + 1;
-      const newCorrectAnswers = (currentStats.correctAnswers || 0) + correctAnswers;
-      const newQuizScore = Math.round((newCorrectAnswers / (newTotalQuizzes * totalQuestions)) * 100);
-      
+      const newCorrectAnswers =
+        (currentStats.correctAnswers || 0) + correctAnswers;
+      const newQuizScore = Math.round(
+        (newCorrectAnswers / (newTotalQuizzes * totalQuestions)) * 100
+      );
+
       await updateUserStats(currentUser.uid, {
         totalQuizzes: newTotalQuizzes,
         correctAnswers: newCorrectAnswers,
@@ -246,7 +257,9 @@ export async function fetchUserQuizHistory(): Promise<QuizResult[]> {
 }
 
 // 실시간 구독 서비스
-export function subscribeToUserStatsUpdates(callback: (stats: UserStats | null) => void): () => void {
+export function subscribeToUserStatsUpdates(
+  callback: (stats: UserStats | null) => void
+): () => void {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     callback(null);
@@ -266,7 +279,9 @@ export function subscribeToUserStatsUpdates(callback: (stats: UserStats | null) 
   }
 }
 
-export function subscribeToUserBookmarksUpdates(callback: (bookmarks: Array<Bookmark & { id: string }>) => void): () => void {
+export function subscribeToUserBookmarksUpdates(
+  callback: (bookmarks: Array<Bookmark & { id: string }>) => void
+): () => void {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     callback([]);
@@ -286,7 +301,9 @@ export function subscribeToUserBookmarksUpdates(callback: (bookmarks: Array<Book
   }
 }
 
-export function subscribeToUserActivitiesUpdates(callback: (activities: Array<RecentActivity & { id: string }>) => void): () => void {
+export function subscribeToUserActivitiesUpdates(
+  callback: (activities: Array<RecentActivity & { id: string }>) => void
+): () => void {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     callback([]);
@@ -306,7 +323,10 @@ export function subscribeToUserActivitiesUpdates(callback: (activities: Array<Re
   }
 }
 
-export function subscribeToChatMessagesUpdates(sessionId: string, callback: (messages: Array<ChatMessage & { id: string }>) => void): () => void {
+export function subscribeToChatMessagesUpdates(
+  sessionId: string,
+  callback: (messages: Array<ChatMessage & { id: string }>) => void
+): () => void {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     callback([]);

@@ -4,9 +4,9 @@ import { View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
-interface QuizResponseProps {
+type QuizResponseProps = {
   quizHistory: QuizResult[];
-}
+};
 
 const QuizResponse = ({ quizHistory }: QuizResponseProps) => {
   // 최근 퀴즈 결과를 기반으로 통계 계산

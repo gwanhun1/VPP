@@ -1,4 +1,4 @@
-import { 
+import {
   createUserChatSession,
   sendChatMessage,
   fetchUserChatSessions,
@@ -6,10 +6,9 @@ import {
   subscribeToChatMessagesUpdates,
   type ChatSession,
   type ChatMessage,
-  type AuthUser
+  type AuthUser,
 } from '@vpp/core-logic';
 
-// 타입들은 @vpp/core-logic에서 가져옴
 export type { ChatMessage, ChatSession } from '@vpp/core-logic';
 
 /**
@@ -56,10 +55,14 @@ export function subscribeToChatMessages(
   }
 
   try {
-    return subscribeToChatMessagesUpdates(authUser.uid, sessionId, (messages) => {
-      console.log('[ChatService] 메시지 업데이트:', messages.length, '개');
-      onMessagesUpdate(messages);
-    });
+    return subscribeToChatMessagesUpdates(
+      authUser.uid,
+      sessionId,
+      (messages) => {
+        console.log('[ChatService] 메시지 업데이트:', messages.length, '개');
+        onMessagesUpdate(messages);
+      }
+    );
   } catch (error) {
     console.error('[ChatService] 메시지 구독 오류:', error);
     return () => {};
@@ -74,7 +77,12 @@ export async function createChatSession(
   title: string | null = null
 ): Promise<string> {
   try {
-    const sessionId = await createUserChatSession(authUser.uid, title, 'web', 'webview');
+    const sessionId = await createUserChatSession(
+      authUser.uid,
+      title,
+      'web',
+      'webview'
+    );
     console.log('[ChatService] 채팅 세션 생성 완료:', sessionId);
     return sessionId;
   } catch (error) {
@@ -86,7 +94,9 @@ export async function createChatSession(
 /**
  * 사용자의 채팅 세션 목록 조회
  */
-export async function getChatSessions(authUser: AuthUser): Promise<Array<ChatSession & { id: string }>> {
+export async function getChatSessions(
+  authUser: AuthUser
+): Promise<Array<ChatSession & { id: string }>> {
   try {
     const sessions = await fetchUserChatSessions(authUser.uid);
     console.log('[ChatService] 채팅 세션 조회 완료:', sessions.length, '개');
@@ -100,7 +110,10 @@ export async function getChatSessions(authUser: AuthUser): Promise<Array<ChatSes
 /**
  * 특정 세션의 메시지 조회
  */
-export async function getSessionMessages(authUser: AuthUser, sessionId: string): Promise<Array<ChatMessage & { id: string }>> {
+export async function getSessionMessages(
+  authUser: AuthUser,
+  sessionId: string
+): Promise<Array<ChatMessage & { id: string }>> {
   try {
     const messages = await fetchChatMessages(authUser.uid, sessionId);
     console.log('[ChatService] 세션 메시지 조회 완료:', messages.length, '개');

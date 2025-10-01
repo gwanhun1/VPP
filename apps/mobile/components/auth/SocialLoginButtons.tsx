@@ -24,7 +24,6 @@ export default function SocialLoginButtons({
 }: SocialLoginButtonsProps) {
   const loginTestUser = async () => {
     try {
-      // Firebase 초기화 및 Auth 인스턴스 확보 (null 가드)
       initializeFirebase();
       const auth = getFirebaseAuth();
       if (!auth)

@@ -7,18 +7,15 @@ const InputIconGroup = () => {
   const { handleSendMessage, inputText } = useChatInput();
 
   // 음성 인식 훅 사용
-  const {
-    // text: transcript,
-    isListening,
-    startListening,
-    stopListening,
-  } = useSpeechToText((text) => {
-    // 텍스트 인식 콜백은 유지하되 직접 setInputText는 하지 않음
-    // 확인 버튼을 누를 때만 적용하도록 변경
-  });
+  const { isListening, startListening, stopListening } = useSpeechToText(
+    (text) => {
+      // 텍스트 인식 콜백은 유지하되 직접 setInputText는 하지 않음
+      // 확인 버튼을 누를 때만 적용하도록 변경
+    }
+  );
 
   return (
-    <div className="flex justify-end items-center gap-2 pl-3 text-gray-600">
+    <div className="flex gap-2 justify-end items-center pl-3 text-gray-600">
       <Button
         variant="ghost"
         size="md"

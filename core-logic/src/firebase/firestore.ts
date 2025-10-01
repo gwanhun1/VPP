@@ -18,7 +18,7 @@ import {
 import { getFirebaseFirestore } from './app';
 
 // Firestore 데이터 타입 정의
-export interface UserProfile {
+export type UserProfile = {
   uid: string;
   displayName: string | null;
   email: string | null;
@@ -26,7 +26,7 @@ export interface UserProfile {
   providerId: 'anonymous' | 'google' | 'naver' | 'kakao' | 'password';
   createdAt: Timestamp;
   updatedAt: Timestamp;
-}
+};
 
 // 사용자의 북마크된 메시지들을 세션 단위로 수집하여 반환
 export async function fetchUserBookmarkedMessages(
@@ -110,15 +110,15 @@ export async function updateChatMessageBookmark(
   await updateDoc(messageDoc, { isBookmarked, timestamp: serverTimestamp() });
 }
 
-export interface UserDevice {
+export type UserDevice = {
   expoPushToken: string | null;
   fcmToken: string | null;
   platform: 'ios' | 'android' | 'web';
   appVersion: string | null;
   updatedAt: Timestamp;
-}
+};
 
-export interface UserStats {
+export type UserStats = {
   learnedTerms: number;
   bookmarks: number;
   quizScore: number; // 정답률(%) 0~100
@@ -128,34 +128,34 @@ export interface UserStats {
   lastStudyDate: Timestamp;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-}
+};
 
-export interface Bookmark {
+export type Bookmark = {
   termId: string;
   termName: string;
   definition: string;
   category: string;
   createdAt: Timestamp;
-}
+};
 
-export interface RecentActivity {
+export type RecentActivity = {
   type: 'quiz' | 'bookmark' | 'chat' | 'study';
   title: string;
   description: string;
   createdAt: Timestamp;
-}
+};
 
-export interface UserNotification {
+export type UserNotification = {
   title: string;
   body: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   status: 'queued' | 'sent' | 'failed';
   createdAt: Timestamp;
   sentAt: Timestamp | null;
   readAt: Timestamp | null;
-}
+};
 
-export interface ChatSession {
+export type ChatSession = {
   userId: string; // == uid
   title: string | null;
   lastMessage: string | null;
@@ -164,9 +164,9 @@ export interface ChatSession {
   source: 'webview' | 'native';
   createdAt: Timestamp;
   updatedAt: Timestamp;
-}
+};
 
-export interface ChatMessage {
+export type ChatMessage = {
   role: 'user' | 'assistant';
   text: string;
   timestamp: Timestamp;
@@ -176,19 +176,19 @@ export interface ChatMessage {
   // 북마크 UX 향상 및 Q/A 연계용: 답변이 참조하는 질문
   replyTo?: string; // 질문 messageId
   replyPreview?: { role: 'user' | 'assistant'; text: string };
-}
+};
 
 // 채팅 북마크 메시지 조회 결과 타입
-export interface ChatBookmarkedMessage {
+export type ChatBookmarkedMessage = {
   id: string; // messageId
   sessionId: string;
   text: string; // assistant 답변
   timestamp: Timestamp | null;
   replyTo?: string;
   replyPreview?: { role: 'user' | 'assistant'; text: string };
-}
+};
 
-export interface QuizResult {
+export type QuizResult = {
   quizId: string | null; // 템플릿 연결 시 사용
   quizType: string; // 예: '전력시장 용어 퀴즈'
   score: number; // 0~100
@@ -196,7 +196,7 @@ export interface QuizResult {
   correctAnswers: number;
   timeSpent: number; // 초 단위
   completedAt: Timestamp;
-}
+};
 
 // ===== 사용자 프로필 관리 =====
 export async function createUserProfile(

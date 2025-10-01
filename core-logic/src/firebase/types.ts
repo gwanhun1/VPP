@@ -1,5 +1,10 @@
 // 공유 타입 정의
-export type AuthProvider = 'anonymous' | 'google' | 'naver' | 'kakao' | 'password';
+export type AuthProvider =
+  | 'anonymous'
+  | 'google'
+  | 'naver'
+  | 'kakao'
+  | 'password';
 export type AuthUser = {
   uid: string;
   email?: string | null;
@@ -18,6 +23,5 @@ export type FirebaseConfig = {
 };
 
 export type AuthPersistence = {
-  // RN AsyncStorage 기반 persistence 인스턴스를 전달받는 용도
   type: 'react-native-async-storage';
 };

@@ -31,10 +31,14 @@ const AiChattingBoxButtonGroup = ({
     // 메시지 문서의 isBookmarked 토글 저장
     if (authUser && sessionId && messageId) {
       try {
-        await updateChatMessageBookmark(authUser.uid, sessionId, messageId, next);
+        await updateChatMessageBookmark(
+          authUser.uid,
+          sessionId,
+          messageId,
+          next
+        );
       } catch (e) {
         console.error('[AiChattingBox] 북마크 토글 실패:', e);
-        // 실패 시 UI 복구
         setStar(!next);
       }
     }

@@ -15,9 +15,7 @@ import { useColorScheme } from 'react-native';
 import { useEffect } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 
-// OAuth 리디렉션 완료 처리: auth.expo.io에서 돌아올 때 세션을 마무리
 WebBrowser.maybeCompleteAuthSession();
-// 모듈 로드 시점에서 Firebase 설정을 주입해 렌더 전에 준비되도록 함
 (() => {
   const apiKey =
     process.env.EXPO_PUBLIC_FIREBASE_API_KEY ??
@@ -49,7 +47,6 @@ WebBrowser.maybeCompleteAuthSession();
       messagingSenderId,
     });
     try {
-      // Firestore/Auth 사용 전 반드시 초기화
       initializeFirebase();
     } catch (e) {
       console.warn('Firebase initialize 실패:', e);
@@ -62,10 +59,8 @@ WebBrowser.maybeCompleteAuthSession();
 })();
 
 export default function RootLayout() {
-  // 전역 Auth 구독: 로그인 직후 Firestore 사용자 초기화가 반드시 실행되도록 보장
   useEffect(() => {
     const off = onAuthStateChanged((user: AuthUser | null) => {
-      // 중요: core-logic onAuthStateChanged 내부에서 initializeUserProfile을 호출함
       if (user) {
         // console.log('[RootLayout] Auth user detected:', user.email);
       }
@@ -79,7 +74,6 @@ export default function RootLayout() {
   });
 
   if (!loaded) {
-    // Async font loading only occurs in development.
     return null;
   }
 

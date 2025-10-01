@@ -24,7 +24,11 @@ const getContainerStyle = (
   const base = tw`h-12 px-4 flex-row items-center justify-center`; // 고정 높이로 터치 타겟 확보
 
   const roundedStyle =
-    rounded === 'full' ? tw`rounded-full` : rounded === 'lg' ? tw`rounded-lg` : tw`rounded-md`;
+    rounded === 'full'
+      ? tw`rounded-full`
+      : rounded === 'lg'
+      ? tw`rounded-lg`
+      : tw`rounded-md`;
 
   const variantStyle =
     variant === 'primary'
@@ -34,16 +38,22 @@ const getContainerStyle = (
       : tw`bg-transparent border border-primary`;
 
   const widthStyle = fullWidth ? tw`w-full` : ({} as ViewStyle);
-
   const disabledStyle = disabled ? tw`opacity-50` : ({} as ViewStyle);
-
-  // 약간의 그림자로 버튼을 돋보이게
   const shadow = variant !== 'outline' ? tw`shadow` : ({} as ViewStyle);
 
-  return { ...base, ...roundedStyle, ...variantStyle, ...widthStyle, ...disabledStyle, ...shadow } as ViewStyle;
+  return {
+    ...base,
+    ...roundedStyle,
+    ...variantStyle,
+    ...widthStyle,
+    ...disabledStyle,
+    ...shadow,
+  } as ViewStyle;
 };
 
-const getTextColor = (variant: NonNullable<QuizActionButtonProps['variant']>) => {
+const getTextColor = (
+  variant: NonNullable<QuizActionButtonProps['variant']>
+) => {
   if (variant === 'outline') return 'primary' as const;
   return 'white' as const;
 };
@@ -58,11 +68,21 @@ export default function QuizActionButton({
   children,
   fullWidth = false,
 }: QuizActionButtonProps) {
-  const containerStyle = getContainerStyle(variant, rounded, disabled, fullWidth);
+  const containerStyle = getContainerStyle(
+    variant,
+    rounded,
+    disabled,
+    fullWidth
+  );
   const textColor = getTextColor(variant);
 
   return (
-    <Pressable style={containerStyle} onPress={onPress} disabled={disabled} android_ripple={{ color: '#e5e7eb' }}>
+    <Pressable
+      style={containerStyle}
+      onPress={onPress}
+      disabled={disabled}
+      android_ripple={{ color: '#e5e7eb' }}
+    >
       <View style={tw`flex-row items-center gap-1`}>
         {leftIcon}
         <Text variant="body" weight="bold" color={textColor}>

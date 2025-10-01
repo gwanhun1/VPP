@@ -31,7 +31,6 @@ export default function MyPageScreen() {
   }, []);
 
   useEffect(() => {
-    // 로딩 완료 후에만 리다이렉트 처리
     if (user === null) {
       // if (user === null || user.providerId === 'anonymous') { 추후 소셜로그인 개발하면 연계
       router.replace('/(auth)');

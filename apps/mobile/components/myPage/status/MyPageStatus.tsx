@@ -9,12 +9,12 @@ import { View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
-interface DisplayStats {
+type DisplayStats = {
   learnedTerms: number;
   bookmarks: number;
   quizScore: number;
   studyDays: number;
-}
+};
 
 const MyPageStatus = () => {
   const primaryColor = tw.color('primary-500');

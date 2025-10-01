@@ -7,14 +7,12 @@ export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
-      // React Native 앱에 맞는 규칙 설정
       'react/jsx-filename-extension': [
         1,
         { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
       ],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      // import 순서 강제 비활성화
       'import/order': 'off',
     },
     settings: {

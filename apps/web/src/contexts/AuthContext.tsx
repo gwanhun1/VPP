@@ -1,9 +1,9 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { useWebViewAuth } from '../hooks/useWebViewAuth';
 import { useWebAuth } from '../hooks/useWebAuth';
 import type { AuthUser } from '@vpp/core-logic';
 
-interface AuthContextType {
+type AuthContextType = {
   authUser: AuthUser | null;
   isWebView: boolean;
   firebaseReady: boolean;
@@ -14,13 +14,13 @@ interface AuthContextType {
   requestAuth: () => void;
   login?: (user: AuthUser) => void;
   logout?: () => Promise<void>;
-}
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
+type AuthProviderProps = {
   children: ReactNode;
-}
+};
 
 /**
  * 웹 앱의 인증 상태를 관리하는 Context Provider
