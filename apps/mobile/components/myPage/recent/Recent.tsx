@@ -1,7 +1,7 @@
 import {
   fetchUserRecentActivities,
-  getCurrentUser,
-  type RecentActivity,
+  onAuthStateChanged,
+  type AuthUser,
 } from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -15,14 +15,28 @@ import RecentCard from './RecentCard';
 const Recent = () => {
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(false);
-  const [user] = useState(() => getCurrentUser());
+  const [user, setUser] = useState<AuthUser | null>(null);
   const primaryColor = tw.color('primary');
 
   useEffect(() => {
-    if (user && user.providerId !== 'anonymous') {
-      loadRecentActivities();
-    }
-  }, [user]);
+    let mounted = true;
+
+    const unsubscribe = onAuthStateChanged((authUser) => {
+      if (!mounted) return;
+      setUser(authUser);
+
+      if (authUser && authUser.providerId !== 'anonymous') {
+        void loadRecentActivities();
+      } else {
+        setActivities([]);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   const loadRecentActivities = async () => {
     setLoading(true);

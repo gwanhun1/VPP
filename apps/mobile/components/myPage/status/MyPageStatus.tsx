@@ -31,32 +31,31 @@ const MyPageStatus = () => {
   });
 
   useEffect(() => {
-    // Auth 상태 변경 리스너 등록
+    let isMounted = true;
+
+    const loadUserData = async () => {
+      try {
+        const userStats = await fetchUserStats();
+        if (userStats && isMounted) {
+          setStats({
+            learnedTerms: userStats.learnedTerms,
+            bookmarks: userStats.bookmarks,
+            quizScore: userStats.quizScore,
+            studyDays: userStats.studyDays,
+          });
+        }
+      } catch (error) {
+        console.error('[MyPageStatus] 통계 로드 실패:', error);
+      }
+    };
+
     const unsubscribe = onAuthStateChanged((authUser: AuthUser | null) => {
+      if (!isMounted) return;
       setUser(authUser);
 
       if (authUser && authUser.providerId !== 'anonymous') {
-        // 사용자 통계 로드
-        const loadUserData = async () => {
-          try {
-            const userStats = await fetchUserStats();
-            if (userStats) {
-              setStats({
-                learnedTerms: userStats.learnedTerms,
-                bookmarks: userStats.bookmarks,
-                quizScore: userStats.quizScore,
-                studyDays: userStats.studyDays,
-              });
-            }
-          } catch (error) {
-            console.error('사용자 데이터 로드 실패:', error);
-            // 실패 시 기본값 유지
-          }
-        };
-
-        loadUserData();
+        void loadUserData();
       } else {
-        // 로그아웃 시 통계 초기화
         setStats({
           learnedTerms: 0,
           bookmarks: 0,
@@ -66,7 +65,10 @@ const MyPageStatus = () => {
       }
     });
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   // 익명 사용자의 경우 기본 통계 표시

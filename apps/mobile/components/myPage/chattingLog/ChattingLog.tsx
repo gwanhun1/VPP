@@ -1,6 +1,7 @@
 import {
   fetchUserChatHistory,
-  getCurrentUser,
+  onAuthStateChanged,
+  type AuthUser,
   type ChatHistory,
 } from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
@@ -16,15 +17,29 @@ import ChattingLogCard from './ChattingLogCard';
 const ChattingLog = () => {
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [loading, setLoading] = useState(false);
-  const [user] = useState(() => getCurrentUser());
+  const [user, setUser] = useState<AuthUser | null>(null);
   const primaryColor = tw.color('primary');
   const router = useRouter();
 
   useEffect(() => {
-    if (user && user.providerId !== 'anonymous') {
-      loadChatHistory();
-    }
-  }, [user]);
+    let mounted = true;
+
+    const unsubscribe = onAuthStateChanged((authUser) => {
+      if (!mounted) return;
+      setUser(authUser);
+
+      if (authUser && authUser.providerId !== 'anonymous') {
+        void loadChatHistory();
+      } else {
+        setChatHistory([]);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   const loadChatHistory = async () => {
     setLoading(true);
@@ -40,9 +55,7 @@ const ChattingLog = () => {
 
   const handleOpenSession = useCallback(
     (sessionId: string) => {
-      router.push(
-        `/(tabs)?openSessionId=${encodeURIComponent(sessionId)}`
-      );
+      router.push(`/(tabs)?openSessionId=${encodeURIComponent(sessionId)}`);
     },
     [router]
   );

@@ -33,8 +33,10 @@ export default function ChatScreen() {
   const [webViewReady, setWebViewReady] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [devUrlIndex, setDevUrlIndex] = useState(0);
-  const { openSessionId, openMessageId } =
-    useLocalSearchParams<{ openSessionId?: string; openMessageId?: string }>();
+  const { openSessionId, openMessageId } = useLocalSearchParams<{
+    openSessionId?: string;
+    openMessageId?: string;
+  }>();
 
   const currentUrl = __DEV__
     ? DEV_URL_CANDIDATES?.[devUrlIndex] ?? DEV_URL_CANDIDATES?.[0] ?? PROD_URL
@@ -185,7 +187,20 @@ export default function ChatScreen() {
         }}
       />
 
-      {isLoading ? <Spinner overlay size={36} message="로딩 중..." /> : null}
+      {isLoading ? (
+        <View
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: '#fff',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <Spinner size={36} message="로딩 중..." />
+        </View>
+      ) : null}
     </View>
   );
 }
