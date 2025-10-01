@@ -20,17 +20,20 @@ const RecentQuestionContainer = () => {
       return;
     }
     let mounted = true;
-    setLoading(true);
-    fetchUserChatSessions(authUser.uid)
-      .then((list) => {
+    const loadSessions = async () => {
+      setLoading(true);
+      try {
+        const list = await fetchChatSessionsWithRetry(authUser.uid);
         if (mounted) setSessions(list);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error('[RecentQuestionContainer] 세션 로드 실패:', error);
         if (mounted) setSessions([]);
-      })
-      .finally(() => {
+      } finally {
         if (mounted) setLoading(false);
-      });
+      }
+    };
+
+    void loadSessions();
     return () => {
       mounted = false;
     };
@@ -89,3 +92,27 @@ const RecentQuestionContainer = () => {
 };
 
 export default RecentQuestionContainer;
+
+async function fetchChatSessionsWithRetry(
+  uid: string,
+  maxAttempts = 3
+): Promise<Array<ChatSession & { id: string }>> {
+  let attempt = 0;
+  let lastError: unknown;
+
+  while (attempt < maxAttempts) {
+    try {
+      return await fetchUserChatSessions(uid);
+    } catch (error) {
+      lastError = error;
+      attempt += 1;
+      if (attempt >= maxAttempts) break;
+      const delayMs = 200 * attempt;
+      await new Promise((resolve) => {
+        setTimeout(resolve, delayMs);
+      });
+    }
+  }
+
+  throw lastError ?? new Error('fetchUserChatSessions failed');
+}

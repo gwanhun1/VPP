@@ -9,3 +9,4 @@ export {
   fetchUserRecentActivities,
   fetchUserChatHistory,
 } from './services/userService';
+export { fetchJejuSmpDaily, fetchJejuRecDaily } from './services/trendsService';
