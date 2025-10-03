@@ -1,7 +1,13 @@
 import UserChattingBox from './UserChattingBox';
 import AiChattingBox from './AiChattingBox';
 import PromptHintBox from '../promptHint/HintBox';
-import { type TouchEvent, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  type TouchEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import RecentQuestionContainer from '../recentQuestion/Container';
 import { useChatInput } from '@/utils/inputProvider';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -33,30 +39,36 @@ const ChattingMessage = () => {
     }
   }, [currentSessionId, loadSession, refreshing]);
 
-  const handleTouchStart = useCallback((event: TouchEvent<HTMLDivElement>) => {
-    if (refreshing) return;
-    if (!scrollContainerRef.current) return;
-    if (scrollContainerRef.current.scrollTop > 0) return;
-    touchStartYRef.current = event.touches[0]?.clientY ?? null;
-    pullTriggeredRef.current = false;
-  }, [refreshing]);
+  const handleTouchStart = useCallback(
+    (event: TouchEvent<HTMLDivElement>) => {
+      if (refreshing) return;
+      if (!scrollContainerRef.current) return;
+      if (scrollContainerRef.current.scrollTop > 0) return;
+      touchStartYRef.current = event.touches[0]?.clientY ?? null;
+      pullTriggeredRef.current = false;
+    },
+    [refreshing]
+  );
 
-  const handleTouchMove = useCallback((event: TouchEvent<HTMLDivElement>) => {
-    const startY = touchStartYRef.current;
-    if (startY === null || !scrollContainerRef.current || refreshing) return;
-    const currentY = event.touches[0]?.clientY ?? 0;
-    const diff = currentY - startY;
-    if (diff > 0 && scrollContainerRef.current.scrollTop <= 0) {
-      setPullDistance(diff);
-      // 중요: 상단에서 충분히 끌어내렸을 때만 새로고침 실행
-      if (diff > 80 && !pullTriggeredRef.current) {
-        pullTriggeredRef.current = true;
-        void triggerRefresh();
+  const handleTouchMove = useCallback(
+    (event: TouchEvent<HTMLDivElement>) => {
+      const startY = touchStartYRef.current;
+      if (startY === null || !scrollContainerRef.current || refreshing) return;
+      const currentY = event.touches[0]?.clientY ?? 0;
+      const diff = currentY - startY;
+      if (diff > 0 && scrollContainerRef.current.scrollTop <= 0) {
+        setPullDistance(diff);
+        // 중요: 상단에서 충분히 끌어내렸을 때만 새로고침 실행
+        if (diff > 80 && !pullTriggeredRef.current) {
+          pullTriggeredRef.current = true;
+          void triggerRefresh();
+        }
+      } else {
+        setPullDistance(0);
       }
-    } else {
-      setPullDistance(0);
-    }
-  }, [refreshing, triggerRefresh]);
+    },
+    [refreshing, triggerRefresh]
+  );
 
   const handleTouchEnd = useCallback(() => {
     touchStartYRef.current = null;
@@ -85,13 +97,13 @@ const ChattingMessage = () => {
   return (
     <>
       {messages.length <= 1 ? <RecentQuestionContainer /> : null}
-      <div className="relative flex-1">
+      <div className="flex relative flex-col flex-1">
         <div
           className={`absolute left-0 right-0 top-0 flex justify-center transition-opacity duration-200 ${
             refreshing || pullDistance > 30 ? 'opacity-100' : 'opacity-0'
           } pointer-events-none`}
         >
-          <div className="mt-2 rounded-full bg-gray-100 px-4 py-1 text-xs text-gray-500">
+          <div className="px-4 py-1 mt-2 text-xs text-gray-500 bg-gray-100 rounded-full">
             {refreshing ? '메시지를 불러오는 중...' : '당겨서 새로고침'}
           </div>
         </div>
@@ -101,10 +113,13 @@ const ChattingMessage = () => {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           className="overflow-y-auto flex-1 p-4 space-y-4 min-h-[50vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          style={{ transform: `translateY(${Math.min(pullDistance, 80)}px)`, transition: 'transform 0.2s ease-out' }}
+          style={{
+            transform: `translateY(${Math.min(pullDistance, 80)}px)`,
+            transition: 'transform 0.2s ease-out',
+          }}
         >
           {messages.length <= 1 ? (
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col justify-between h-full">
               <AiChattingBox
                 message={{
                   id: 1752583353312,

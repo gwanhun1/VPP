@@ -56,7 +56,7 @@ const RecentQuestionContainer = () => {
   }
 
   return (
-    <div className="flex flex-col gap-2 px-6 py-4 border-b">
+    <div className="flex flex-col gap-2 px-4 py-2 border-b">
       <div className="flex gap-2 items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -76,7 +76,7 @@ const RecentQuestionContainer = () => {
           최근 질문
         </Text>
       </div>
-      <Skeleton isLoading={loading} rounded={true} className="w-20 h-7">
+      <Skeleton isLoading={loading} rounded={true} className="w-20 h-9">
         <div className="flex overflow-x-auto gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {sessionsWithTitle.map((s) => (
             <RecentQuestionBadge

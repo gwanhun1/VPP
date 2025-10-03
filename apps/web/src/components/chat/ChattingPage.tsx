@@ -5,10 +5,8 @@ import { ChatInputProvider } from '../../utils/inputProvider';
 const ChattingPage = () => {
   return (
     <ChatInputProvider>
-      <div>
-        <ChattingHeader />
-        <Chatting />
-      </div>
+      <ChattingHeader />
+      <Chatting />
     </ChatInputProvider>
   );
 };

@@ -101,13 +101,16 @@ const HeaderMoreTooltip = ({
 
   const handleDelete = async () => {
     if (!authUser || !currentSessionId) return;
-    const ok = window.confirm('이 대화를 삭제하시겠습니까? 되돌릴 수 없습니다.');
+    const ok = window.confirm(
+      '이 대화를 삭제하시겠습니까? \n 되돌릴 수 없습니다.'
+    );
     if (!ok) return;
     try {
       await deleteChatSession(authUser.uid, currentSessionId);
       // 삭제 후 현재 채팅방에서 나가기: 새 채팅 상태로 초기화
       startNewChat();
       onClose();
+      alert('삭제되었습니다.');
     } catch (e) {
       console.error('[HeaderMoreTooltip] 대화 삭제 실패:', e);
     }
@@ -169,19 +172,21 @@ const HeaderMoreTooltip = ({
           </div>
         )}
 
-        {tooltipItems.map((item, index) => (
-          <Button
-            variant="ghost"
-            key={index}
-            className="flex items-center px-4 py-2 w-full transition-colors hover:bg-gray-50"
-            onClick={item.onClick}
-          >
-            <span className="mr-3 text-gray-500">{item.icon}</span>
-            <Text variant="body2" className="text-gray-700">
-              {item.label}
-            </Text>
-          </Button>
-        ))}
+        <div className="flex flex-col gap-1 px-2 py-1">
+          {tooltipItems.map((item, index) => (
+            <Button
+              variant="ghost"
+              key={index}
+              className="flex items-center px-4 py-2 w-full transition-colors hover:bg-gray-50"
+              onClick={item.onClick}
+            >
+              <span className="mr-3 text-gray-500">{item.icon}</span>
+              <Text variant="body2" className="text-gray-700">
+                {item.label}
+              </Text>
+            </Button>
+          ))}
+        </div>
       </div>
     </>
   );

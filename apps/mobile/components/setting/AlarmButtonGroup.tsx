@@ -30,6 +30,7 @@ const AlarmButtonGroup = () => {
           value={alarms.drNoticeEnabled}
           onValueChange={toggleDrNotice}
           trackColor={{ false: '#e5e7eb', true: subColor }}
+          disabled
         />
       </View>
       <View style={tw`flex-row items-center justify-between`}>
@@ -45,6 +46,7 @@ const AlarmButtonGroup = () => {
           value={alarms.marketNoticeEnabled}
           onValueChange={toggleMarketNotice}
           trackColor={{ false: '#e5e7eb', true: subColor }}
+          disabled
         />
       </View>
       <View style={tw`flex-row items-center justify-between`}>
@@ -60,6 +62,7 @@ const AlarmButtonGroup = () => {
           value={alarms.bidNoticeEnabled}
           onValueChange={toggleBidNotice}
           trackColor={{ false: '#e5e7eb', true: subColor }}
+          disabled
         />
       </View>
     </View>
