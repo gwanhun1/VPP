@@ -41,7 +41,6 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
   return (
     <div className="max-w-[80%] group">
       <AiMessageHeader />
-
       <AiMessageSkeleton isLoading={isLoading}>
         <div
           className="p-4 text-gray-800 bg-white rounded-2xl rounded-tl-sm border shadow-sm border-primary-50 
@@ -54,7 +53,6 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
                       opacity-100"
         >
           <AiMessageContent text={message.text} />
-
           <AiMessageMeta
             timestamp={message.timestamp}
             messageText={message.text}

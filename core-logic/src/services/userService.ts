@@ -28,6 +28,72 @@ import { serverTimestamp, Timestamp } from 'firebase/firestore';
 export type ChatHistory = ChatSession;
 import { getCurrentUser } from '../firebase/auth';
 
+// ===== 연속 학습일(Study Streak) 계산 유틸 =====
+// 중요: 서버 Timestamp를 기록하지만, 날짜 경계 비교는 Asia/Seoul 기준으로 처리
+function toSeoulDateString(d: Date): string {
+  // Intl을 사용해 'Asia/Seoul' 기준 연-월-일 문자열 생성
+  const fmt = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const parts = fmt.formatToParts(d);
+  const y = parts.find((p) => p.type === 'year')?.value ?? '0000';
+  const m = parts.find((p) => p.type === 'month')?.value ?? '01';
+  const day = parts.find((p) => p.type === 'day')?.value ?? '01';
+  return `${y}-${m}-${day}`; // YYYY-MM-DD
+}
+
+function diffSeoulDays(a: Date, b: Date): number {
+  // a, b를 Asia/Seoul 기준 같은 자정으로 정규화 후 일수 차이 계산
+  const aStr = toSeoulDateString(a);
+  const bStr = toSeoulDateString(b);
+  // 간단 비교: 문자열 비교가 같으면 0
+  if (aStr === bStr) return 0;
+  // 일수 차이 계산을 위해 UTC 자정으로 재해석
+  const toUTCFromSeoul = (s: string): number => {
+    // s: YYYY-MM-DD (Seoul)
+    const [yy, mm, dd] = s.split('-').map((v) => Number(v));
+    // 서울 자정 시각을 UTC로 변환: Date.UTC(yy, mm-1, dd) - 9시간
+    const utcMs = Date.UTC(yy, mm - 1, dd);
+    const seoulOffsetMs = 9 * 60 * 60 * 1000;
+    return utcMs - seoulOffsetMs;
+  };
+  const aMs = toUTCFromSeoul(aStr);
+  const bMs = toUTCFromSeoul(bStr);
+  const diff = Math.round((bMs - aMs) / (24 * 60 * 60 * 1000));
+  return diff;
+}
+
+function computeNextStudyDays(prev: UserStats | null, now: Date): number {
+  if (!prev || !prev.lastStudyDate) return 1;
+  const last = (prev.lastStudyDate as unknown as Timestamp)?.toDate?.() ?? null;
+  if (!last) return 1;
+  const d = diffSeoulDays(last, now);
+  if (d === 0) return prev.studyDays || 1; // 같은 날은 증가하지 않음
+  if (d === 1) return (prev.studyDays || 0) + 1; // 하루 차이면 +1
+  return 1; // 그 외는 리셋
+}
+
+// 외부에서 재사용 가능: 어떤 학습 활동이 발생했을 때 호출
+export async function recordStudyActivity(): Promise<void> {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.providerId === 'anonymous') {
+    return; // 익명은 무시
+  }
+  try {
+    const prev = await getUserStats(currentUser.uid);
+    const nextDays = computeNextStudyDays(prev, new Date());
+    await updateUserStats(currentUser.uid, {
+      studyDays: nextDays,
+      lastStudyDate: serverTimestamp() as Timestamp,
+    });
+  } catch (error) {
+    console.error('연속 학습일 갱신 실패:', error);
+  }
+}
+
 // 사용자 프로필 초기화 (Auth 상태 변경 시 호출)
 export async function initializeUserProfile(): Promise<void> {
   return initializeUser();
@@ -114,11 +180,14 @@ export async function addTermBookmark(
       category,
     });
 
-    // 통계 업데이트
+    // 통계 업데이트 (+ 연속학습일 갱신 포함)
     const stats = await getUserStats(currentUser.uid);
     if (stats) {
+      const nextDays = computeNextStudyDays(stats, new Date());
       await updateUserStats(currentUser.uid, {
         bookmarks: stats.bookmarks + 1,
+        studyDays: nextDays,
+        lastStudyDate: serverTimestamp() as Timestamp,
       });
     }
 
@@ -193,7 +262,7 @@ export async function saveUserQuizResult(
       timeSpent,
     });
 
-    // 사용자 통계 업데이트
+    // 사용자 통계 업데이트 (+ 연속학습일 갱신 포함)
     const currentStats = await getUserStats(currentUser.uid);
     if (currentStats) {
       const newTotalQuizzes = (currentStats.totalQuizzes || 0) + 1;
@@ -202,11 +271,13 @@ export async function saveUserQuizResult(
       const newQuizScore = Math.round(
         (newCorrectAnswers / (newTotalQuizzes * totalQuestions)) * 100
       );
+      const nextDays = computeNextStudyDays(currentStats, new Date());
 
       await updateUserStats(currentUser.uid, {
         totalQuizzes: newTotalQuizzes,
         correctAnswers: newCorrectAnswers,
         quizScore: newQuizScore,
+        studyDays: nextDays,
         lastStudyDate: serverTimestamp() as Timestamp,
       });
     }

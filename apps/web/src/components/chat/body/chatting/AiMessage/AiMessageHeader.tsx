@@ -17,7 +17,6 @@ const AiMessageHeader = () => {
           />
         </svg>
       </Badge>
-
       <Text variant="caption" color="primary" weight="bold">
         AI 전문가
       </Text>

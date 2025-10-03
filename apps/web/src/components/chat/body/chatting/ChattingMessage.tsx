@@ -112,7 +112,7 @@ const ChattingMessage = () => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="overflow-y-auto flex-1 p-4 space-y-4 min-h-[50vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="overflow-y-auto flex-1 p-4 flex flex-col gap-0 min-h-[50vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           style={{
             transform: `translateY(${Math.min(pullDistance, 80)}px)`,
             transition: 'transform 0.2s ease-out',

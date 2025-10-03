@@ -93,7 +93,9 @@ const BookMark = () => {
                       text={bm.text}
                       onPress={() => {
                         router.push(
-                          `/(tabs)?openSessionId=${encodeURIComponent(bm.sessionId)}&openMessageId=${encodeURIComponent(bm.id)}`
+                          `/(tabs)?openSessionId=${encodeURIComponent(
+                            bm.sessionId
+                          )}&openMessageId=${encodeURIComponent(bm.id)}`
                         );
                       }}
                     />

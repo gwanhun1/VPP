@@ -88,6 +88,37 @@ export async function fetchUserBookmarkedMessages(
   return results;
 }
 
+// 모든 세션을 대상으로, assistant 답변 중 북마크된 메시지의 총 갯수를 카운트
+export async function countUserBookmarkedMessages(uid: string): Promise<number> {
+  const db = getFirebaseFirestore();
+  if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
+
+  const sessions = await getUserChatSessions(uid);
+  let total = 0;
+
+  for (const s of sessions) {
+    const sessionId = (s as ChatSession & { id?: string }).id;
+    if (!sessionId) continue;
+    const messagesCol = collection(
+      db,
+      'users',
+      uid,
+      'chats',
+      sessionId,
+      'messages'
+    );
+    const q = query(
+      messagesCol,
+      where('isBookmarked', '==', true),
+      where('role', '==', 'assistant')
+    );
+    const snap = await getDocs(q);
+    total += snap.size;
+  }
+
+  return total;
+}
+
 // 메시지 북마크 토글
 export async function updateChatMessageBookmark(
   uid: string,

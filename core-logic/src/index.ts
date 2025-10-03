@@ -8,5 +8,7 @@ export {
   fetchUserQuizHistory,
   fetchUserRecentActivities,
   fetchUserChatHistory,
+  recordStudyActivity,
 } from './services/userService';
 export { fetchJejuSmpDaily, fetchJejuRecDaily } from './services/trendsService';
+export { countUserBookmarkedMessages } from './firebase/firestore';

@@ -76,7 +76,7 @@ const RecentQuestionContainer = () => {
           최근 질문
         </Text>
       </div>
-      <Skeleton isLoading={loading} rounded={true} className="w-20 h-9">
+      <Skeleton isLoading={loading} className="w-20 h-9 rounded-3xl">
         <div className="flex overflow-x-auto gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {sessionsWithTitle.map((s) => (
             <RecentQuestionBadge

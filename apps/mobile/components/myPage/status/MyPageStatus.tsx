@@ -2,6 +2,7 @@ import {
   onAuthStateChanged,
   type AuthUser,
   fetchUserStats,
+  countUserBookmarkedMessages,
 } from '@vpp/core-logic';
 import { Card, Text } from '@vpp/shared-ui';
 import { useEffect, useState } from 'react';
@@ -33,15 +34,18 @@ const MyPageStatus = () => {
   useEffect(() => {
     let isMounted = true;
 
-    const loadUserData = async () => {
+    const loadUserData = async (uid: string) => {
       try {
-        const userStats = await fetchUserStats();
-        if (userStats && isMounted) {
+        const [userStats, bookmarkCount] = await Promise.all([
+          fetchUserStats(),
+          countUserBookmarkedMessages(uid),
+        ]);
+        if (isMounted) {
           setStats({
-            learnedTerms: userStats.learnedTerms,
-            bookmarks: userStats.bookmarks,
-            quizScore: userStats.quizScore,
-            studyDays: userStats.studyDays,
+            learnedTerms: userStats?.learnedTerms ?? 0,
+            bookmarks: bookmarkCount,
+            quizScore: userStats?.quizScore ?? 0,
+            studyDays: userStats?.studyDays ?? 0,
           });
         }
       } catch (error) {
@@ -54,7 +58,7 @@ const MyPageStatus = () => {
       setUser(authUser);
 
       if (authUser && authUser.providerId !== 'anonymous') {
-        void loadUserData();
+        void loadUserData(authUser.uid);
       } else {
         setStats({
           learnedTerms: 0,
@@ -101,7 +105,7 @@ const MyPageStatus = () => {
               {stats.learnedTerms}
             </Text>
             <Text variant="caption" color="white" weight="bold">
-              학습한 용어
+              학습한 챕터
             </Text>
           </View>
         </Card>

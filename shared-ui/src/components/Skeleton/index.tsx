@@ -35,7 +35,8 @@ export type SkeletonProps = {
 const WebSkeleton = ({
   width,
   height,
-  rounded = true,
+  // rounded가 명시되면 최우선 적용. 미지정(undefined)이면 className의 rounded-*가 적용되도록 함
+  rounded,
   className = '',
   isOverlay = false,
   isLoading = false,
@@ -44,13 +45,14 @@ const WebSkeleton = ({
   const baseClass = isLoading
     ? 'bg-neutral-400 dark:bg-neutral-600 animate-pulse border border-neutral-300 dark:border-neutral-500'
     : '';
-  const skeletonClass = `${baseClass} ${
-    rounded ? 'rounded-md' : 'rounded-none'
-  } ${className}`.trim();
+  // rounded 우선순위: prop이 명시되었을 때만 tailwind rounded 클래스를 최종에 배치하여 우선 적용
+  const roundedClass =
+    typeof rounded === 'boolean' ? (rounded ? 'rounded-md' : 'rounded-none') : '';
+  const skeletonClass = `${baseClass} ${className} ${roundedClass}`.trim();
 
   if (!isLoading) {
     // 로딩 끝난 상태면 children만 보여줌
-    return <>{children}</>;
+    return children as React.ReactElement | null;
   }
 
   if (isOverlay && children) {

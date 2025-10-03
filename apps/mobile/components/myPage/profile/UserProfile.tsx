@@ -3,10 +3,19 @@ import {
   onAuthStateChanged,
   signOut,
   type AuthUser,
+  updateUserProfile,
+  getUserProfile,
 } from '@vpp/core-logic';
 import { Card, Text } from '@vpp/shared-ui';
 import { useEffect, useState } from 'react';
-import { Alert, Image, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  TouchableOpacity,
+  View,
+  TextInput,
+  ActivityIndicator,
+} from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 
@@ -14,6 +23,9 @@ import tw from '../../../utils/tailwind';
 
 const UserProfile = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [displayNameInput, setDisplayNameInput] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
     // 초기 사용자 상태 설정 및 Auth 상태 구독
@@ -22,10 +34,65 @@ const UserProfile = () => {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    setDisplayNameInput(user?.displayName ?? '');
+  }, [user?.displayName]);
+
   // 로그인되지 않은 경우 표시하지 않음
   if (!user || user.providerId === 'anonymous') {
     return null;
   }
+
+  const handleDisplayNameSave = async () => {
+    const trimmed = displayNameInput.trim();
+    if (!trimmed) {
+      Alert.alert('이름 수정', '이름을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await updateUserProfile(user.uid, { displayName: trimmed });
+
+      try {
+        const refreshedProfile = await getUserProfile(user.uid);
+        if (refreshedProfile) {
+          setUser((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  displayName: refreshedProfile.displayName,
+                  email: refreshedProfile.email,
+                  photoURL: refreshedProfile.photoURL,
+                  providerId: refreshedProfile.providerId,
+                }
+              : prev
+          );
+          setDisplayNameInput(refreshedProfile.displayName ?? '');
+        } else {
+          setUser((prev) => (prev ? { ...prev, displayName: trimmed } : prev));
+          setDisplayNameInput(trimmed);
+        }
+      } catch (fetchError) {
+        console.warn('업데이트된 프로필 조회 실패:', fetchError);
+        setUser((prev) => (prev ? { ...prev, displayName: trimmed } : prev));
+        setDisplayNameInput(trimmed);
+      }
+
+      Alert.alert('이름 수정', '이름이 업데이트되었습니다.');
+      setIsEditingName(false);
+    } catch (error) {
+      console.error('displayName 업데이트 실패:', error);
+      Alert.alert('오류', '이름을 저장하는 중 문제가 발생했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setDisplayNameInput(user.displayName ?? '');
+    setIsEditingName(false);
+  };
 
   const getProviderColor = (providerId: string) => {
     switch (providerId) {
@@ -98,9 +165,69 @@ const UserProfile = () => {
 
         {/* 사용자 정보 */}
         <View style={tw`flex-1`}>
-          <Text variant="h5" weight="bold" color="default">
-            {user.displayName || '사용자'}
-          </Text>
+          {isEditingName ? (
+            <View
+              style={[
+                tw`flex-row items-center gap-2`,
+                { height: 32 },
+              ]}
+            >
+              <TextInput
+                value={displayNameInput}
+                onChangeText={setDisplayNameInput}
+                placeholder="이름을 입력하세요"
+                placeholderTextColor={tw.color('gray-400') || '#9CA3AF'}
+                editable={!isSaving}
+                autoFocus
+                style={[
+                  tw`flex-1 px-3 border border-gray-200 rounded-lg text-gray-900`,
+                  {
+                    height: 32,
+                    fontSize: 14,
+                    lineHeight: 18,
+                    paddingVertical: 0,
+                    textAlignVertical: 'center',
+                  },
+                ]}
+              />
+              <TouchableOpacity
+                style={tw`h-8 px-3 rounded-lg bg-primary items-center justify-center`}
+                onPress={handleDisplayNameSave}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text variant="caption" weight="bold" color="white">
+                    저장
+                  </Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={tw`h-8 px-3 rounded-lg bg-gray-100 items-center justify-center`}
+                onPress={handleCancelEdit}
+                disabled={isSaving}
+              >
+                <Text variant="caption" weight="medium" color="default">
+                  취소
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setIsEditingName(true)}
+              style={[
+                tw`flex-row items-center gap-1`,
+                { minHeight: 32 },
+              ]}
+            >
+              <Text variant="h5" weight="bold" color="default">
+                {user.displayName || '사용자'}
+              </Text>
+              <MaterialIcons name="edit" size={18} color={tw.color('gray-500')} />
+            </TouchableOpacity>
+          )}
           {user.email && (
             <View style={tw`mt-1`}>
               <Text variant="body2" color="muted">
