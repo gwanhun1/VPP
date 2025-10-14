@@ -17,6 +17,7 @@ import {
   addRecentActivity,
 } from '@vpp/core-logic';
 import { useAuth } from '../contexts/AuthContext';
+import { callHuggingFaceAPI } from './huggingfaceApi';
 
 // RN WebView 브릿지 안전 접근자 (any 회피)
 const getRNWebView = () => {
@@ -257,11 +258,16 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     ]
   );
 
-  const generateMockAiAnswer = useCallback(
-    async (question: string, userName: string): Promise<string> => {
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      return `${userName}님, "${question}"에 대한 정보를 정리하고 있습니다. 곧 더 자세한 내용을 전달드릴게요.`;
+  const generateAiAnswer = useCallback(
+    async (question: string): Promise<string> => {
+      try {
+        const response = await callHuggingFaceAPI(question);
+        return response;
+      } catch (error) {
+        console.error('[ChatInputProvider] AI 응답 생성 실패:', error);
+        const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+        return `죄송합니다. AI 응답을 생성하는 중 오류가 발생했습니다. (${errorMessage})`;
+      }
     },
     []
   );
@@ -274,14 +280,12 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const userName = authUser.displayName || authUser.email || '사용자';
-
     await addMessage(trimmed, true);
     setInputText('');
 
-    const aiResponse = await generateMockAiAnswer(trimmed, userName);
+    const aiResponse = await generateAiAnswer(trimmed);
     await addMessage(aiResponse, false);
-  }, [addMessage, authUser, generateMockAiAnswer, inputText]);
+  }, [addMessage, authUser, generateAiAnswer, inputText]);
 
   // 채팅 세션 초기화
   useEffect(() => {
