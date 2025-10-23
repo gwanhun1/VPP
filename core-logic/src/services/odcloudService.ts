@@ -1,4 +1,8 @@
 const DEFAULT_PER_PAGE = 1;
+const ODCLOUD_SMP_ENDPOINT =
+  'https://api.odcloud.kr/api/15066755/v1/uddi:816c39cc-a4f7-47fe-a9c7-f4aa07a5e407';
+const ODCLOUD_REC_ENDPOINT =
+  'https://api.odcloud.kr/api/15090556/v1/uddi:2d25d87e-19d5-456d-9cae-bbe52219cc0d';
 
 export type OdcloudRecMarketRow = {
   거래일: string;
@@ -23,35 +27,33 @@ export type OdcloudRecMarketResponse = {
   totalCount?: number;
 };
 
-function getApiOrigin(): string | null {
-  const expoOrigin = process.env.EXPO_PUBLIC_API_ORIGIN ?? null;
-  if (expoOrigin && expoOrigin.trim().length > 0) return expoOrigin.trim();
-  return null;
+function getOdcloudServiceKey(): string {
+  const key = process.env.EXPO_PUBLIC_ODCLOUD_SERVICE_KEY ?? '';
+  if (!key || key.trim().length === 0) {
+    throw new Error('EXPO_PUBLIC_ODCLOUD_SERVICE_KEY is not set');
+  }
+  return key.trim();
 }
 
 type fetchRecMarketOdcloudProps = {
   page?: number;
   perPage?: number;
-  origin?: string;
 };
 
 export async function fetchRecMarketOdcloud({
   page = 1,
   perPage = DEFAULT_PER_PAGE,
-  origin,
 }: fetchRecMarketOdcloudProps = {}): Promise<OdcloudRecMarketRow[]> {
-  const base = origin ?? getApiOrigin();
-  const finalUrl = base ? `${base}/api/rec-market` : '/api/rec-market';
-
   const params = new URLSearchParams();
+  params.set('serviceKey', getOdcloudServiceKey());
   params.set('page', String(page));
   params.set('perPage', String(perPage));
 
-  const r = await fetch(`${finalUrl}?${params.toString()}`, {
+  const r = await fetch(`${ODCLOUD_REC_ENDPOINT}?${params.toString()}`, {
     headers: { Accept: 'application/json' },
   });
   if (!r.ok) {
-    throw new Error(`odcloud 프록시 요청 실패: ${r.status}`);
+    throw new Error(`odcloud 요청 실패: ${r.status}`);
   }
   const data = (await r.json()) as
     | OdcloudRecMarketResponse
@@ -108,24 +110,20 @@ export type OdcloudSmpResponse = {
 export async function fetchSmpMarketOdcloud({
   page = 1,
   perPage = DEFAULT_PER_PAGE,
-  origin,
 }: {
   page?: number;
   perPage?: number;
-  origin?: string;
 } = {}): Promise<OdcloudSmpRow[]> {
-  const base = origin ?? getApiOrigin();
-  const finalUrl = base ? `${base}/api/smp-market` : '/api/smp-market';
-
   const params = new URLSearchParams();
+  params.set('serviceKey', getOdcloudServiceKey());
   params.set('page', String(page));
   params.set('perPage', String(perPage));
 
-  const r = await fetch(`${finalUrl}?${params.toString()}`, {
+  const r = await fetch(`${ODCLOUD_SMP_ENDPOINT}?${params.toString()}`, {
     headers: { Accept: 'application/json' },
   });
   if (!r.ok) {
-    throw new Error(`odcloud 프록시 요청 실패: ${r.status}`);
+    throw new Error(`odcloud 요청 실패: ${r.status}`);
   }
   const data = (await r.json()) as OdcloudSmpResponse | OdcloudSmpRow[];
 

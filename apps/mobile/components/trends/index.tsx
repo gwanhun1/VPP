@@ -18,7 +18,10 @@ function toNumberOrNull(value?: string | number | null): number | null {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
-function calculateChangeRate(current: number | null, previous: number | null): number | null {
+function calculateChangeRate(
+  current: number | null,
+  previous: number | null
+): number | null {
   if (current === null || previous === null || previous === 0) return null;
   return ((current - previous) / previous) * 100;
 }
@@ -29,8 +32,14 @@ const Trends = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [smp, setSmp] = useState<MarketSnapshot>({ value: null, changeRate: null });
-  const [rec, setRec] = useState<MarketSnapshot>({ value: null, changeRate: null });
+  const [smp, setSmp] = useState<MarketSnapshot>({
+    value: null,
+    changeRate: null,
+  });
+  const [rec, setRec] = useState<MarketSnapshot>({
+    value: null,
+    changeRate: null,
+  });
 
   const load = useCallback(async () => {
     setError(null);
@@ -43,14 +52,26 @@ const Trends = () => {
       const latestSmp = toNumberOrNull(smpRows.at(0)?.SMP ?? null);
       const prevSmp = toNumberOrNull(smpRows.at(1)?.SMP ?? null);
       const latestRec = toNumberOrNull(
-        (recRows.at(0)?.['제주 평균가(원)'] as unknown as string | number | null) ?? null
+        (recRows.at(0)?.['제주 평균가(원)'] as unknown as
+          | string
+          | number
+          | null) ?? null
       );
       const prevRec = toNumberOrNull(
-        (recRows.at(1)?.['제주 평균가(원)'] as unknown as string | number | null) ?? null
+        (recRows.at(1)?.['제주 평균가(원)'] as unknown as
+          | string
+          | number
+          | null) ?? null
       );
 
-      setSmp({ value: latestSmp, changeRate: calculateChangeRate(latestSmp, prevSmp) });
-      setRec({ value: latestRec, changeRate: calculateChangeRate(latestRec, prevRec) });
+      setSmp({
+        value: latestSmp,
+        changeRate: calculateChangeRate(latestSmp, prevSmp),
+      });
+      setRec({
+        value: latestRec,
+        changeRate: calculateChangeRate(latestRec, prevRec),
+      });
     } catch (e) {
       setError('시장 데이터를 불러오지 못했습니다');
       console.error('[Trends] 시장 데이터 로딩 실패:', e);
@@ -69,10 +90,18 @@ const Trends = () => {
 
   return (
     <ScrollView
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
       contentContainerStyle={{ alignItems: 'center' }}
     >
-      <View style={{ width: '100%', maxWidth: containerMaxWidth, paddingHorizontal: horizontalPadding }}>
+      <View
+        style={{
+          width: '100%',
+          maxWidth: containerMaxWidth,
+          paddingHorizontal: horizontalPadding,
+        }}
+      >
         <View style={tw`flex-col gap-4`}>
           <TrendsStatus loading={loading} error={error} smp={smp} rec={rec} />
           <TrendFilter />
