@@ -1,50 +1,46 @@
-type HuggingFaceResponse = {
-  data: string[];
-};
-
-type HuggingFaceErrorResponse = {
-  error?: string;
-};
+import { Client } from '@gradio/client';
 
 export const callHuggingFaceAPI = async (message: string): Promise<string> => {
-  const apiUrl = import.meta.env.VITE_HF_API_URL;
-  
-  if (!apiUrl) {
-    throw new Error('Hugging Face API URL이 설정되지 않았습니다.');
-  }
-
   try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: [message],
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = (await response.json()) as HuggingFaceErrorResponse;
-      throw new Error(
-        errorData.error || `API 호출 실패: ${response.status}`
-      );
-    }
-
-    const result = (await response.json()) as HuggingFaceResponse;
+    console.log('[HF API] 연결 시작:', 'jungfgsds/vpp');
+    const client = await Client.connect('jungfgsds/vpp');
+    console.log('[HF API] 연결 성공');
     
-    if (!result.data || !result.data[0]) {
-      throw new Error('응답 데이터가 올바르지 않습니다.');
+    // API 구조 확인
+    try {
+      const apiInfo = await client.view_api();
+      console.log('[HF API] API 정보:', JSON.stringify(apiInfo, null, 2));
+    } catch (e) {
+      console.log('[HF API] API 정보 조회 실패:', e);
     }
-
-    return result.data[0];
+    
+    console.log('[HF API] 요청 전송:', message);
+    console.log('[HF API] ⏳ Space가 sleep 상태인 경우 첫 응답은 오래 걸릴 수 있습니다. 기다려주세요...');
+    
+    // 타임아웃 없이 실행
+    const startTime = Date.now();
+    const result = await client.predict('/generate', { message: message });
+    
+    const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`[HF API] ✅ 응답 수신 완료 (소요 시간: ${elapsedTime}초)`);
+    
+    console.log('[HF API] 응답 받음:', result);
+    console.log('[HF API] 응답 타입:', typeof result.data);
+    console.log('[HF API] 응답 내용:', result.data);
+    
+    // 응답 데이터 처리
+    if (Array.isArray(result.data)) {
+      console.log('[HF API] 배열 응답, 첫 요소:', result.data[0]);
+      return String(result.data[0] || '응답이 없습니다.');
+    }
+    
+    return String(result.data || '응답이 없습니다.');
   } catch (error) {
-    console.error('[HuggingFace API] 호출 오류:', error);
-    
+    console.error('[HF API] 에러 발생:', error);
     if (error instanceof Error) {
-      throw error;
+      console.error('[HF API] 에러 메시지:', error.message);
+      console.error('[HF API] 에러 스택:', error.stack);
     }
-    
-    throw new Error('알 수 없는 오류가 발생했습니다.');
+    throw new Error(`API 호출 실패: ${error instanceof Error ? error.message : String(error)}`);
   }
 };

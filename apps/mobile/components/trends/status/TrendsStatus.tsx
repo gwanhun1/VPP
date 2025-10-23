@@ -1,69 +1,23 @@
-import { fetchJejuRecDaily, fetchJejuSmpDaily } from '@vpp/core-logic';
-import { Card, Text } from '@vpp/shared-ui';
-import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { Card, Text, Skeleton } from '@vpp/shared-ui';
+import { View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
-const TrendsStatus = () => {
+type MarketSnapshot = {
+  value: number | null;
+  changeRate: number | null;
+};
+
+type TrendsStatusProps = {
+  loading: boolean;
+  error: string | null;
+  smp: MarketSnapshot;
+  rec: MarketSnapshot;
+};
+
+const TrendsStatus = ({ loading, error, smp, rec }: TrendsStatusProps) => {
   const greenColor = tw.color('green-500');
   const secondaryColor = tw.color('secondary-400');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [smp, setSmp] = useState<MarketSnapshot>({ value: null, changeRate: null });
-  const [rec, setRec] = useState<MarketSnapshot>({ value: null, changeRate: null });
-
-  const targetDate = useMemo(() => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = `${today.getMonth() + 1}`.padStart(2, '0');
-    const day = `${today.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadMarketData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [smpItems, recItems] = await Promise.all([
-          fetchJejuSmpDaily(targetDate),
-          fetchJejuRecDaily(targetDate),
-        ]);
-
-        if (!mounted) return;
-
-        const latestSmp = smpItems.at(0);
-        const latestRec = recItems.at(0);
-
-        setSmp({
-          value: toNumberOrNull(latestSmp?.smp),
-          changeRate: toNumberOrNull(latestSmp?.chgRt),
-        });
-        setRec({
-          value: toNumberOrNull(latestRec?.avgPrc),
-          changeRate: toNumberOrNull(latestRec?.chgRt),
-        });
-      } catch (err) {
-        if (mounted) {
-          setError('시장 데이터를 불러오지 못했습니다');
-          console.error('[TrendsStatus] 시장 데이터 로딩 실패:', err);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadMarketData();
-
-    return () => {
-      mounted = false;
-    };
-  }, [targetDate]);
 
   const cards: Array<{
     title: string;
@@ -89,7 +43,11 @@ const TrendsStatus = () => {
           <Card bordered backgroundColor={card.backgroundColor}>
             <View style={tw`flex-col justify-center items-center gap-2 py-2`}>
               {loading ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <>
+                  <Skeleton width={80} height={32} rounded />
+                  <Skeleton width={96} height={16} rounded />
+                  <Skeleton width={64} height={12} rounded />
+                </>
               ) : error ? (
                 <Text variant="body2" color="white">
                   {error}
@@ -114,19 +72,6 @@ const TrendsStatus = () => {
     </View>
   );
 };
-
-type MarketSnapshot = {
-  value: number | null;
-  changeRate: number | null;
-};
-
-function toNumberOrNull(value?: string | null): number | null {
-  if (value === undefined || value === null) {
-    return null;
-  }
-  const parsed = Number.parseFloat(value);
-  return Number.isNaN(parsed) ? null : parsed;
-}
 
 function formatValue(value: number | null): string {
   if (value === null) {

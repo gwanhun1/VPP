@@ -73,12 +73,15 @@ export function useWebViewAuth() {
     // 모바일 앱으로부터 메시지 수신 처리
     const handleMessage = (event: MessageEvent) => {
       try {
-        const data: WebViewMessage | FirebaseConfigMessage | OpenSessionMessage = JSON.parse(event.data);
-        
+        const data:
+          | WebViewMessage
+          | FirebaseConfigMessage
+          | OpenSessionMessage = JSON.parse(event.data);
+
         if (data.type === 'AUTH') {
           const authData = data as WebViewMessage;
           setAuthUser(authData.payload || null);
-          
+
           // 인증 정보 수신 시 사용자 상태 업데이트 및 로그인 활동 기록 (새로운 구조 사용)
           if (authData.payload) {
             const userPayload = authData.payload;
@@ -102,13 +105,17 @@ export function useWebViewAuth() {
                   const auth = getFirebaseAuth();
                   if (auth && auth.currentUser?.uid !== userPayload.uid) {
                     try {
-                      await signInWithEmailAndPassword(auth, 'test@test.com', 'testtest');
+                      await signInWithEmailAndPassword(
+                        auth,
+                        'test@test.com',
+                        'testtest'
+                      );
                     } catch {
                       // dev 로그인 실패는 무시하고 진행
                     }
                   }
                 }
-                
+
                 // 웹 디바이스 정보 업데이트
                 const deviceId = `webview_${Date.now()}`;
                 await updateUserDevice(userPayload.uid, deviceId, {
@@ -213,6 +220,6 @@ export function useWebViewAuth() {
           // no-op
         }
       }
-    }
+    },
   };
 }

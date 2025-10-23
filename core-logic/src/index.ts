@@ -10,5 +10,8 @@ export {
   fetchUserChatHistory,
   recordStudyActivity,
 } from './services/userService';
-export { fetchJejuSmpDaily, fetchJejuRecDaily } from './services/trendsService';
+export { fetchRecMarketOdcloud } from './services/odcloudService';
+export type { OdcloudRecMarketRow } from './services/odcloudService';
+export { fetchSmpMarketOdcloud } from './services/odcloudService';
+export type { OdcloudSmpRow } from './services/odcloudService';
 export { countUserBookmarkedMessages } from './firebase/firestore';

@@ -283,8 +283,22 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     await addMessage(trimmed, true);
     setInputText('');
 
+    // 로딩 메시지 먼저 표시
+    await addMessage('💭 답변을 생성하고 있습니다... (최초 실행 시 2-3분 소요될 수 있습니다)', false);
+    
     const aiResponse = await generateAiAnswer(trimmed);
-    await addMessage(aiResponse, false);
+    
+    // 로딩 메시지 제거하고 실제 응답으로 교체
+    setMessages((prev) => {
+      const filtered = prev.filter((msg) => !msg.text.startsWith('💭 답변을 생성하고'));
+      return [...filtered, {
+        id: Date.now(),
+        text: aiResponse,
+        isUser: false,
+        timestamp: new Date(),
+        isBookmarked: false,
+      }];
+    });
   }, [addMessage, authUser, generateAiAnswer, inputText]);
 
   // 채팅 세션 초기화
