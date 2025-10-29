@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useChatInput } from '@/utils/inputProvider';
 import AiMessageHeader from './AiMessage/AiMessageHeader';
 import AiMessageSkeleton from './AiMessage/AiMessageSkeleton';
@@ -18,22 +17,10 @@ type AiChattingBoxProps = {
 };
 
 const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
-  const [isLoading, setIsLoading] = useState(!layout);
-  const { currentSessionId } = useChatInput();
+  const { currentSessionId, isGeneratingResponse } = useChatInput();
 
-  // 메시지가 표시될 때 로딩 효과를 위한 타이머 설정
-  useEffect(() => {
-    if (layout) {
-      setIsLoading(false);
-      return;
-    }
-
-    const loadingTimer = window.setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
-
-    return () => window.clearTimeout(loadingTimer);
-  }, [layout]);
+  // 빈 텍스트 메시지는 스켈레톤만 표시 (응답 생성 중)
+  const isLoadingSkeleton = message.text === '' || (isGeneratingResponse && !layout);
 
   // assistant 역할의 메시지만 렌더링
   if (message.isUser) return null;
@@ -41,7 +28,7 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
   return (
     <div className="max-w-[80%] group">
       <AiMessageHeader />
-      <AiMessageSkeleton isLoading={isLoading}>
+      <AiMessageSkeleton isLoading={isLoadingSkeleton}>
         <div
           className="p-4 text-gray-800 bg-white rounded-2xl rounded-tl-sm border shadow-sm border-primary-50 
                       transition-opacity duration-500 

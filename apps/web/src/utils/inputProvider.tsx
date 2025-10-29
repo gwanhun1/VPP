@@ -146,6 +146,111 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     [authUser, currentSessionId, firebaseReady]
   );
 
+  // Firebase에만 메시지 저장 (UI 업데이트 없음)
+  const saveMessageToFirebase = useCallback(
+    async (text: string, isUser: boolean, localTimestamp: Date) => {
+      if (!authUser || !firebaseReady) return;
+
+      let sessionId = currentSessionId ?? lastSessionIdRef.current;
+
+      if (!sessionId && isUser) {
+        sessionId = await ensureSession(text);
+      }
+
+      if (!sessionId) return;
+
+      try {
+        // 채팅 메시지 저장
+        const savedMessageId = await sendChatMessage(
+          authUser.uid,
+          sessionId,
+          text,
+          isUser ? 'user' : 'assistant',
+          'web',
+          'webview',
+          // assistant일 때만 reply 메타 포함
+          !isUser && lastUserMsgIdRef.current
+            ? {
+                replyTo: lastUserMsgIdRef.current || undefined,
+                replyPreview: lastUserMsgTextRef.current
+                  ? {
+                      role: 'user',
+                      text:
+                        lastUserMsgTextRef.current.length > 120
+                          ? `${lastUserMsgTextRef.current.substring(
+                              0,
+                              120
+                            )}...`
+                          : lastUserMsgTextRef.current,
+                    }
+                  : undefined,
+              }
+            : undefined
+        );
+
+        // 로컬 메시지에 Firestore messageId 매핑
+        setMessages((prev) => {
+          const next = [...prev];
+          const targetIdx = next.findIndex(
+            (msg) => msg.text === text && msg.timestamp === localTimestamp
+          );
+          if (targetIdx >= 0) {
+            next[targetIdx] = { ...next[targetIdx], messageId: savedMessageId };
+          }
+          return next;
+        });
+
+        // 사용자 메시지 저장 직후에는 마지막 사용자 메시지 참조를 업데이트
+        if (isUser) {
+          lastUserMsgIdRef.current = savedMessageId;
+          lastUserMsgTextRef.current = text;
+        }
+
+        // 사용자 활동 로그 (채팅 메시지인 경우에만)
+        if (isUser) {
+          await addRecentActivity(authUser.uid, {
+            type: 'chat',
+            title: '채팅 메시지',
+            description:
+              text.length > 50 ? `${text.substring(0, 50)}...` : text,
+          });
+        }
+
+        // 첫 번째 사용자 메시지인 경우 세션 제목 업데이트
+        if (isUser && messages.length === 0) {
+          await updateChatSession(authUser.uid, sessionId, {
+            title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
+          });
+        }
+      } catch (error) {
+        console.error(
+          '[ChatInputProvider] 메시지 저장/활동/제목 업데이트 중 오류:',
+          error
+        );
+        try {
+          if (typeof window !== 'undefined') {
+            const rnwv = getRNWebView();
+            rnwv?.postMessage(
+              JSON.stringify({
+                type: 'WEB_ERROR',
+                payload: `메시지 저장 오류: ${String(error)}`,
+              })
+            );
+          }
+        } catch {
+          /* no-op: RN bridge may be unavailable */
+        }
+      }
+    },
+    [
+      authUser,
+      currentSessionId,
+      ensureSession,
+      messages.length,
+      firebaseReady,
+    ]
+  );
+
   const addMessage = useCallback(
     async (text: string, isUser: boolean) => {
       // 새 메시지 흐름에서는 히스토리 모드 해제
@@ -159,112 +264,10 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       };
       setMessages((prev) => [...prev, newMessage]);
 
-      // Firebase에 메시지 저장 (새로운 구조 사용)
-      if (authUser && firebaseReady) {
-        let sessionId = currentSessionId ?? lastSessionIdRef.current;
-
-        if (!sessionId && isUser) {
-          sessionId = await ensureSession(text);
-        }
-
-        if (!sessionId) {
-          return;
-        }
-
-        try {
-          // 채팅 메시지 저장
-          const savedMessageId = await sendChatMessage(
-            authUser.uid,
-            sessionId,
-            text,
-            isUser ? 'user' : 'assistant',
-            'web',
-            'webview',
-            // assistant일 때만 reply 메타 포함
-            !isUser && lastUserMsgIdRef.current
-              ? {
-                  replyTo: lastUserMsgIdRef.current || undefined,
-                  replyPreview: lastUserMsgTextRef.current
-                    ? {
-                        role: 'user',
-                        text:
-                          lastUserMsgTextRef.current.length > 120
-                            ? `${lastUserMsgTextRef.current.substring(
-                                0,
-                                120
-                              )}...`
-                            : lastUserMsgTextRef.current,
-                      }
-                    : undefined,
-                }
-              : undefined
-          );
-
-          // 방금 추가한 로컬 메시지에 Firestore messageId를 매핑
-          setMessages((prev) => {
-            const next = [...prev];
-            const lastIdx = next.length - 1;
-            if (
-              lastIdx >= 0 &&
-              next[lastIdx].text === text &&
-              next[lastIdx].timestamp === newMessage.timestamp
-            ) {
-              next[lastIdx] = { ...next[lastIdx], messageId: savedMessageId };
-            }
-            return next;
-          });
-
-          // 사용자 메시지 저장 직후에는 마지막 사용자 메시지 참조를 업데이트
-          if (isUser) {
-            lastUserMsgIdRef.current = savedMessageId;
-            lastUserMsgTextRef.current = text;
-          }
-
-          // 사용자 활동 로그 (채팅 메시지인 경우에만)
-          if (isUser) {
-            await addRecentActivity(authUser.uid, {
-              type: 'chat',
-              title: '채팅 메시지',
-              description:
-                text.length > 50 ? `${text.substring(0, 50)}...` : text,
-            });
-          }
-
-          // 첫 번째 사용자 메시지인 경우 세션 제목 업데이트
-          if (isUser && messages.length === 0) {
-            await updateChatSession(authUser.uid, sessionId, {
-              title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
-            });
-          }
-        } catch (error) {
-          console.error(
-            '[ChatInputProvider] 메시지 저장/활동/제목 업데이트 중 오류:',
-            error
-          );
-          try {
-            if (typeof window !== 'undefined') {
-              const rnwv = getRNWebView();
-              rnwv?.postMessage(
-                JSON.stringify({
-                  type: 'WEB_ERROR',
-                  payload: `메시지 저장 오류: ${String(error)}`,
-                })
-              );
-            }
-          } catch {
-            /* no-op: RN bridge may be unavailable */
-          }
-        }
-      }
+      // Firebase에 메시지 저장
+      await saveMessageToFirebase(text, isUser, newMessage.timestamp);
     },
-    [
-      authUser,
-      currentSessionId,
-      ensureSession,
-      messages.length,
-      firebaseReady,
-      historyMode,
-    ]
+    [historyMode, saveMessageToFirebase]
   );
 
   const generateAiAnswer = useCallback(
@@ -301,8 +304,8 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
 
-    // 2. Firebase 저장은 백그라운드에서 처리 (await 없이)
-    addMessage(trimmed, true);
+    // 2. Firebase 저장은 백그라운드에서 처리 (await 없이, UI 업데이트 없음)
+    saveMessageToFirebase(trimmed, true, userMessage.timestamp);
 
     // 3. AI 응답 생성 중 상태 활성화 (스켈레톤 UI 표시)
     setIsGeneratingResponse(true);
@@ -318,7 +321,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       // AI 응답 생성 완료 (스켈레톤 UI 숨김)
       setIsGeneratingResponse(false);
     }
-  }, [addMessage, authUser, generateAiAnswer, inputText]);
+  }, [addMessage, authUser, generateAiAnswer, inputText, saveMessageToFirebase]);
 
   // 채팅 세션 초기화
   useEffect(() => {

@@ -20,6 +20,7 @@ const ChattingMessage = () => {
     currentSessionId,
     focusMessageId,
     consumeFocusMessage,
+    isGeneratingResponse,
   } = useChatInput();
   const { authUser } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -94,9 +95,12 @@ const ChattingMessage = () => {
     }
   }, [focusMessageId, consumeFocusMessage]);
 
+  // 메시지가 없거나 AI 응답 생성 중이 아닐 때만 초기 화면 표시
+  const showWelcomeScreen = messages.length === 0 && !isGeneratingResponse;
+
   return (
     <>
-      {messages.length <= 1 ? <RecentQuestionContainer /> : null}
+      {showWelcomeScreen ? <RecentQuestionContainer /> : null}
       <div className="flex relative flex-col flex-1">
         <div
           className={`absolute left-0 right-0 top-0 flex justify-center transition-opacity duration-200 ${
@@ -118,7 +122,7 @@ const ChattingMessage = () => {
             transition: 'transform 0.2s ease-out',
           }}
         >
-          {messages.length <= 1 ? (
+          {showWelcomeScreen ? (
             <div className="flex flex-col justify-between h-full">
               <AiChattingBox
                 message={{
@@ -158,6 +162,19 @@ const ChattingMessage = () => {
                   )}
                 </div>
               ))}
+              {isGeneratingResponse && (
+                <div className="flex justify-start animate-fade-in">
+                  <AiChattingBox
+                    message={{
+                      id: Date.now(),
+                      text: '',
+                      isUser: false,
+                      timestamp: new Date(),
+                    }}
+                    layout={false}
+                  />
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </>
           )}
