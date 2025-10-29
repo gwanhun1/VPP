@@ -3248,15 +3248,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gradio/client@npm:^2.0.0-dev.0":
-  version: 2.0.0-dev.0
-  resolution: "@gradio/client@npm:2.0.0-dev.0"
-  dependencies:
-    fetch-event-stream: "npm:^0.1.5"
-  checksum: 10c0/f1bd4d05e69004212f6321dfc3cade0aa3b13a18a7fb6c135b2af59d69ef781a2a9ecc9524c3ce87309e7a59ec00fb0fa5ccf3a4e9bab54a5a80d03051efd0ea
-  languageName: node
-  linkType: hard
-
 "@grpc/grpc-js@npm:~1.9.0":
   version: 1.9.15
   resolution: "@grpc/grpc-js@npm:1.9.15"
@@ -7575,7 +7566,6 @@ __metadata:
     "@babel/core": "npm:^7.14.5"
     "@babel/preset-react": "npm:^7.14.5"
     "@eslint/js": "npm:^9.8.0"
-    "@gradio/client": "npm:^2.0.0-dev.0"
     "@nx/eslint": "npm:21.2.2"
     "@nx/eslint-plugin": "npm:21.2.2"
     "@nx/js": "npm:21.2.2"
@@ -12273,13 +12263,6 @@ __metadata:
     picomatch:
       optional: true
   checksum: 10c0/45b559cff889934ebb8bc498351e5acba40750ada7e7d6bde197768d2fa67c149be8ae7f8ff34d03f4e1eb20f2764116e56440aaa2f6689e9a4aa7ef06acafe9
-  languageName: node
-  linkType: hard
-
-"fetch-event-stream@npm:^0.1.5":
-  version: 0.1.5
-  resolution: "fetch-event-stream@npm:0.1.5"
-  checksum: 10c0/f5979cbff7bcfc554ba9d80783c972fab99d5e0ab0e0f24bad14d461b31ae847d510bb53a5a06c7ec6e243a7b397475441bc23b6d1e325edc3eda4d0f50f7bbd
   languageName: node
   linkType: hard
 

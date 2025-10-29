@@ -73,7 +73,6 @@
   ],
   "packageManager": "yarn@4.9.2",
   "dependencies": {
-    "@gradio/client": "^2.0.0-dev.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native-worklets": "0.5.1",

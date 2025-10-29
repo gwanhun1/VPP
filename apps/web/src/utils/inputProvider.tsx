@@ -17,7 +17,7 @@ import {
   addRecentActivity,
 } from '@vpp/core-logic';
 import { useAuth } from '../contexts/AuthContext';
-import { callHuggingFaceAPI } from './huggingfaceApi';
+import { callDifyAPI } from './difyApi';
 
 // RN WebView 브릿지 안전 접근자 (any 회피)
 const getRNWebView = () => {
@@ -49,6 +49,7 @@ export type ChatInputContextType = {
   currentSessionId: string | null;
   focusMessageId: string | null;
   consumeFocusMessage: () => void;
+  isGeneratingResponse: boolean; // AI 응답 생성 중 상태 (스켈레톤 UI용)
 };
 
 type IncomingMessage =
@@ -66,6 +67,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [historyMode, setHistoryMode] = useState<boolean>(false);
   const [focusMessageId, setFocusMessageId] = useState<string | null>(null);
+  const [isGeneratingResponse, setIsGeneratingResponse] = useState<boolean>(false);
   const creatingSessionRef = useRef(false);
   const lastSessionIdRef = useRef<string | null>(null);
   // 마지막 사용자 메시지 정보를 보관하여 assistant 메시지 저장 시 replyTo/preview로 사용
@@ -187,7 +189,10 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
                         role: 'user',
                         text:
                           lastUserMsgTextRef.current.length > 120
-                            ? `${lastUserMsgTextRef.current.substring(0, 120)}...`
+                            ? `${lastUserMsgTextRef.current.substring(
+                                0,
+                                120
+                              )}...`
                             : lastUserMsgTextRef.current,
                       }
                     : undefined,
@@ -199,7 +204,11 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
           setMessages((prev) => {
             const next = [...prev];
             const lastIdx = next.length - 1;
-            if (lastIdx >= 0 && next[lastIdx].text === text && next[lastIdx].timestamp === newMessage.timestamp) {
+            if (
+              lastIdx >= 0 &&
+              next[lastIdx].text === text &&
+              next[lastIdx].timestamp === newMessage.timestamp
+            ) {
               next[lastIdx] = { ...next[lastIdx], messageId: savedMessageId };
             }
             return next;
@@ -261,11 +270,12 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const generateAiAnswer = useCallback(
     async (question: string): Promise<string> => {
       try {
-        const response = await callHuggingFaceAPI(question);
+        const response = await callDifyAPI(question);
         return response;
       } catch (error) {
         console.error('[ChatInputProvider] AI 응답 생성 실패:', error);
-        const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+        const errorMessage =
+          error instanceof Error ? error.message : '알 수 없는 오류';
         return `죄송합니다. AI 응답을 생성하는 중 오류가 발생했습니다. (${errorMessage})`;
       }
     },
@@ -280,25 +290,34 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    await addMessage(trimmed, true);
+    // 1. 사용자 메시지를 즉시 로컬 상태에 추가 (UI 즉시 업데이트)
+    const userMessage: Message = {
+      id: Date.now(),
+      text: trimmed,
+      isUser: true,
+      timestamp: new Date(),
+      isBookmarked: false,
+    };
+    setMessages((prev) => [...prev, userMessage]);
     setInputText('');
 
-    // 로딩 메시지 먼저 표시
-    await addMessage('💭 답변을 생성하고 있습니다... (최초 실행 시 2-3분 소요될 수 있습니다)', false);
-    
-    const aiResponse = await generateAiAnswer(trimmed);
-    
-    // 로딩 메시지 제거하고 실제 응답으로 교체
-    setMessages((prev) => {
-      const filtered = prev.filter((msg) => !msg.text.startsWith('💭 답변을 생성하고'));
-      return [...filtered, {
-        id: Date.now(),
-        text: aiResponse,
-        isUser: false,
-        timestamp: new Date(),
-        isBookmarked: false,
-      }];
-    });
+    // 2. Firebase 저장은 백그라운드에서 처리 (await 없이)
+    addMessage(trimmed, true);
+
+    // 3. AI 응답 생성 중 상태 활성화 (스켈레톤 UI 표시)
+    setIsGeneratingResponse(true);
+
+    // 4. AI 응답 생성은 백그라운드에서 비동기로 처리
+    try {
+      const aiResponse = await generateAiAnswer(trimmed);
+      // 실제 AI 응답을 Firebase에 저장
+      await addMessage(aiResponse, false);
+    } catch (error) {
+      console.error('[handleSendMessage] AI 응답 생성 실패:', error);
+    } finally {
+      // AI 응답 생성 완료 (스켈레톤 UI 숨김)
+      setIsGeneratingResponse(false);
+    }
   }, [addMessage, authUser, generateAiAnswer, inputText]);
 
   // 채팅 세션 초기화
@@ -452,6 +471,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         currentSessionId,
         focusMessageId,
         consumeFocusMessage: () => setFocusMessageId(null),
+        isGeneratingResponse,
       }}
     >
       {children}
