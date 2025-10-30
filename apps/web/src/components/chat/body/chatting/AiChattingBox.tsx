@@ -19,8 +19,8 @@ type AiChattingBoxProps = {
 const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
   const { currentSessionId, isGeneratingResponse } = useChatInput();
 
-  // 빈 텍스트 메시지는 스켈레톤만 표시 (응답 생성 중)
-  const isLoadingSkeleton = message.text === '' || (isGeneratingResponse && !layout);
+  // 빈 텍스트 메시지만 스켈레톤 표시 (응답 생성 중)
+  const isLoadingSkeleton = message.text === '';
 
   // assistant 역할의 메시지만 렌더링
   if (message.isUser) return null;
