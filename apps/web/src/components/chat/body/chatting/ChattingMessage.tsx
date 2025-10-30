@@ -26,27 +26,34 @@ const ChattingMessage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const touchStartYRef = useRef<number | null>(null);
-  const pullTriggeredRef = useRef(false);
+  const scrollStartTopRef = useRef<number>(0);
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
 
   const triggerRefresh = useCallback(async () => {
     if (!currentSessionId || refreshing) return;
     setRefreshing(true);
+    setIsPulling(false);
     try {
       await loadSession(currentSessionId);
     } finally {
       setRefreshing(false);
+      setPullDistance(0);
     }
   }, [currentSessionId, loadSession, refreshing]);
 
   const handleTouchStart = useCallback(
     (event: TouchEvent<HTMLDivElement>) => {
-      if (refreshing) return;
-      if (!scrollContainerRef.current) return;
-      if (scrollContainerRef.current.scrollTop > 0) return;
-      touchStartYRef.current = event.touches[0]?.clientY ?? null;
-      pullTriggeredRef.current = false;
+      if (refreshing || !scrollContainerRef.current) return;
+      const scrollTop = scrollContainerRef.current.scrollTop;
+      
+      // 스크롤이 최상단에 있을 때만 pull 시작
+      if (scrollTop <= 0) {
+        touchStartYRef.current = event.touches[0]?.clientY ?? null;
+        scrollStartTopRef.current = scrollTop;
+        setIsPulling(true);
+      }
     },
     [refreshing]
   );
@@ -54,33 +61,49 @@ const ChattingMessage = () => {
   const handleTouchMove = useCallback(
     (event: TouchEvent<HTMLDivElement>) => {
       const startY = touchStartYRef.current;
-      if (startY === null || !scrollContainerRef.current || refreshing) return;
+      if (startY === null || !scrollContainerRef.current || refreshing || !isPulling) return;
+      
       const currentY = event.touches[0]?.clientY ?? 0;
       const diff = currentY - startY;
-      if (diff > 0 && scrollContainerRef.current.scrollTop <= 0) {
-        setPullDistance(diff);
-        // 중요: 상단에서 충분히 끌어내렸을 때만 새로고침 실행
-        if (diff > 80 && !pullTriggeredRef.current) {
-          pullTriggeredRef.current = true;
-          void triggerRefresh();
-        }
+      const scrollTop = scrollContainerRef.current.scrollTop;
+      
+      // 스크롤이 최상단이고 아래로 당기는 경우에만
+      if (diff > 0 && scrollTop <= 0) {
+        // 당기는 저항감 추가 (rubber band effect)
+        const resistance = 2.5;
+        const adjustedDistance = diff / resistance;
+        setPullDistance(Math.min(adjustedDistance, 100));
+        
+        // 기본 스크롤 방지
+        event.preventDefault();
       } else {
         setPullDistance(0);
+        setIsPulling(false);
       }
     },
-    [refreshing, triggerRefresh]
+    [refreshing, isPulling]
   );
 
   const handleTouchEnd = useCallback(() => {
-    touchStartYRef.current = null;
-    setPullDistance(0);
-  }, []);
-
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (pullDistance > 60 && !refreshing) {
+      // 충분히 당겼으면 새로고침 트리거
+      void triggerRefresh();
+    } else {
+      // 충분히 당기지 않았으면 원위치
+      setPullDistance(0);
+      setIsPulling(false);
     }
-  }, [messages]);
+    touchStartYRef.current = null;
+  }, [pullDistance, refreshing, triggerRefresh]);
+
+  // Pull-to-refresh 상태 초기화
+  useEffect(() => {
+    if (!currentSessionId) {
+      setPullDistance(0);
+      setRefreshing(false);
+      setIsPulling(false);
+    }
+  }, [currentSessionId]);
 
   useEffect(() => {
     if (!focusMessageId || !scrollContainerRef.current) return;
@@ -101,17 +124,43 @@ const ChattingMessage = () => {
   return (
     <div className="flex flex-col flex-1 relative overflow-hidden">
       {showWelcomeScreen && <RecentQuestionContainer />}
-      
-      {/* 새로고침 인디케이터 */}
-      <div
-        className={`absolute left-0 right-0 top-0 flex justify-center transition-opacity duration-200 z-10 ${
-          refreshing || pullDistance > 30 ? 'opacity-100' : 'opacity-0'
-        } pointer-events-none`}
-      >
-        <div className="px-4 py-1 mt-2 text-xs text-gray-500 bg-gray-100 rounded-full">
-          {refreshing ? '메시지를 불러오는 중...' : '당겨서 새로고침'}
+
+      {/* Pull-to-refresh 인디케이터 */}
+      {!showWelcomeScreen && currentSessionId && (pullDistance > 0 || refreshing) && (
+        <div 
+          className="flex justify-center items-center py-2 transition-all duration-200"
+          style={{
+            height: `${Math.min(pullDistance, 60)}px`,
+            opacity: refreshing ? 1 : Math.min(pullDistance / 60, 1),
+          }}
+        >
+          <div className="flex items-center gap-2 px-4 py-1 text-xs text-primary-600 bg-primary-50 rounded-full">
+            {refreshing ? (
+              <>
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>새로고침 중...</span>
+              </>
+            ) : pullDistance > 60 ? (
+              <>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>놓으면 새로고침</span>
+              </>
+            ) : (
+              <>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                <span>아래로 당기기</span>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 스크롤 컨테이너 */}
       <div
@@ -121,8 +170,7 @@ const ChattingMessage = () => {
         onTouchEnd={handleTouchEnd}
         className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{
-          transform: `translateY(${Math.min(pullDistance, 80)}px)`,
-          transition: 'transform 0.2s ease-out',
+          transition: isPulling ? 'none' : 'transform 0.3s ease-out',
         }}
       >
         {showWelcomeScreen ? (
