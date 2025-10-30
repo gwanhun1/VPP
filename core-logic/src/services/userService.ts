@@ -25,7 +25,7 @@ import {
 import { serverTimestamp, Timestamp } from 'firebase/firestore';
 
 // 모바일 앱 호환성을 위한 타입 별칭
-export type ChatHistory = ChatSession;
+export type ChatHistory = ChatSession & { id: string };
 import { getCurrentUser } from '../firebase/auth';
 
 // ===== 연속 학습일(Study Streak) 계산 유틸 =====

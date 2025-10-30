@@ -10,6 +10,7 @@ export {
   fetchUserChatHistory,
   recordStudyActivity,
 } from './services/userService';
+export type { ChatHistory } from './services/userService';
 export { fetchRecMarketOdcloud } from './services/odcloudService';
 export type { OdcloudRecMarketRow } from './services/odcloudService';
 export { fetchSmpMarketOdcloud } from './services/odcloudService';

@@ -99,88 +99,90 @@ const ChattingMessage = () => {
   const showWelcomeScreen = messages.length === 0 && !isGeneratingResponse;
 
   return (
-    <>
-      {showWelcomeScreen ? <RecentQuestionContainer /> : null}
-      <div className="flex relative flex-col flex-1">
-        <div
-          className={`absolute left-0 right-0 top-0 flex justify-center transition-opacity duration-200 ${
-            refreshing || pullDistance > 30 ? 'opacity-100' : 'opacity-0'
-          } pointer-events-none`}
-        >
-          <div className="px-4 py-1 mt-2 text-xs text-gray-500 bg-gray-100 rounded-full">
-            {refreshing ? '메시지를 불러오는 중...' : '당겨서 새로고침'}
-          </div>
-        </div>
-        <div
-          ref={scrollContainerRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="overflow-y-auto flex-1 p-4 flex flex-col gap-0 min-h-[50vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          style={{
-            transform: `translateY(${Math.min(pullDistance, 80)}px)`,
-            transition: 'transform 0.2s ease-out',
-          }}
-        >
-          {showWelcomeScreen ? (
-            <div className="flex flex-col justify-between h-full">
-              <AiChattingBox
-                message={{
-                  id: 1752583353312,
-                  text: `안녕하세요${
-                    authUser
-                      ? `, ${
-                          authUser.displayName || authUser.email || '사용자'
-                        }님`
-                      : ''
-                  }! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!`,
-                  isUser: false,
-                  timestamp: new Date('2025-07-15T12:42:33.312Z'),
-                }}
-                layout={true}
-              />
-              <PromptHintBox />
-            </div>
-          ) : (
-            <>
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  data-message-id={message.messageId}
-                  className={`flex ${
-                    message.isUser ? 'justify-end' : 'justify-start'
-                  } animate-fade-in`}
-                  style={{ animationDuration: '500ms' }}
-                >
-                  {message.isUser ? (
-                    <UserChattingBox message={message} />
-                  ) : (
-                    <AiChattingBox
-                      message={message}
-                      layout={historyMode ? true : undefined}
-                    />
-                  )}
-                </div>
-              ))}
-              {isGeneratingResponse && (
-                <div className="flex justify-start animate-fade-in">
-                  <AiChattingBox
-                    message={{
-                      id: Date.now(),
-                      text: '',
-                      isUser: false,
-                      timestamp: new Date(),
-                    }}
-                    layout={false}
-                  />
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
-          )}
+    <div className="flex flex-col flex-1 relative overflow-hidden">
+      {showWelcomeScreen && <RecentQuestionContainer />}
+      
+      {/* 새로고침 인디케이터 */}
+      <div
+        className={`absolute left-0 right-0 top-0 flex justify-center transition-opacity duration-200 z-10 ${
+          refreshing || pullDistance > 30 ? 'opacity-100' : 'opacity-0'
+        } pointer-events-none`}
+      >
+        <div className="px-4 py-1 mt-2 text-xs text-gray-500 bg-gray-100 rounded-full">
+          {refreshing ? '메시지를 불러오는 중...' : '당겨서 새로고침'}
         </div>
       </div>
-    </>
+
+      {/* 스크롤 컨테이너 */}
+      <div
+        ref={scrollContainerRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        style={{
+          transform: `translateY(${Math.min(pullDistance, 80)}px)`,
+          transition: 'transform 0.2s ease-out',
+        }}
+      >
+        {showWelcomeScreen ? (
+          <div className="flex flex-col justify-between min-h-full">
+            <AiChattingBox
+              message={{
+                id: 1752583353312,
+                text: `안녕하세요${
+                  authUser
+                    ? `, ${
+                        authUser.displayName || authUser.email || '사용자'
+                      }님`
+                    : ''
+                }! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!`,
+                isUser: false,
+                timestamp: new Date('2025-07-15T12:42:33.312Z'),
+              }}
+              layout={true}
+            />
+            <PromptHintBox />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                data-message-id={message.messageId}
+                className={`flex ${
+                  message.isUser ? 'justify-end' : 'justify-start'
+                } animate-fade-in`}
+                style={{ animationDuration: '500ms' }}
+              >
+                {message.isUser ? (
+                  <UserChattingBox message={message} />
+                ) : (
+                  <AiChattingBox
+                    message={message}
+                    layout={historyMode ? true : undefined}
+                  />
+                )}
+              </div>
+            ))}
+            {isGeneratingResponse && (
+              <div className="flex justify-start animate-fade-in">
+                <AiChattingBox
+                  message={{
+                    id: Date.now(),
+                    text: '',
+                    isUser: false,
+                    timestamp: new Date(),
+                  }}
+                  layout={false}
+                />
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

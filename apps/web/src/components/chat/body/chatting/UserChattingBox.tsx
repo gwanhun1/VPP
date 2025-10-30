@@ -10,7 +10,6 @@ type UserChattingBoxProps = {
 };
 
 const UserChattingBox = ({ message }: UserChattingBoxProps) => {
-  // user 역할의 메시지만 렌더링
   if (!message.isUser) return null;
   return (
     <div

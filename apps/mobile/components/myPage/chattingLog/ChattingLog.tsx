@@ -101,7 +101,7 @@ const ChattingLog = () => {
                 style={idx !== chatHistory.length - 1 ? tw`mb-1` : undefined}
               >
                 <ChattingLogCard
-                  text={chat.title}
+                  text={chat.title ?? '제목 없음'}
                   time={chat.updatedAt.toDate().toString()}
                   onPress={() => handleOpenSession(chat.id)}
                 />
