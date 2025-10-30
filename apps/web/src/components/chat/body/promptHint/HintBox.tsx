@@ -4,7 +4,7 @@ import ScrollIndicator from './ScrollAnimation';
 
 const PromptHintBox = () => {
   return (
-    <div className="px-2 mt-2 flex flex-1 flex-col gap-2 justify-end items-center ">
+    <div className="flex flex-col flex-1 gap-2 justify-end items-center px-2 mt-2">
       <div className="flex gap-2 items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -44,6 +44,4 @@ const MOCK = [
   { id: 2, message: '계약기간이 얼마인가요?' },
   { id: 3, message: '신재생 에너지가 뭔가요?' },
   { id: 4, message: '전력거래소의 역할은 뭔가요?' },
-  { id: 5, message: '계약기간이 얼마인가요?' },
-  { id: 6, message: '계약기간이 얼마인가요?' },
 ];

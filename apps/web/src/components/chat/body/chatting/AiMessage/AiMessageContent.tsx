@@ -1,4 +1,7 @@
-import { Text } from '@vpp/shared-ui';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 type AiMessageContentProps = {
   text: string;
@@ -6,13 +9,86 @@ type AiMessageContentProps = {
 
 const AiMessageContent = ({ text }: AiMessageContentProps) => {
   return (
-    <Text
-      variant="body"
-      color="primary"
-      className="pb-2 whitespace-pre-wrap transition-colors duration-300 group-hover:text-primary-600"
-    >
-      {text}
-    </Text>
+    <div className="prose prose-sm max-w-none">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code(props) {
+            const { children, className, node, ...rest } = props;
+            const match = /language-(\w+)/.exec(className || '');
+            const isInline = !match;
+            
+            return !isInline ? (
+              <SyntaxHighlighter
+                style={vscDarkPlus as any}
+                language={match[1]}
+                PreTag="div"
+                className="rounded-md my-1.5 text-xs"
+              >
+                {String(children).replace(/\n$/, '')}
+              </SyntaxHighlighter>
+            ) : (
+              <code className="bg-primary-50 text-primary-700 px-1 py-0.5 rounded text-xs font-mono" {...rest}>
+                {children}
+              </code>
+            );
+          },
+          a({ children, href, ...props }) {
+            return (
+              <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700 underline" {...props}>
+                {children}
+              </a>
+            );
+          },
+          h1({ children, ...props }) {
+            return <h1 className="text-base font-bold text-primary-800 mt-2 mb-1" {...props}>{children}</h1>;
+          },
+          h2({ children, ...props }) {
+            return <h2 className="text-sm font-semibold text-primary-700 mt-2 mb-1" {...props}>{children}</h2>;
+          },
+          h3({ children, ...props }) {
+            return <h3 className="text-sm font-semibold text-primary-600 mt-1.5 mb-0.5" {...props}>{children}</h3>;
+          },
+          ul({ children, ...props }) {
+            return <ul className="list-disc list-inside my-1 space-y-0.5 text-sm" {...props}>{children}</ul>;
+          },
+          ol({ children, ...props }) {
+            return <ol className="list-decimal list-inside my-1 space-y-0.5 text-sm" {...props}>{children}</ol>;
+          },
+          blockquote({ children, ...props }) {
+            return (
+              <blockquote className="border-l-2 border-primary-300 pl-2 py-1 my-1 italic text-gray-700 bg-primary-25 text-sm" {...props}>
+                {children}
+              </blockquote>
+            );
+          },
+          table({ children, ...props }) {
+            return (
+              <div className="overflow-x-auto my-1.5">
+                <table className="min-w-full border border-gray-300 text-xs" {...props}>{children}</table>
+              </div>
+            );
+          },
+          thead({ children, ...props }) {
+            return <thead className="bg-primary-50" {...props}>{children}</thead>;
+          },
+          th({ children, ...props }) {
+            return <th className="border border-gray-300 px-2 py-1 text-left font-semibold" {...props}>{children}</th>;
+          },
+          td({ children, ...props }) {
+            return <td className="border border-gray-300 px-2 py-1" {...props}>{children}</td>;
+          },
+          p({ children, ...props }) {
+            return <p className="my-1 text-gray-800 leading-relaxed text-sm" {...props}>{children}</p>;
+          },
+          hr({ ...props }) {
+            return <hr className="my-2 border-gray-300" {...props} />;
+          },
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
   );
 };
 
