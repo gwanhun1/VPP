@@ -48,11 +48,11 @@ const ChatInputContext = createContext<ChatInputContextType | undefined>(
 export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [historyMode, setHistoryMode] = useState(false);
   const [focusMessageId, setFocusMessageId] = useState<string | null>(null);
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
 
+  const currentSessionIdRef = useRef<string | null>(null);
   const difyConversationIdRef = useRef<string | null>(null);
   const lastUserMsgIdRef = useRef<string | null>(null);
 
@@ -70,7 +70,11 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('사용자 인증이 필요합니다.');
     }
 
-    if (currentSessionId) return currentSessionId;
+    console.log('[ensureSession] currentSessionId:', currentSessionIdRef.current);
+    if (currentSessionIdRef.current) {
+      console.log('[ensureSession] 기존 세션 사용:', currentSessionIdRef.current);
+      return currentSessionIdRef.current;
+    }
 
     const sessionId = await createUserChatSession(
       authUser.uid,
@@ -78,16 +82,18 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       'web',
       'webview'
     );
-    setCurrentSessionId(sessionId);
+    console.log('[ensureSession] 새 세션 생성:', sessionId);
+    currentSessionIdRef.current = sessionId;
     return sessionId;
-  }, [authUser, firebaseReady, currentSessionId]);
+  }, [authUser, firebaseReady]);
 
   // Firebase에 메시지 저장
   const saveMessage = useCallback(
-    async (text: string, isUser: boolean): Promise<string> => {
+    async (text: string, isUser: boolean, isFirstMessage: boolean): Promise<string> => {
       if (!authUser) throw new Error('사용자 인증이 필요합니다.');
 
       const sessionId = await ensureSession();
+      console.log('[saveMessage] 사용할 세션 ID:', sessionId, '| role:', isUser ? 'user' : 'assistant');
 
       const messageId = await sendChatMessage(
         authUser.uid,
@@ -113,7 +119,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         lastUserMsgIdRef.current = messageId;
 
         // 첫 메시지면 세션 제목 업데이트
-        if (messages.length === 0) {
+        if (isFirstMessage) {
           await updateChatSession(authUser.uid, sessionId, {
             title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
           });
@@ -129,7 +135,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
       return messageId;
     },
-    [authUser, ensureSession, messages.length]
+    [authUser, ensureSession]
   );
 
   const handleSendMessage = useCallback(async () => {
@@ -137,6 +143,9 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     if (!trimmed || !authUser) return;
 
     if (historyMode) setHistoryMode(false);
+
+    // 현재 세션의 첫 메시지인지 확인
+    const isFirstMessage = messages.length === 0;
 
     // 1. 사용자 메시지 UI에 즉시 표시
     const userMessage: Message = {
@@ -151,7 +160,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // 2. 사용자 메시지 Firebase 저장
-      await saveMessage(trimmed, true);
+      await saveMessage(trimmed, true, isFirstMessage);
 
       // 3. Dify API 호출
       const response = await callDifyAPI(
@@ -174,7 +183,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       setMessages((prev) => [...prev, aiMessage]);
 
       // 6. AI 응답 Firebase 저장
-      await saveMessage(response.answer, false);
+      await saveMessage(response.answer, false, false);
     } catch (error) {
       console.error('[handleSendMessage] 오류:', error);
 
@@ -193,7 +202,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsGeneratingResponse(false);
     }
-  }, [inputText, authUser, historyMode, saveMessage]);
+  }, [inputText, authUser, historyMode, saveMessage, messages.length]);
 
   // 기존 세션 로드
   const loadSession = useCallback(
@@ -213,7 +222,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         }));
 
         setMessages(mapped);
-        setCurrentSessionId(sessionId);
+        currentSessionIdRef.current = sessionId;
         setHistoryMode(true);
         difyConversationIdRef.current = null;
 
@@ -230,7 +239,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   // 새 채팅 시작
   const startNewChat = useCallback(() => {
     setMessages([]);
-    setCurrentSessionId(null);
+    currentSessionIdRef.current = null;
     setHistoryMode(false);
     setInputText('');
     setFocusMessageId(null);
@@ -265,7 +274,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         loadSession,
         startNewChat,
         historyMode,
-        currentSessionId,
+        currentSessionId: currentSessionIdRef.current,
         focusMessageId,
         consumeFocusMessage: () => setFocusMessageId(null),
         isGeneratingResponse,

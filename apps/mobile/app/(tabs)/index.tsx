@@ -17,12 +17,12 @@ import { useLocalSearchParams } from 'expo-router';
  */
 const DEV_URL_CANDIDATES = Platform.select({
   ios: [
-    'http://localhost:4200',
-    'http://127.0.0.1:4200',
-    'http://192.168.0.4:4200',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://192.168.0.40:5173',
   ],
-  android: ['http://10.0.2.2:4200'],
-  default: ['http://127.0.0.1:4200'],
+  android: ['http://10.0.2.2:5173'],
+  default: ['http://127.0.0.1:5173'],
 });
 
 const PROD_URL = 'https://vpp-two.vercel.app';
