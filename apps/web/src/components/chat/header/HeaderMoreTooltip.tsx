@@ -14,6 +14,7 @@ type HeaderMoreTooltipProps = {
   isOpen: boolean;
   onClose: () => void;
   anchorRef: React.RefObject<HTMLElement | null>;
+  onTitleUpdate?: (newTitle: string) => void;
 };
 
 type TooltipItem = {
@@ -26,6 +27,7 @@ const HeaderMoreTooltip = ({
   isOpen,
   onClose,
   anchorRef,
+  onTitleUpdate,
 }: HeaderMoreTooltipProps) => {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number }>({
@@ -86,33 +88,65 @@ const HeaderMoreTooltip = ({
     };
   }, [isOpen, onClose]);
   const handleRename = async () => {
-    if (!authUser || !currentSessionId) return;
-    const next = window.prompt('새 대화명 입력');
-    if (!next) return;
+    if (!authUser || !currentSessionId) {
+      alert('세션 정보를 찾을 수 없습니다.');
+      return;
+    }
+    
+    const next = window.prompt('새 대화명을 입력하세요');
+    if (!next || !next.trim()) {
+      return;
+    }
+    
     try {
+      const newTitle = next.trim().length > 30 
+        ? `${next.trim().substring(0, 30)}...` 
+        : next.trim();
+        
       await updateChatSession(authUser.uid, currentSessionId, {
-        title: next.length > 30 ? `${next.substring(0, 30)}...` : next,
+        title: newTitle,
       });
+      
+      // 부모 컴포넌트에 제목 업데이트 알림
+      if (onTitleUpdate) {
+        onTitleUpdate(newTitle);
+      }
+      
       onClose();
+      alert('대화명이 수정되었습니다.');
     } catch (e) {
       console.error('[HeaderMoreTooltip] 대화명 수정 실패:', e);
+      alert('대화명 수정에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
   const handleDelete = async () => {
-    if (!authUser || !currentSessionId) return;
+    if (!authUser || !currentSessionId) {
+      alert('세션 정보를 찾을 수 없습니다.');
+      return;
+    }
+    
     const ok = window.confirm(
-      '이 대화를 삭제하시겠습니까? \n 되돌릴 수 없습니다.'
+      '이 대화를 삭제하시겠습니까?\n삭제된 대화는 복구할 수 없습니다.'
     );
     if (!ok) return;
+    
     try {
+      // 삭제 진행 중 표시
+      console.log('[HeaderMoreTooltip] 대화 삭제 시작:', currentSessionId);
+      
       await deleteChatSession(authUser.uid, currentSessionId);
-      // 삭제 후 현재 채팅방에서 나가기: 새 채팅 상태로 초기화
+      
+      console.log('[HeaderMoreTooltip] 대화 삭제 완료');
+      
+      // 삭제 후 새 채팅 상태로 초기화
       startNewChat();
       onClose();
-      alert('삭제되었습니다.');
+      
+      alert('대화가 삭제되었습니다.');
     } catch (e) {
       console.error('[HeaderMoreTooltip] 대화 삭제 실패:', e);
+      alert('대화 삭제에 실패했습니다. 다시 시도해주세요.');
     }
   };
 

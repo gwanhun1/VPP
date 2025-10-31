@@ -1,30 +1,68 @@
 import { Button, Text } from '@vpp/shared-ui';
 import { useChatInput } from '@/utils/inputProvider';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import HeaderMoreTooltip from './HeaderMoreTooltip';
+import { getChatSession } from '@vpp/core-logic';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const ChattingHeaderPrompt = () => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+  const [sessionTitle, setSessionTitle] = useState<string>('');
   const moreAnchorRef = useRef<HTMLDivElement>(null);
 
   const { messages, startNewChat, currentSessionId } = useChatInput();
+  const { authUser } = useAuth();
 
-  // 채팅방 제목 생성 (첫 번째 사용자 메시지를 제목으로 사용)
-  const getChatTitle = () => {
-    const firstUserMessage = messages.find((msg) => msg.isUser);
-    if (firstUserMessage) {
-      return firstUserMessage.text.length > 20
-        ? `${firstUserMessage.text.substring(0, 20)}...`
-        : firstUserMessage.text;
-    }
-    return '새 채팅';
-  };
+  // Firebase에서 실제 세션 제목 가져오기
+  useEffect(() => {
+    const loadSessionTitle = async () => {
+      if (!authUser || !currentSessionId) {
+        // 세션이 없으면 첫 메시지로 제목 생성
+        const firstUserMessage = messages.find((msg) => msg.isUser);
+        if (firstUserMessage) {
+          const title = firstUserMessage.text.length > 20
+            ? `${firstUserMessage.text.substring(0, 20)}...`
+            : firstUserMessage.text;
+          setSessionTitle(title);
+        } else {
+          setSessionTitle('새 채팅');
+        }
+        return;
+      }
+
+      try {
+        const session = await getChatSession(authUser.uid, currentSessionId);
+        if (session?.title) {
+          setSessionTitle(session.title);
+        } else {
+          // Firebase에 제목이 없으면 첫 메시지로 fallback
+          const firstUserMessage = messages.find((msg) => msg.isUser);
+          const title = firstUserMessage
+            ? (firstUserMessage.text.length > 20
+                ? `${firstUserMessage.text.substring(0, 20)}...`
+                : firstUserMessage.text)
+            : '새 채팅';
+          setSessionTitle(title);
+        }
+      } catch (error) {
+        console.error('[HeaderPrompt] 세션 제목 로드 실패:', error);
+        setSessionTitle('채팅');
+      }
+    };
+
+    loadSessionTitle();
+  }, [authUser, currentSessionId, messages]);
 
   const handleMoreButtonClick = () => {
     setIsTooltipOpen((prev) => !prev);
   };
+  
   const closeTooltip = () => {
     setIsTooltipOpen(false);
+  };
+  
+  const handleTitleUpdate = (newTitle: string) => {
+    setSessionTitle(newTitle);
   };
 
   return (
@@ -60,7 +98,7 @@ const ChattingHeaderPrompt = () => {
         {/* 제목 */}
         <div className="flex-1 text-right max-w-60">
           <Text variant="h6" weight="bold" color="white" className="truncate">
-            {getChatTitle()}
+            {sessionTitle || '새 채팅'}
           </Text>
         </div>
 
@@ -93,6 +131,7 @@ const ChattingHeaderPrompt = () => {
               isOpen={isTooltipOpen}
               onClose={closeTooltip}
               anchorRef={moreAnchorRef}
+              onTitleUpdate={handleTitleUpdate}
             />
           </div>
         ) : null}

@@ -4,7 +4,7 @@ import { useSpeechToText } from './VoiceInput';
 import VoiceModal from './VoiceModal';
 
 const InputIconGroup = () => {
-  const { handleSendMessage, inputText } = useChatInput();
+  const { handleSendMessage, inputText, isGeneratingResponse } = useChatInput();
 
   // 음성 인식 훅 사용
   const { isListening, startListening, stopListening } = useSpeechToText(
@@ -21,6 +21,7 @@ const InputIconGroup = () => {
         size="md"
         rounded="full"
         isIconOnly
+        disabled={isGeneratingResponse}
         onClick={() => {
           startListening();
         }}
@@ -50,7 +51,7 @@ const InputIconGroup = () => {
         size="md"
         rounded="full"
         onClick={handleSendMessage}
-        disabled={!inputText.trim()}
+        disabled={!inputText.trim() || isGeneratingResponse}
         isIconOnly
       >
         <svg
