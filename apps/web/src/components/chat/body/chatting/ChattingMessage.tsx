@@ -46,6 +46,19 @@ const ChattingMessage = () => {
   const handleTouchStart = useCallback(
     (event: TouchEvent<HTMLDivElement>) => {
       if (refreshing || !scrollContainerRef.current) return;
+      
+      // 버튼이나 클릭 가능한 요소에서 시작된 터치는 무시
+      const target = event.target as HTMLElement;
+      if (
+        target.closest('button') || 
+        target.closest('a') || 
+        target.closest('[role="button"]') ||
+        target.closest('input') ||
+        target.closest('textarea')
+      ) {
+        return;
+      }
+      
       const scrollTop = scrollContainerRef.current.scrollTop;
       
       // 스크롤이 최상단에 있을 때만 pull 시작
@@ -62,6 +75,18 @@ const ChattingMessage = () => {
     (event: TouchEvent<HTMLDivElement>) => {
       const startY = touchStartYRef.current;
       if (startY === null || !scrollContainerRef.current || refreshing || !isPulling) return;
+      
+      // 버튼이나 클릭 가능한 요소에서의 터치는 무시
+      const target = event.target as HTMLElement;
+      if (
+        target.closest('button') || 
+        target.closest('a') || 
+        target.closest('[role="button"]') ||
+        target.closest('input') ||
+        target.closest('textarea')
+      ) {
+        return;
+      }
       
       const currentY = event.touches[0]?.clientY ?? 0;
       const diff = currentY - startY;
@@ -120,6 +145,8 @@ const ChattingMessage = () => {
 
   // 메시지가 없거나 AI 응답 생성 중이 아닐 때만 초기 화면 표시
   const showWelcomeScreen = messages.length === 0 && !isGeneratingResponse;
+  // 힌트 박스는 새 채팅(historyMode가 아님)이고 메시지가 2개 이하일 때만 표시
+  const showHintBox = !historyMode && !currentSessionId && messages.length <= 2;
 
   return (
     <div className="flex flex-col flex-1 relative overflow-hidden">
@@ -168,6 +195,15 @@ const ChattingMessage = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={(e) => {
+          // 최상위 레벨에서 링크 클릭 차단 (최종 방어선)
+          const target = e.target as HTMLElement;
+          if (target.tagName === 'A' || target.closest('a')) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[ChattingMessage] 최상위에서 링크 클릭 차단');
+          }
+        }}
         className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{
           transition: isPulling ? 'none' : 'transform 0.3s ease-out',
@@ -193,40 +229,43 @@ const ChattingMessage = () => {
             <PromptHintBox />
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                data-message-id={message.messageId}
-                className={`flex ${
-                  message.isUser ? 'justify-end' : 'justify-start'
-                } animate-fade-in`}
-                style={{ animationDuration: '500ms' }}
-              >
-                {message.isUser ? (
-                  <UserChattingBox message={message} />
-                ) : (
+          <div className="flex flex-col justify-between min-h-full">
+            <div className="flex flex-col gap-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  data-message-id={message.messageId}
+                  className={`flex ${
+                    message.isUser ? 'justify-end' : 'justify-start'
+                  } animate-fade-in`}
+                  style={{ animationDuration: '500ms' }}
+                >
+                  {message.isUser ? (
+                    <UserChattingBox message={message} />
+                  ) : (
+                    <AiChattingBox
+                      message={message}
+                      layout={historyMode ? true : undefined}
+                    />
+                  )}
+                </div>
+              ))}
+              {isGeneratingResponse && (
+                <div className="flex justify-start animate-fade-in">
                   <AiChattingBox
-                    message={message}
-                    layout={historyMode ? true : undefined}
+                    message={{
+                      id: Date.now(),
+                      text: '',
+                      isUser: false,
+                      timestamp: new Date(),
+                    }}
+                    layout={false}
                   />
-                )}
-              </div>
-            ))}
-            {isGeneratingResponse && (
-              <div className="flex justify-start animate-fade-in">
-                <AiChattingBox
-                  message={{
-                    id: Date.now(),
-                    text: '',
-                    isUser: false,
-                    timestamp: new Date(),
-                  }}
-                  layout={false}
-                />
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+            {showHintBox && <PromptHintBox />}
           </div>
         )}
       </div>

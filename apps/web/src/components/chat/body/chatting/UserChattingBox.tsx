@@ -15,8 +15,18 @@ type UserChattingBoxProps = {
 const UserChattingBox = ({ message }: UserChattingBoxProps) => {
   if (!message.isUser) return null;
   
+  // 링크 클릭 방지 (상위 레벨 방어)
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'A' || target.closest('a')) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[UserChattingBox] 상위에서 링크 클릭 차단');
+    }
+  };
+  
   return (
-    <div className="max-w-[80%] group">
+    <div className="max-w-[80%] group" onClick={handleClick}>
       <div
         className="p-4 bg-primary-500 text-white rounded-2xl rounded-tr-sm shadow-lg 
                     transition-all duration-500 ease-out
@@ -51,7 +61,15 @@ const UserChattingBox = ({ message }: UserChattingBoxProps) => {
               },
               a({ children, href, ...props }) {
                 return (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-white underline hover:text-primary-100" {...props}>
+                  <a 
+                    href={href} 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('[UserChattingBox] 링크 클릭 차단:', href);
+                    }}
+                    className="text-white underline hover:text-primary-100 cursor-default" 
+                    {...props}
+                  >
                     {children}
                   </a>
                 );

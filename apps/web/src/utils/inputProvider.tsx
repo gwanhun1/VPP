@@ -46,11 +46,17 @@ const ChatInputContext = createContext<ChatInputContextType | undefined>(
 );
 
 export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputTextInternal] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [historyMode, setHistoryMode] = useState(false);
   const [focusMessageId, setFocusMessageId] = useState<string | null>(null);
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
+
+  // setInputText 래퍼 - 디버깅용
+  const setInputText = useCallback((value: string | ((prev: string) => string)) => {
+    console.log('[InputProvider] setInputText 호출됨:', typeof value === 'function' ? 'function' : value);
+    setInputTextInternal(value);
+  }, []);
 
   const currentSessionIdRef = useRef<string | null>(null);
   const difyConversationIdRef = useRef<string | null>(null);
@@ -89,7 +95,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
   // Firebase에 메시지 저장
   const saveMessage = useCallback(
-    async (text: string, isUser: boolean, isFirstMessage: boolean): Promise<string> => {
+    async (text: string, isUser: boolean, isFirstMessage: boolean, explicitTimestamp?: Date): Promise<string> => {
       if (!authUser) throw new Error('사용자 인증이 필요합니다.');
 
       const sessionId = await ensureSession();
@@ -102,9 +108,10 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         isUser ? 'user' : 'assistant',
         'web',
         'webview',
-        !isUser && lastUserMsgIdRef.current
-          ? { replyTo: lastUserMsgIdRef.current }
-          : undefined
+        {
+          ...((!isUser && lastUserMsgIdRef.current) ? { replyTo: lastUserMsgIdRef.current } : {}),
+          ...(explicitTimestamp ? { explicitTimestamp } : {}),
+        }
       );
 
       // 메시지 ID 업데이트
@@ -147,20 +154,23 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     // 현재 세션의 첫 메시지인지 확인
     const isFirstMessage = messages.length === 0;
 
+    // 타임스탬프 생성 (순서 보장을 위해)
+    const userTimestamp = new Date();
+    
     // 1. 사용자 메시지 UI에 즉시 표시
     const userMessage: Message = {
       id: Date.now(),
       text: trimmed,
       isUser: true,
-      timestamp: new Date(),
+      timestamp: userTimestamp,
     };
     setMessages((prev) => [...prev, userMessage]);
-    setInputText('');
+    setInputTextInternal('');
     setIsGeneratingResponse(true);
 
     try {
-      // 2. 사용자 메시지 Firebase 저장
-      await saveMessage(trimmed, true, isFirstMessage);
+      // 2. 사용자 메시지 Firebase 저장 (명시적 타임스탬프 사용)
+      await saveMessage(trimmed, true, isFirstMessage, userTimestamp);
 
       // 3. Dify API 호출
       const response = await callDifyAPI(
@@ -173,17 +183,20 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         difyConversationIdRef.current = response.conversationId;
       }
 
+      // AI 응답 타임스탬프 (사용자 메시지보다 최소 1ms 이후)
+      const aiTimestamp = new Date(userTimestamp.getTime() + 1);
+
       // 5. AI 응답 UI에 표시
       const aiMessage: Message = {
         id: Date.now() + 1,
         text: response.answer,
         isUser: false,
-        timestamp: new Date(),
+        timestamp: aiTimestamp,
       };
       setMessages((prev) => [...prev, aiMessage]);
 
-      // 6. AI 응답 Firebase 저장
-      await saveMessage(response.answer, false, false);
+      // 6. AI 응답 Firebase 저장 (명시적 타임스탬프 사용)
+      await saveMessage(response.answer, false, false, aiTimestamp);
     } catch (error) {
       console.error('[handleSendMessage] 오류:', error);
 
@@ -202,7 +215,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsGeneratingResponse(false);
     }
-  }, [inputText, authUser, historyMode, saveMessage, messages.length]);
+  }, [inputText, authUser, historyMode, saveMessage, messages.length, setInputTextInternal]);
 
   // 기존 세션 로드
   const loadSession = useCallback(
@@ -241,7 +254,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     setMessages([]);
     currentSessionIdRef.current = null;
     setHistoryMode(false);
-    setInputText('');
+    setInputTextInternal('');
     setFocusMessageId(null);
     difyConversationIdRef.current = null;
     lastUserMsgIdRef.current = null;

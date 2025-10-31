@@ -25,8 +25,18 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
   // assistant 역할의 메시지만 렌더링
   if (message.isUser) return null;
 
+  // 링크 클릭 방지 (상위 레벨 방어)
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'A' || target.closest('a')) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[AiChattingBox] 상위에서 링크 클릭 차단');
+    }
+  };
+
   return (
-    <div className="max-w-[80%] group">
+    <div className="max-w-[80%] group" onClick={handleClick}>
       <AiMessageHeader />
       <AiMessageSkeleton isLoading={isLoadingSkeleton}>
         <div

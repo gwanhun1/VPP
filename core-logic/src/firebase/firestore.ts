@@ -960,7 +960,11 @@ export async function sendChatMessage(
   role: 'user' | 'assistant',
   platform: 'web' | 'mobile' = 'web',
   source: 'webview' | 'native' = 'webview',
-  meta?: { replyTo?: string; replyPreview?: { role: 'user' | 'assistant'; text: string } }
+  meta?: { 
+    replyTo?: string; 
+    replyPreview?: { role: 'user' | 'assistant'; text: string };
+    explicitTimestamp?: Date;
+  }
 ): Promise<string> {
   const db = getFirebaseFirestore();
   if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
@@ -974,10 +978,16 @@ export async function sendChatMessage(
     sessionId,
     'messages'
   );
+  
+  // explicitTimestamp가 제공되면 사용, 아니면 serverTimestamp 사용
+  const timestamp = meta?.explicitTimestamp 
+    ? Timestamp.fromDate(meta.explicitTimestamp)
+    : serverTimestamp();
+  
   const messageDoc = await addDoc(messagesCol, {
     role,
     text,
-    timestamp: serverTimestamp(),
+    timestamp,
     platform,
     source,
     ...(meta?.replyTo ? { replyTo: meta.replyTo } : {}),

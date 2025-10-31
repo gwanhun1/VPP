@@ -3,24 +3,48 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    /* 모든 요소에 대해 텍스트 선택 방지 */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
   body {
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
       sans-serif;
-
-    /* 추가 */
-    overflow: hidden; /* 전체 스크롤 막기 */
-    touch-action: none; /* 전체 터치 드래그 막기 */
+    overflow: hidden;
   }
 
   #root {
     @apply max-w-[430px] mx-auto min-h-screen bg-white;
   }
 
-  textarea {
-    overflow-y: auto !important; /* 세로 스크롤 허용 */
-    touch-action: auto !important; /* 드래그 허용 */
+  /* 스크롤 가능한 영역과 입력 요소는 터치 허용 */
+  textarea,
+  input,
+  button,
+  [role="button"],
+  a,
+  .overflow-y-auto,
+  .overflow-auto {
+    touch-action: auto !important;
     -webkit-overflow-scrolling: touch;
+  }
+
+  textarea {
+    overflow-y: auto !important;
+  }
+
+  /* input과 textarea는 텍스트 선택 허용 */
+  input,
+  textarea {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
   }
 }

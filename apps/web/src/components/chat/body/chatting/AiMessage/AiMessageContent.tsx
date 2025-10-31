@@ -35,7 +35,15 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           },
           a({ children, href, ...props }) {
             return (
-              <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700 underline" {...props}>
+              <a 
+                href={href} 
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('[AiMessageContent] 링크 클릭 차단:', href);
+                }}
+                className="text-primary-600 hover:text-primary-700 underline cursor-default" 
+                {...props}
+              >
                 {children}
               </a>
             );
