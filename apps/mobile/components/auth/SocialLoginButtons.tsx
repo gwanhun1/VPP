@@ -1,14 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import {
-  getFirebaseAuth,
-  initializeFirebase,
-  signInAsGuest,
-  signInWithNaver,
-} from '@vpp/core-logic';
-import { signInWithGoogle } from '@vpp/core-logic/firebase/auth-native';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import tw from '../../utils/tailwind';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { router } from 'expo-router';
 
 type SocialLoginButtonsProps = {
   loading: null | 'google' | 'naver' | 'kakao' | 'guest';
@@ -22,35 +15,14 @@ export default function SocialLoginButtons({
   loading,
   onLogin,
 }: SocialLoginButtonsProps) {
-  const loginTestUser = async () => {
-    try {
-      initializeFirebase();
-      const auth = getFirebaseAuth();
-      if (!auth)
-        throw new Error(
-          'Firebase Auth가 초기화되지 않았습니다. setFirebaseConfig를 확인하세요.'
-        );
-
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        'test@test.com',
-        'testtest'
-      );
-      console.log('✅ 로그인 성공:', userCredential.user.email);
-    } catch (e) {
-      // 중요: 테스트 로그인 실패 시 조용히 무시하지 않도록 최소 로그 남김
-      console.warn('테스트 사용자 로그인 실패', e);
-    }
-  };
-
   return (
     <>
       {/* 로그인 버튼들 */}
       <View style={tw`gap-3 mb-4`}>
         <TouchableOpacity
           activeOpacity={0.85}
-          disabled={loading !== null}
-          onPress={() => onLogin('google', async () => signInWithGoogle())}
+          disabled={true}
+          onPress={() => undefined}
           style={[
             tw`bg-white border border-gray-300 py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -60,7 +32,7 @@ export default function SocialLoginButtons({
               shadowOffset: { width: 0, height: 2 },
               elevation: 2,
             },
-            loading === 'google' && tw`opacity-70`,
+            tw`opacity-30`,
           ]}
         >
           <View
@@ -71,17 +43,14 @@ export default function SocialLoginButtons({
           <Text
             style={tw`text-gray-800 font-semibold text-sm flex-1 text-center`}
           >
-            {loading === 'google' ? '로그인 중...' : 'Google로 계속하기'}
+            점검 중입니다 (Google)
           </Text>
-          {loading === 'google' && (
-            <ActivityIndicator size="small" color="#14287f" style={tw`ml-2`} />
-          )}
         </TouchableOpacity>
 
         <TouchableOpacity
           activeOpacity={0.85}
-          disabled={loading !== null}
-          onPress={() => onLogin('naver', async () => signInWithNaver())}
+          disabled={true}
+          onPress={() => undefined}
           style={[
             tw`bg-[#03C75A] py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -91,7 +60,7 @@ export default function SocialLoginButtons({
               shadowOffset: { width: 0, height: 2 },
               elevation: 2,
             },
-            loading === 'naver' && tw`opacity-70`,
+            tw`opacity-30`,
           ]}
         >
           <View
@@ -100,17 +69,14 @@ export default function SocialLoginButtons({
             <Text style={tw`text-[#03C75A] font-bold text-xs`}>N</Text>
           </View>
           <Text style={tw`text-white font-semibold text-sm flex-1 text-center`}>
-            {loading === 'naver' ? '로그인 중...' : '네이버로 계속하기'}
+            점검 중입니다 (네이버)
           </Text>
-          {loading === 'naver' && (
-            <ActivityIndicator size="small" color="#fff" style={tw`ml-2`} />
-          )}
         </TouchableOpacity>
 
         <TouchableOpacity
           activeOpacity={0.85}
-          disabled={loading !== null}
-          onPress={() => onLogin('kakao', async () => loginTestUser())}
+          disabled={true}
+          onPress={() => undefined}
           style={[
             tw`bg-[#FEE500] py-3.5 px-5 rounded-xl flex-row items-center justify-center`,
             {
@@ -120,7 +86,7 @@ export default function SocialLoginButtons({
               shadowOffset: { width: 0, height: 2 },
               elevation: 2,
             },
-            loading === 'kakao' && tw`opacity-70`,
+            tw`opacity-30`,
           ]}
         >
           <View
@@ -131,11 +97,8 @@ export default function SocialLoginButtons({
           <Text
             style={tw`text-[#3C1E1E] font-semibold text-sm flex-1 text-center`}
           >
-            {loading === 'kakao' ? '로그인 중...' : '카카오로 계속하기'}
+            점검 중입니다 (카카오)
           </Text>
-          {loading === 'kakao' && (
-            <ActivityIndicator size="small" color="#3C1E1E" style={tw`ml-2`} />
-          )}
         </TouchableOpacity>
       </View>
 
@@ -146,27 +109,25 @@ export default function SocialLoginButtons({
         <View style={tw`flex-1 h-px bg-gray-200`} />
       </View>
 
-      {/* 익명 로그인 */}
+      {/* 아이디/비밀번호 로그인 이동 */}
       <TouchableOpacity
-        onPress={() => onLogin('guest', async () => signInAsGuest())}
-        disabled={loading !== null}
+        onPress={() => router.push({ pathname: '/(auth)/login' })}
         style={[
-          tw`border border-dashed border-gray-300 bg-gray-50 py-3.5 px-5 rounded-xl flex-row items-center justify-center mb-8`,
-          loading === 'guest' && tw`opacity-70`,
+          tw`bg-[#14287f] py-3.5 px-5 rounded-xl flex-row items-center justify-center mb-8`,
+          {
+            shadowColor: '#000',
+            shadowOpacity: 0.08,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 3,
+          },
         ]}
+        activeOpacity={0.9}
       >
-        <Ionicons
-          name="person-outline"
-          size={18}
-          color="#6B7280"
-          style={tw`mr-2`}
-        />
-        <Text style={tw`text-gray-700 font-medium text-sm flex-1 text-center`}>
-          {loading === 'guest' ? '접속 중...' : '익명으로 둘러보기'}
+        <Ionicons name="key-outline" size={18} color="#fff" style={tw`mr-2`} />
+        <Text style={tw`text-white font-semibold text-sm flex-1 text-center`}>
+          아이디 / 비밀번호로 로그인
         </Text>
-        {loading === 'guest' && (
-          <ActivityIndicator size="small" color="#6B7280" style={tw`ml-2`} />
-        )}
       </TouchableOpacity>
     </>
   );
