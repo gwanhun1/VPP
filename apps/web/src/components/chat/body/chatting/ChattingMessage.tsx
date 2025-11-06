@@ -10,7 +10,7 @@ import {
 } from 'react';
 import RecentQuestionContainer from '../recentQuestion/Container';
 import { useChatInput } from '@/utils/inputProvider';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuthStore } from '@vpp/core-logic';
 
 const ChattingMessage = () => {
   const {
@@ -22,7 +22,7 @@ const ChattingMessage = () => {
     consumeFocusMessage,
     isGeneratingResponse,
   } = useChatInput();
-  const { authUser } = useAuth();
+  const authUser = useAuthStore((s) => s.authUser);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const touchStartYRef = useRef<number | null>(null);
@@ -46,21 +46,21 @@ const ChattingMessage = () => {
   const handleTouchStart = useCallback(
     (event: TouchEvent<HTMLDivElement>) => {
       if (refreshing || !scrollContainerRef.current) return;
-      
+
       // 버튼이나 클릭 가능한 요소에서 시작된 터치는 무시
       const target = event.target as HTMLElement;
       if (
-        target.closest('button') || 
-        target.closest('a') || 
+        target.closest('button') ||
+        target.closest('a') ||
         target.closest('[role="button"]') ||
         target.closest('input') ||
         target.closest('textarea')
       ) {
         return;
       }
-      
+
       const scrollTop = scrollContainerRef.current.scrollTop;
-      
+
       // 스크롤이 최상단에 있을 때만 pull 시작
       if (scrollTop <= 0) {
         touchStartYRef.current = event.touches[0]?.clientY ?? null;
@@ -74,31 +74,34 @@ const ChattingMessage = () => {
   const handleTouchMove = useCallback(
     (event: TouchEvent<HTMLDivElement>) => {
       const startY = touchStartYRef.current;
-      if (startY === null || !scrollContainerRef.current || refreshing || !isPulling) return;
-      
-      // 버튼이나 클릭 가능한 요소에서의 터치는 무시
+      if (
+        startY === null ||
+        !scrollContainerRef.current ||
+        refreshing ||
+        !isPulling
+      )
+        return;
+
       const target = event.target as HTMLElement;
       if (
-        target.closest('button') || 
-        target.closest('a') || 
+        target.closest('button') ||
+        target.closest('a') ||
         target.closest('[role="button"]') ||
         target.closest('input') ||
         target.closest('textarea')
       ) {
         return;
       }
-      
+
       const currentY = event.touches[0]?.clientY ?? 0;
       const diff = currentY - startY;
       const scrollTop = scrollContainerRef.current.scrollTop;
-      
-      // 스크롤이 최상단이고 아래로 당기는 경우에만
+
       if (diff > 0 && scrollTop <= 0) {
-        // 당기는 저항감 추가 (rubber band effect)
         const resistance = 2.5;
         const adjustedDistance = diff / resistance;
         setPullDistance(Math.min(adjustedDistance, 100));
-        
+
         // 기본 스크롤 방지
         event.preventDefault();
       } else {
@@ -111,17 +114,14 @@ const ChattingMessage = () => {
 
   const handleTouchEnd = useCallback(() => {
     if (pullDistance > 60 && !refreshing) {
-      // 충분히 당겼으면 새로고침 트리거
       void triggerRefresh();
     } else {
-      // 충분히 당기지 않았으면 원위치
       setPullDistance(0);
       setIsPulling(false);
     }
     touchStartYRef.current = null;
   }, [pullDistance, refreshing, triggerRefresh]);
 
-  // Pull-to-refresh 상태 초기화
   useEffect(() => {
     if (!currentSessionId) {
       setPullDistance(0);
@@ -143,51 +143,86 @@ const ChattingMessage = () => {
     }
   }, [focusMessageId, consumeFocusMessage]);
 
-  // 메시지가 없거나 AI 응답 생성 중이 아닐 때만 초기 화면 표시
   const showWelcomeScreen = messages.length === 0 && !isGeneratingResponse;
-  // 힌트 박스는 새 채팅(historyMode가 아님)이고 메시지가 2개 이하일 때만 표시
   const showHintBox = !historyMode && !currentSessionId && messages.length <= 2;
 
   return (
-    <div className="flex flex-col flex-1 relative overflow-hidden">
+    <div className="flex overflow-hidden relative flex-col flex-1">
       {showWelcomeScreen && <RecentQuestionContainer />}
 
-      {/* Pull-to-refresh 인디케이터 */}
-      {!showWelcomeScreen && currentSessionId && (pullDistance > 0 || refreshing) && (
-        <div 
-          className="flex justify-center items-center py-2 transition-all duration-200"
-          style={{
-            height: `${Math.min(pullDistance, 60)}px`,
-            opacity: refreshing ? 1 : Math.min(pullDistance / 60, 1),
-          }}
-        >
-          <div className="flex items-center gap-2 px-4 py-1 text-xs text-primary-600 bg-primary-50 rounded-full">
-            {refreshing ? (
-              <>
-                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>새로고침 중...</span>
-              </>
-            ) : pullDistance > 60 ? (
-              <>
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>놓으면 새로고침</span>
-              </>
-            ) : (
-              <>
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-                <span>아래로 당기기</span>
-              </>
-            )}
+      {!showWelcomeScreen &&
+        currentSessionId &&
+        (pullDistance > 0 || refreshing) && (
+          <div
+            className="flex justify-center items-center py-2 transition-all duration-200"
+            style={{
+              height: `${Math.min(pullDistance, 60)}px`,
+              opacity: refreshing ? 1 : Math.min(pullDistance / 60, 1),
+            }}
+          >
+            <div className="flex gap-2 items-center px-4 py-1 text-xs rounded-full text-primary-600 bg-primary-50">
+              {refreshing ? (
+                <>
+                  <svg
+                    className="w-4 h-4 animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>새로고침 중...</span>
+                </>
+              ) : pullDistance > 60 ? (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span>놓으면 새로고침</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                    />
+                  </svg>
+                  <span>아래로 당기기</span>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* 스크롤 컨테이너 */}
       <div
@@ -196,12 +231,10 @@ const ChattingMessage = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={(e) => {
-          // 최상위 레벨에서 링크 클릭 차단 (최종 방어선)
           const target = e.target as HTMLElement;
           if (target.tagName === 'A' || target.closest('a')) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('[ChattingMessage] 최상위에서 링크 클릭 차단');
           }
         }}
         className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"

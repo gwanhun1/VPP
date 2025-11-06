@@ -28,7 +28,6 @@ const UserProfile = () => {
   const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
-    // 초기 사용자 상태 설정 및 Auth 상태 구독
     setUser(getCurrentUser());
     const unsubscribe = onAuthStateChanged((authUser) => setUser(authUser));
     return unsubscribe;
@@ -38,7 +37,6 @@ const UserProfile = () => {
     setDisplayNameInput(user?.displayName ?? '');
   }, [user?.displayName]);
 
-  // 로그인되지 않은 경우 표시하지 않음
   if (!user || user.providerId === 'anonymous') {
     return null;
   }
@@ -166,12 +164,7 @@ const UserProfile = () => {
         {/* 사용자 정보 */}
         <View style={tw`flex-1`}>
           {isEditingName ? (
-            <View
-              style={[
-                tw`flex-row items-center gap-2`,
-                { height: 32 },
-              ]}
-            >
+            <View style={[tw`flex-row items-center gap-2`, { height: 32 }]}>
               <TextInput
                 value={displayNameInput}
                 onChangeText={setDisplayNameInput}
@@ -217,15 +210,16 @@ const UserProfile = () => {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setIsEditingName(true)}
-              style={[
-                tw`flex-row items-center gap-1`,
-                { minHeight: 32 },
-              ]}
+              style={[tw`flex-row items-center gap-1`, { minHeight: 32 }]}
             >
               <Text variant="h5" weight="bold" color="default">
                 {user.displayName || '사용자'}
               </Text>
-              <MaterialIcons name="edit" size={18} color={tw.color('gray-500')} />
+              <MaterialIcons
+                name="edit"
+                size={18}
+                color={tw.color('gray-500')}
+              />
             </TouchableOpacity>
           )}
           {user.email && (

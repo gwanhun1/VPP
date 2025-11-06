@@ -1,7 +1,6 @@
 import { Button } from '@vpp/shared-ui';
 import { useEffect, useState } from 'react';
-import { updateChatMessageBookmark } from '@vpp/core-logic';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { updateChatMessageBookmark, useAuthStore } from '@vpp/core-logic';
 
 type AiChattingBoxButtonGroupProps = {
   messageText: string;
@@ -18,7 +17,7 @@ const AiChattingBoxButtonGroup = ({
 }: AiChattingBoxButtonGroupProps) => {
   const [star, setStar] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const { authUser } = useAuth();
+  const authUser = useAuthStore((s) => s.authUser);
 
   // 전달된 북마크 상태로 초기값 동기화
   useEffect(() => {

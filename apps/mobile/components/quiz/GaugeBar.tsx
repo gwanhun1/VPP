@@ -13,7 +13,7 @@ const GaugeBar = () => {
     Animated.timing(animatedWidth, {
       toValue: Math.min(Math.max(progress, 0), 100),
       duration: 500, // 0.5초 애니메이션
-      useNativeDriver: false, // width 애니메이션은 native driver 사용 불가
+      useNativeDriver: false,
     }).start();
   }, [progress, animatedWidth]);
 

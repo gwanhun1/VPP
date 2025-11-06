@@ -66,7 +66,6 @@ export async function fetchRecMarketOdcloud({
     rows = data.data;
   }
 
-  // 문자열로 온 숫자 필드들을 숫자로 변환
   return rows.map((row) => {
     const converted: OdcloudRecMarketRow = { ...row };
     const numericFields = [
@@ -134,7 +133,6 @@ export async function fetchSmpMarketOdcloud({
     rows = data.data;
   }
 
-  // API 응답 필드명을 표준 필드명으로 변환
   return rows.map((row) => {
     const smpValue = row.SMP ?? row['에스엠피(SMP) 가중평균'];
     return {

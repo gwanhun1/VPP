@@ -113,43 +113,47 @@ const NativeButton = ({
   onPress,
   ...props
 }: ButtonProps) => {
-  // React Native에서는 react-native 모듈을 동적으로 import
   try {
     const { TouchableOpacity, Text } = require('react-native');
-    
+
     const buttonStyles = {
       primary: { backgroundColor: '#14287f', color: '#ffffff' },
       secondary: { backgroundColor: '#f6a20b', color: '#ffffff' },
-      outline: { backgroundColor: 'transparent', borderColor: '#14287f', borderWidth: 1, color: '#14287f' },
+      outline: {
+        backgroundColor: 'transparent',
+        borderColor: '#14287f',
+        borderWidth: 1,
+        color: '#14287f',
+      },
       ghost: { backgroundColor: 'transparent', color: '#14287f' },
-      link: { backgroundColor: 'transparent', color: '#14287f' }
+      link: { backgroundColor: 'transparent', color: '#14287f' },
     };
-    
+
     const sizeStyles = {
       xs: { paddingHorizontal: 8, paddingVertical: 4, fontSize: 12 },
       sm: { paddingHorizontal: 12, paddingVertical: 6, fontSize: 14 },
       md: { paddingHorizontal: 16, paddingVertical: 8, fontSize: 16 },
       lg: { paddingHorizontal: 20, paddingVertical: 10, fontSize: 18 },
-      xl: { paddingHorizontal: 24, paddingVertical: 12, fontSize: 20 }
+      xl: { paddingHorizontal: 24, paddingVertical: 12, fontSize: 20 },
     };
-    
+
     const buttonStyle = {
       ...buttonStyles[variant],
       ...sizeStyles[size],
       borderRadius: 6,
       alignItems: 'center',
       justifyContent: 'center',
-      opacity: disabled ? 0.5 : 1
+      opacity: disabled ? 0.5 : 1,
     };
-    
+
     const textStyle = {
       color: buttonStyles[variant].color || '#14287f',
       fontSize: sizeStyles[size].fontSize,
-      fontWeight: '600'
+      fontWeight: '600',
     };
-    
+
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={buttonStyle}
         onPress={onPress || onClick}
         disabled={disabled}
@@ -159,14 +163,10 @@ const NativeButton = ({
       </TouchableOpacity>
     );
   } catch {
-    // React Native 모듈이 없는 경우 fallback
     return null;
   }
 };
 
-/**
- * 플랫폼에 따라 적절한 버튼 컴포넌트를 내보냄
- */
 const Button = isWeb ? WebButton : NativeButton;
 
 export default Button;

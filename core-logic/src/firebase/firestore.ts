@@ -53,7 +53,6 @@ export async function fetchUserBookmarkedMessages(
       sessionId,
       'messages'
     );
-    // orderBy를 제거하여 복합 인덱스 요구를 피함. 전체 결과는 아래에서 클라이언트 정렬.
     const q = query(
       messagesCol,
       where('isBookmarked', '==', true),
@@ -89,7 +88,9 @@ export async function fetchUserBookmarkedMessages(
 }
 
 // 모든 세션을 대상으로, assistant 답변 중 북마크된 메시지의 총 갯수를 카운트
-export async function countUserBookmarkedMessages(uid: string): Promise<number> {
+export async function countUserBookmarkedMessages(
+  uid: string
+): Promise<number> {
   const db = getFirebaseFirestore();
   if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
 
@@ -960,8 +961,8 @@ export async function sendChatMessage(
   role: 'user' | 'assistant',
   platform: 'web' | 'mobile' = 'web',
   source: 'webview' | 'native' = 'webview',
-  meta?: { 
-    replyTo?: string; 
+  meta?: {
+    replyTo?: string;
     replyPreview?: { role: 'user' | 'assistant'; text: string };
     explicitTimestamp?: Date;
   }
@@ -978,12 +979,12 @@ export async function sendChatMessage(
     sessionId,
     'messages'
   );
-  
+
   // explicitTimestamp가 제공되면 사용, 아니면 serverTimestamp 사용
-  const timestamp = meta?.explicitTimestamp 
+  const timestamp = meta?.explicitTimestamp
     ? Timestamp.fromDate(meta.explicitTimestamp)
     : serverTimestamp();
-  
+
   const messageDoc = await addDoc(messagesCol, {
     role,
     text,
@@ -1095,7 +1096,6 @@ export async function deleteChatSession(
   const db = getFirebaseFirestore();
   if (!db) throw new Error('Firestore가 초기화되지 않았습니다.');
 
-  // 먼저 모든 메시지 삭제
   const messagesCol = collection(
     db,
     'users',
@@ -1111,7 +1111,6 @@ export async function deleteChatSession(
   );
   await Promise.all(deletePromises);
 
-  // 세션 삭제
   const sessionDoc = doc(db, 'users', uid, 'chats', sessionId);
   await deleteDoc(sessionDoc);
 }

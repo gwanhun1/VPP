@@ -81,12 +81,10 @@ export const useSpeechToText = (onTextReceived?: (text: string) => void) => {
 
     recognition.onstart = () => {
       setIsListening(true);
-      console.log('🎤 음성 인식 시작');
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
-      console.log('📝 인식된 텍스트:', transcript);
       setText(transcript);
 
       // 콜백 함수가 제공되었다면 호출
@@ -106,7 +104,6 @@ export const useSpeechToText = (onTextReceived?: (text: string) => void) => {
     };
 
     recognition.onend = () => {
-      console.log('🛑 음성 인식 종료');
       setIsListening(false);
     };
 

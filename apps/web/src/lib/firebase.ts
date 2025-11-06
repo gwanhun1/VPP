@@ -55,8 +55,6 @@ export function initializeFirebaseFromMobile(config: FirebaseConfig) {
         console.debug('Firebase 에뮬레이터 연결 실패:', error);
       }
     }
-
-    console.log('[Firebase] 웹에서 Firebase 초기화 완료');
   } catch (error) {
     console.error('[Firebase] 초기화 실패:', error);
     throw error;
@@ -76,7 +74,9 @@ export function initializeFirebaseFromEnv() {
   };
 
   if (!config.apiKey || !config.projectId) {
-    console.warn('[Firebase] 환경변수 설정이 불완전하여 Firebase 초기화를 건너뜁니다.');
+    console.warn(
+      '[Firebase] 환경변수 설정이 불완전하여 Firebase 초기화를 건너뜁니다.'
+    );
     return;
   }
 

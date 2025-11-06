@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Link, router } from 'expo-router';
 import tw from '../../utils/tailwind';
-import { getFirebaseAuth, initializeFirebase } from '@vpp/core-logic';
+import { getFirebaseAuth } from '@vpp/core-logic';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginScreen() {
@@ -17,7 +17,6 @@ export default function LoginScreen() {
     }
     try {
       setSubmitting(true);
-      initializeFirebase();
       const auth = getFirebaseAuth();
       if (!auth) throw new Error('Firebase Auth 초기화 실패');
       await signInWithEmailAndPassword(auth, email.trim(), password);

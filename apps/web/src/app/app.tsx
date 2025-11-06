@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react';
 import ChattingPage from '../components/chat/ChattingPage';
 import { WebLoginModal } from '../components/auth/WebLoginModal';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '@vpp/core-logic';
 import type { AuthUser } from '@vpp/core-logic';
+import { useWebViewAuth } from '../hooks/useWebViewAuth';
+import { useWebAuth } from '../hooks/useWebAuth';
 
 export function App() {
-  const { authUser, isWebView, firebaseReady, isLoading, login } = useAuth();
+  useWebViewAuth();
+  useWebAuth();
+  
+  const authUser = useAuthStore((s) => s.authUser);
+  const isWebView = useAuthStore((s) => s.isWebView);
+  const firebaseReady = useAuthStore((s) => s.firebaseReady);
+  const isLoading = useAuthStore((s) => s.isLoading);
+  const { setAuthUser } = useAuthStore();
   const [showLoginModal, setShowLoginModal] = useState(false);
-
-  // 디버깅용 로그
-  console.log('App 상태:', { authUser: !!authUser, isWebView, firebaseReady, isLoading });
 
   useEffect(() => {
     // 웹뷰가 아닌 환경에서만 로그인 모달 표시 로직 실행
@@ -21,9 +27,7 @@ export function App() {
   }, [authUser, isWebView, firebaseReady, isLoading]);
 
   const handleLoginSuccess = (user: AuthUser) => {
-    if (login) {
-      login(user);
-    }
+    setAuthUser(user);
     setShowLoginModal(false);
   };
 

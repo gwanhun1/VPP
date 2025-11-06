@@ -4,15 +4,14 @@ import { TouchableOpacity, View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
-type RecentCardProps = { 
+type RecentCardProps = {
   text: string;
   time?: string;
 };
 
 const RecentCard = ({ text, time }: RecentCardProps) => {
   const subColor = tw.color('secondary');
-  
-  // 시간 포맷팅 함수
+
   const formatTime = (timeString?: string) => {
     if (!timeString) return '';
     try {
@@ -21,7 +20,7 @@ const RecentCard = ({ text, time }: RecentCardProps) => {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       });
     } catch {
       return '';

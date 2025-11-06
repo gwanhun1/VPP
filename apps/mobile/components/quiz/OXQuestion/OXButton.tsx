@@ -18,8 +18,8 @@ const OXButton = ({ option, questionId, number }: OXButtonProps) => {
 
   const getCardVariant = () => {
     if (!isSelected) return 'default';
-    if (answerState === 'correct') return 'primary'; // 정답은 primary
-    if (answerState === 'incorrect') return 'error'; // 오답은 error
+    if (answerState === 'correct') return 'primary';
+    if (answerState === 'incorrect') return 'error';
     return 'primary';
   };
 

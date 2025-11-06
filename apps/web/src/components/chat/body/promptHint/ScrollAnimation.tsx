@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 type ScrollIndicatorProps = {
   visible?: boolean;
 };
 
-const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
-  visible = true,
-}) => {
+const ScrollIndicator = ({ visible = true }: ScrollIndicatorProps) => {
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
@@ -40,7 +38,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
       `}</style>
 
       <div
-        className="absolute w-5 h-8 flex justify-center items-center opacity-60"
+        className="flex absolute justify-center items-center w-5 h-8 opacity-60"
         style={animationStyle}
       >
         <div className="flex flex-col items-center">

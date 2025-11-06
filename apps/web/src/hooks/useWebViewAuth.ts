@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { AuthUser } from '@vpp/core-logic';
 import {
   setFirebaseConfig,
@@ -6,6 +6,7 @@ import {
   updateUserDevice,
   addRecentActivity,
   getFirebaseAuth,
+  useAuthStore,
 } from '@vpp/core-logic';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
@@ -50,11 +51,19 @@ declare global {
  * 모바일 앱에서 postMessage로 전송한 AUTH 메시지를 수신하여 상태를 업데이트
  */
 export function useWebViewAuth() {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [isWebView, setIsWebView] = useState(false);
-  const [firebaseReady, setFirebaseReady] = useState(false);
-  const [openSessionId, setOpenSessionId] = useState<string | null>(null);
-  const [openMessageId, setOpenMessageId] = useState<string | null>(null);
+  const {
+    setAuthUser,
+    setIsWebView,
+    setFirebaseReady,
+    setOpenSessionId,
+    setOpenMessageId,
+    clearOpenSessionId,
+  } = useAuthStore();
+  const authUser = useAuthStore((s) => s.authUser);
+  const isWebView = useAuthStore((s) => s.isWebView);
+  const firebaseReady = useAuthStore((s) => s.firebaseReady);
+  const openSessionId = useAuthStore((s) => s.openSessionId);
+  const openMessageId = useAuthStore((s) => s.openMessageId);
   const firebaseReadyRef = useRef(false);
 
   useEffect(() => {
@@ -197,7 +206,19 @@ export function useWebViewAuth() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [setAuthUser, setIsWebView, setFirebaseReady, setOpenSessionId, setOpenMessageId]);
+
+  const requestAuth = () => {
+    if (isWebView && window.ReactNativeWebView) {
+      try {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: 'REQUEST_AUTH' })
+        );
+      } catch {
+        // no-op
+      }
+    }
+  };
 
   return {
     authUser,
@@ -205,21 +226,7 @@ export function useWebViewAuth() {
     firebaseReady,
     openSessionId,
     openMessageId,
-    clearOpenSessionId: () => {
-      setOpenSessionId(null);
-      setOpenMessageId(null);
-    },
-    // 웹뷰에서 모바일 앱에 인증 정보 재요청
-    requestAuth: () => {
-      if (isWebView && window.ReactNativeWebView) {
-        try {
-          window.ReactNativeWebView.postMessage(
-            JSON.stringify({ type: 'REQUEST_AUTH' })
-          );
-        } catch {
-          // no-op
-        }
-      }
-    },
+    clearOpenSessionId,
+    requestAuth,
   };
 }

@@ -3,19 +3,10 @@ import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
 import { View, SafeAreaView, Platform, StatusBar } from 'react-native';
 
-/**
- * 탭 레이아웃 컴포넌트
- * - VPP 앱의 메인 네비게이션
- * - AI 채팅, 시장 동향, 용어 퀴즈, 마이페이지, 설정 탭으로 구성
- * - VPP 디자인 시스템 색상 적용
- */
 export default function TabLayout() {
-  // StatusBar 색상 설정을 컴포넌트 마운트 시 적용
   useEffect(() => {
-    // 상태바 스타일을 설정 (밝은 배경에는 어두운 콘텐츠, 어두운 배경에는 밝은 콘텐츠)
     StatusBar.setBarStyle('light-content');
 
-    // Android에서는 배경색도 설정
     if (Platform.OS === 'android') {
       StatusBar.setBackgroundColor('#14287f');
       StatusBar.setTranslucent(true);
@@ -24,11 +15,10 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* ✅ iOS의 경우 SafeAreaView로 상단 영역 색상 처리 */}
       <SafeAreaView
         style={{
           backgroundColor: '#14287f',
-          flex: 0, // iOS에서만 상단 Safe Area 처리
+          flex: 0,
         }}
       />
 
@@ -37,7 +27,7 @@ export default function TabLayout() {
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarActiveTintColor: '#14287f', // VPP 메인 컬러
+            tabBarActiveTintColor: '#14287f',
             tabBarInactiveTintColor: '#666666',
             tabBarStyle: {
               backgroundColor: '#ffffff',

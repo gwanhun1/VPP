@@ -29,7 +29,6 @@ const ChattingLogCard = ({ text, time, onPress }: ChattingLogCardProps) => {
     if (diffHour < 24) return `${diffHour}시간 전`;
     if (diffDay < 7) return `${diffDay}일 전`;
 
-    // 일주일 이상이면 날짜로 표현
     return inputDate.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'short',

@@ -1,4 +1,3 @@
-// 공유 타입 정의
 export type AuthProvider =
   | 'anonymous'
   | 'google'

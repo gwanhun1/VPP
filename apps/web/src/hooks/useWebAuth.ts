@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { AuthUser } from '@vpp/core-logic';
 import {
@@ -7,6 +7,7 @@ import {
   getFirebaseAuth,
   updateUserDevice,
   addRecentActivity,
+  useAuthStore,
 } from '@vpp/core-logic';
 
 // 개발 환경에서 사용할 Firebase 설정
@@ -19,17 +20,15 @@ const DEV_FIREBASE_CONFIG = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-/**
- * 웹 브라우저 환경에서의 Firebase 인증을 처리하는 훅
- * 개발 환경에서만 동작하며, Firebase 설정을 환경변수에서 가져와 초기화
- */
 export function useWebAuth() {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [firebaseReady, setFirebaseReady] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { setAuthUser, setFirebaseReady, setIsLoading, setIsWebView } = useAuthStore();
+  const authUser = useAuthStore((s) => s.authUser);
+  const firebaseReady = useAuthStore((s) => s.firebaseReady);
+  const isLoading = useAuthStore((s) => s.isLoading);
 
   useEffect(() => {
-    // 개발 환경에서만 Firebase 초기화
+    setIsWebView(false);
+    
     if (import.meta.env.DEV) {
       try {
         // Firebase 설정
@@ -47,13 +46,23 @@ export function useWebAuth() {
 
           const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
+              // Firebase provider 값을 도메인 타입(AuthProvider)으로 매핑
+              let mappedProvider: AuthUser['providerId'];
+              if (user.isAnonymous) {
+                mappedProvider = 'anonymous';
+              } else {
+                const rawProvider = user.providerData[0]?.providerId;
+                if (rawProvider === 'google.com') mappedProvider = 'google';
+                else if (rawProvider === 'password') mappedProvider = 'password';
+                else mappedProvider = undefined;
+              }
+
               const authUser: AuthUser = {
                 uid: user.uid,
                 email: user.email,
                 displayName: user.displayName,
                 photoURL: user.photoURL,
-                providerId: user.providerData[0]?.providerId || 'password',
-                emailVerified: user.emailVerified,
+                providerId: mappedProvider,
               };
 
               setAuthUser(authUser);
@@ -94,7 +103,11 @@ export function useWebAuth() {
       // 프로덕션 환경에서는 웹 로그인 비활성화
       setIsLoading(false);
     }
-  }, []);
+    
+    return () => {
+      // Cleanup
+    };
+  }, [setAuthUser, setFirebaseReady, setIsLoading, setIsWebView]);
 
   const login = (user: AuthUser) => {
     setAuthUser(user);

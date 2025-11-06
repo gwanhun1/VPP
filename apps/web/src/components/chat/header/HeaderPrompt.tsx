@@ -2,8 +2,7 @@ import { Button, Text } from '@vpp/shared-ui';
 import { useChatInput } from '@/utils/inputProvider';
 import { useRef, useState, useEffect } from 'react';
 import HeaderMoreTooltip from './HeaderMoreTooltip';
-import { getChatSession } from '@vpp/core-logic';
-import { useAuth } from '../../../contexts/AuthContext';
+import { getChatSession, useAuthStore } from '@vpp/core-logic';
 
 const ChattingHeaderPrompt = () => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
@@ -11,7 +10,7 @@ const ChattingHeaderPrompt = () => {
   const moreAnchorRef = useRef<HTMLDivElement>(null);
 
   const { messages, startNewChat, currentSessionId } = useChatInput();
-  const { authUser } = useAuth();
+  const authUser = useAuthStore((s) => s.authUser);
 
   // Firebase에서 실제 세션 제목 가져오기
   useEffect(() => {

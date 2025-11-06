@@ -1,19 +1,17 @@
 import { createStore } from 'zustand/vanilla';
 import type { AuthUser } from '../firebase/types';
 
-// 공용 메시지 타입 (웹/모바일 공통)
-export type ChatMessage = {
+export type AppChatMessage = {
   id: number;
   text: string;
   isUser: boolean;
-  // Date 직렬화 안전성을 위해 string으로 저장 (플랫폼 간 전송 고려)
   timestamp: string;
 };
 
 export type AppState = {
   authUser: AuthUser | null;
   inputText: string;
-  messages: ChatMessage[];
+  messages: AppChatMessage[];
 };
 
 export type AppActions = {
@@ -52,7 +50,6 @@ export const appStore = createStore<AppStore>()((set) => ({
   reset: () => set({ ...initialState }),
 }));
 
-// 선택자 유틸 (선택적 사용)
 export const selectors = {
   authUser: (s: AppStore) => s.authUser,
   inputText: (s: AppStore) => s.inputText,

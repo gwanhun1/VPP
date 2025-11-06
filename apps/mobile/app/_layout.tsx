@@ -3,16 +3,10 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from '@react-navigation/native';
-import {
-  onAuthStateChanged,
-  setFirebaseConfig,
-  initializeFirebase,
-  type AuthUser,
-} from '@vpp/core-logic';
+import { setFirebaseConfig, initializeFirebase } from '@vpp/core-logic';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
-import { useEffect } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -59,15 +53,6 @@ WebBrowser.maybeCompleteAuthSession();
 })();
 
 export default function RootLayout() {
-  useEffect(() => {
-    const off = onAuthStateChanged((user: AuthUser | null) => {
-      if (user) {
-        // console.log('[RootLayout] Auth user detected:', user.email);
-      }
-    });
-    return off;
-  }, []);
-
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),

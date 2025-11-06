@@ -75,7 +75,6 @@ const MyPageStatus = () => {
     };
   }, []);
 
-  // 익명 사용자의 경우 기본 통계 표시
   if (!user || user.providerId === 'anonymous') {
     return (
       <View style={tw`flex-row items-center gap-2`}>

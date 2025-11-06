@@ -21,7 +21,7 @@ const getContainerStyle = (
   disabled: boolean,
   fullWidth?: boolean
 ): ViewStyle => {
-  const base = tw`h-12 px-4 flex-row items-center justify-center`; // 고정 높이로 터치 타겟 확보
+  const base = tw`h-12 px-4 flex-row items-center justify-center`;
 
   const roundedStyle =
     rounded === 'full'

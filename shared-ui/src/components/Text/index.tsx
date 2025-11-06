@@ -1,7 +1,6 @@
 import React from 'react';
 import { isWeb, cn } from '../../utils/platform';
 
-// 웹 환경에서 사용할 텍스트 컴포넌트
 const WebText = ({
   variant = 'body',
   color = 'default',
@@ -80,7 +79,6 @@ const WebText = ({
     className
   );
 
-  // 헤더 변형인 경우 해당 HTML 태그를 사용
   if (variant === 'h1')
     return (
       <h1 className={classes} {...props}>
@@ -118,7 +116,6 @@ const WebText = ({
       </h6>
     );
 
-  // 나머지 경우에는 p 태그 사용
   return (
     <p className={classes} {...props}>
       {children}
@@ -126,7 +123,6 @@ const WebText = ({
   );
 };
 
-// 네이티브 환경에서 사용할 텍스트 컴포넌트
 const NativeText = ({
   variant = 'body',
   color = 'default',

@@ -1,6 +1,5 @@
 import { isWeb, cn } from '../../utils/platform';
 
-// 웹 환경에서 사용할 입력 컴포넌트
 const WebInput = ({
   variant = 'default',
   size = 'md',
@@ -78,7 +77,6 @@ const WebInput = ({
   );
 };
 
-// 네이티브 환경에서 사용할 입력 컴포넌트
 const NativeInput = ({
   variant = 'default',
   size = 'md',
@@ -93,77 +91,75 @@ const NativeInput = ({
 }: InputProps) => {
   try {
     const { View, TextInput, Text } = require('react-native');
-    
+
     const sizeStyles = {
       xs: { fontSize: 12, paddingVertical: 4, paddingHorizontal: 8 },
       sm: { fontSize: 14, paddingVertical: 6, paddingHorizontal: 12 },
       md: { fontSize: 16, paddingVertical: 8, paddingHorizontal: 16 },
-      lg: { fontSize: 18, paddingVertical: 10, paddingHorizontal: 20 }
+      lg: { fontSize: 18, paddingVertical: 10, paddingHorizontal: 20 },
     };
-    
+
     const variantStyles = {
       default: {
         borderWidth: 1,
         borderColor: '#cbd5e1',
         backgroundColor: '#ffffff',
-        borderRadius: 6
+        borderRadius: 6,
       },
       filled: {
         borderWidth: 1,
         borderColor: 'transparent',
         backgroundColor: '#f1f5f9',
-        borderRadius: 6
+        borderRadius: 6,
       },
       flushed: {
         borderWidth: 0,
         borderBottomWidth: 1,
         borderBottomColor: '#cbd5e1',
         backgroundColor: 'transparent',
-        borderRadius: 0
-      }
+        borderRadius: 0,
+      },
     };
-    
-    let inputStyle: any = {
+
+    let inputStyle = {
       ...variantStyles[variant],
       ...sizeStyles[size],
-      color: '#1e293b'
+      color: '#1e293b',
     };
-    
+
     if (error) {
-      inputStyle = {
-        ...inputStyle,
-        borderColor: '#ef4444'
-      };
+      inputStyle = { ...inputStyle, borderColor: '#ef4444' };
     } else if (success) {
-      inputStyle = {
-        ...inputStyle,
-        borderColor: '#10b981'
-      };
+      inputStyle = { ...inputStyle, borderColor: '#10b981' };
     }
-    
+
+    const containerStyle = {
+      width: fullWidth ? '100%' : undefined,
+      ...(disabled ? { opacity: 0.6 } : {}),
+    };
+
     if (disabled) {
       inputStyle = {
         ...inputStyle,
-        opacity: 0.6,
-        backgroundColor: '#f8fafc'
+        backgroundColor: '#f8fafc',
       };
     }
-    
+
     const labelStyle = {
       fontSize: 14,
       fontWeight: '500',
       color: '#374151',
-      marginBottom: 4
+      marginBottom: 4,
     };
-    
+
     const helperTextStyle = {
       fontSize: 12,
       color: error ? '#ef4444' : success ? '#10b981' : '#6b7280',
-      marginTop: 4
+      marginTop: 4,
     };
-    
+
     return (
-      <View style={{ width: fullWidth ? '100%' : undefined }}>
+      <View style={containerStyle}>
         {label && <Text style={labelStyle}>{label}</Text>}
         <TextInput
           style={inputStyle}

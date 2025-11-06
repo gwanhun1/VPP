@@ -18,7 +18,6 @@ const QuizContainer = () => {
   const { setQuestions, currentQuestion, getAnswerState, checkAnswer, step } =
     useQuiz();
 
-  // 전환 애니메이션 상태
   const fade = useRef(new Animated.Value(1)).current;
   const translate = useRef(new Animated.Value(0)).current;
   const prevStepRef = useRef(step);

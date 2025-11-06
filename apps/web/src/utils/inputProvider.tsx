@@ -13,8 +13,8 @@ import {
   sendChatMessage,
   updateChatSession,
   addRecentActivity,
+  useAuthStore,
 } from '@vpp/core-logic';
-import { useAuth } from '../contexts/AuthContext';
 import { callDifyAPI } from './difyApi';
 
 export type Message = {
@@ -53,22 +53,22 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
 
   // setInputText 래퍼 - 디버깅용
-  const setInputText = useCallback((value: string | ((prev: string) => string)) => {
-    console.log('[InputProvider] setInputText 호출됨:', typeof value === 'function' ? 'function' : value);
-    setInputTextInternal(value);
-  }, []);
+  const setInputText = useCallback(
+    (value: string | ((prev: string) => string)) => {
+      setInputTextInternal(value);
+    },
+    []
+  );
 
   const currentSessionIdRef = useRef<string | null>(null);
   const difyConversationIdRef = useRef<string | null>(null);
   const lastUserMsgIdRef = useRef<string | null>(null);
 
-  const {
-    authUser,
-    firebaseReady,
-    openSessionId,
-    openMessageId,
-    clearOpenSessionId,
-  } = useAuth();
+  const authUser = useAuthStore((s) => s.authUser);
+  const firebaseReady = useAuthStore((s) => s.firebaseReady);
+  const openSessionId = useAuthStore((s) => s.openSessionId);
+  const openMessageId = useAuthStore((s) => s.openMessageId);
+  const clearOpenSessionId = useAuthStore((s) => s.clearOpenSessionId);
 
   // 세션 생성 또는 기존 세션 반환
   const ensureSession = useCallback(async (): Promise<string> => {
@@ -76,9 +76,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('사용자 인증이 필요합니다.');
     }
 
-    console.log('[ensureSession] currentSessionId:', currentSessionIdRef.current);
     if (currentSessionIdRef.current) {
-      console.log('[ensureSession] 기존 세션 사용:', currentSessionIdRef.current);
       return currentSessionIdRef.current;
     }
 
@@ -88,18 +86,21 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       'web',
       'webview'
     );
-    console.log('[ensureSession] 새 세션 생성:', sessionId);
     currentSessionIdRef.current = sessionId;
     return sessionId;
   }, [authUser, firebaseReady]);
 
   // Firebase에 메시지 저장
   const saveMessage = useCallback(
-    async (text: string, isUser: boolean, isFirstMessage: boolean, explicitTimestamp?: Date): Promise<string> => {
+    async (
+      text: string,
+      isUser: boolean,
+      isFirstMessage: boolean,
+      explicitTimestamp?: Date
+    ): Promise<string> => {
       if (!authUser) throw new Error('사용자 인증이 필요합니다.');
 
       const sessionId = await ensureSession();
-      console.log('[saveMessage] 사용할 세션 ID:', sessionId, '| role:', isUser ? 'user' : 'assistant');
 
       const messageId = await sendChatMessage(
         authUser.uid,
@@ -109,7 +110,9 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         'web',
         'webview',
         {
-          ...((!isUser && lastUserMsgIdRef.current) ? { replyTo: lastUserMsgIdRef.current } : {}),
+          ...(!isUser && lastUserMsgIdRef.current
+            ? { replyTo: lastUserMsgIdRef.current }
+            : {}),
           ...(explicitTimestamp ? { explicitTimestamp } : {}),
         }
       );
@@ -156,7 +159,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
     // 타임스탬프 생성 (순서 보장을 위해)
     const userTimestamp = new Date();
-    
+
     // 1. 사용자 메시지 UI에 즉시 표시
     const userMessage: Message = {
       id: Date.now(),
@@ -215,7 +218,14 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsGeneratingResponse(false);
     }
-  }, [inputText, authUser, historyMode, saveMessage, messages.length, setInputTextInternal]);
+  }, [
+    inputText,
+    authUser,
+    historyMode,
+    saveMessage,
+    messages.length,
+    setInputTextInternal,
+  ]);
 
   // 기존 세션 로드
   const loadSession = useCallback(

@@ -70,7 +70,7 @@ const TrendCard = ({ trend }: TrendCardProps) => {
               </Text>
             </View>
             <View style={tw`flex-row items-center gap-2`}>
-              <AntDesign name="clockcircleo" size={14} color={primaryColor} />
+              <AntDesign name="clockcircle" size={14} color={primaryColor} />
               <Text variant="body2" color="primary">
                 {format(trend.date, 'HH:mm')}
               </Text>

@@ -116,3 +116,4 @@ yarn-error.log
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
 .vercel
+.editorconfig

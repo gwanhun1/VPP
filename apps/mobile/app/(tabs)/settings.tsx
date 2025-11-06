@@ -16,7 +16,7 @@ export default function SettingsScreen() {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      // 중요: 설정 데이터 새로고침 로직과 연동 필요
+      // 설정 데이터 새로고침 로직과 연동 필요
     } finally {
       setRefreshing(false);
     }

@@ -1,4 +1,3 @@
-// Dify API 호출 함수
 const DIFY_API_KEY = 'app-jSwMKNtI1NmPU9EujLxrSdYy';
 const DIFY_API_URL = 'https://api.dify.ai/v1/chat-messages';
 
@@ -13,13 +12,6 @@ export const callDifyAPI = async (
   conversationId?: string
 ): Promise<{ answer: string; conversationId: string }> => {
   try {
-    console.log(
-      '[Dify API] 요청 전송:',
-      message,
-      'conversationId:',
-      conversationId
-    );
-
     const response = await fetch(DIFY_API_URL, {
       method: 'POST',
       headers: {
@@ -44,7 +36,6 @@ export const callDifyAPI = async (
       try {
         const errorData = JSON.parse(errorText);
         if (errorData.message) {
-          // Quota 에러 등 사용자 친화적 메시지 추출
           if (
             errorData.message.includes('quota') ||
             errorData.message.includes('RESOURCE_EXHAUSTED')
@@ -63,7 +54,6 @@ export const callDifyAPI = async (
     }
 
     const data: DifyResponse = await response.json();
-    console.log('[Dify API] 응답 수신:', data);
 
     return {
       answer: data.answer || '응답이 없습니다.',

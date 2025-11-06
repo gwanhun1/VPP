@@ -1,6 +1,6 @@
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
-import { fetchRecMarketOdcloud, fetchSmpMarketOdcloud } from '@vpp/core-logic';
+import { fetchRecMarketOdcloud, fetchSmpMarketOdcloud, toNumber } from '@vpp/core-logic';
 
 import tw from '../../utils/tailwind';
 import useResponsive from '../../utils/useResponsive';
@@ -10,13 +10,6 @@ import TrendFilter from './liveTrends/TrendFilter';
 import TrendsStatus from './status/TrendsStatus';
 
 type MarketSnapshot = { value: number | null; changeRate: number | null };
-
-function toNumberOrNull(value?: string | number | null): number | null {
-  if (value === undefined || value === null) return null;
-  if (typeof value === 'number') return Number.isNaN(value) ? null : value;
-  const parsed = Number.parseFloat(value);
-  return Number.isNaN(parsed) ? null : parsed;
-}
 
 function calculateChangeRate(
   current: number | null,
@@ -49,19 +42,21 @@ const Trends = () => {
         fetchRecMarketOdcloud({ perPage: 2 }),
       ]);
 
-      const latestSmp = toNumberOrNull(smpRows.at(0)?.SMP ?? null);
-      const prevSmp = toNumberOrNull(smpRows.at(1)?.SMP ?? null);
-      const latestRec = toNumberOrNull(
-        (recRows.at(0)?.['제주 평균가(원)'] as unknown as
-          | string
-          | number
-          | null) ?? null
+      const latestSmp = toNumber(smpRows[0]?.SMP ?? null);
+      const prevSmp = toNumber(smpRows[1]?.SMP ?? null);
+      
+      const latestRecValue = recRows[0]?.['제주 평균가(원)'];
+      const latestRec = toNumber(
+        typeof latestRecValue === 'string' || typeof latestRecValue === 'number'
+          ? latestRecValue
+          : null
       );
-      const prevRec = toNumberOrNull(
-        (recRows.at(1)?.['제주 평균가(원)'] as unknown as
-          | string
-          | number
-          | null) ?? null
+      
+      const prevRecValue = recRows[1]?.['제주 평균가(원)'];
+      const prevRec = toNumber(
+        typeof prevRecValue === 'string' || typeof prevRecValue === 'number'
+          ? prevRecValue
+          : null
       );
 
       setSmp({

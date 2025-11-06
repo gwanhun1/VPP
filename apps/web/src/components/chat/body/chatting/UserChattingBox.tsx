@@ -14,17 +14,16 @@ type UserChattingBoxProps = {
 
 const UserChattingBox = ({ message }: UserChattingBoxProps) => {
   if (!message.isUser) return null;
-  
+
   // 링크 클릭 방지 (상위 레벨 방어)
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     if (target.tagName === 'A' || target.closest('a')) {
       e.preventDefault();
       e.stopPropagation();
-      console.log('[UserChattingBox] 상위에서 링크 클릭 차단');
     }
   };
-  
+
   return (
     <div className="max-w-[80%] group" onClick={handleClick}>
       <div
@@ -35,7 +34,7 @@ const UserChattingBox = ({ message }: UserChattingBoxProps) => {
                     hover:transform hover:scale-[1.02]
                     cursor-pointer"
       >
-        <div className="prose prose-sm max-w-none prose-invert">
+        <div className="max-w-none prose prose-sm prose-invert">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -43,10 +42,10 @@ const UserChattingBox = ({ message }: UserChattingBoxProps) => {
                 const { children, className, node, ...rest } = props;
                 const match = /language-(\w+)/.exec(className || '');
                 const isInline = !match;
-                
+
                 return !isInline ? (
                   <SyntaxHighlighter
-                    style={vscDarkPlus as any}
+                    style={vscDarkPlus}
                     language={match[1]}
                     PreTag="div"
                     className="rounded-md my-1.5 text-xs"
@@ -54,20 +53,22 @@ const UserChattingBox = ({ message }: UserChattingBoxProps) => {
                     {String(children).replace(/\n$/, '')}
                   </SyntaxHighlighter>
                 ) : (
-                  <code className="bg-primary-600 text-white px-1 py-0.5 rounded text-xs font-mono" {...rest}>
+                  <code
+                    className="bg-primary-600 text-white px-1 py-0.5 rounded text-xs font-mono"
+                    {...rest}
+                  >
                     {children}
                   </code>
                 );
               },
               a({ children, href, ...props }) {
                 return (
-                  <a 
-                    href={href} 
+                  <a
+                    href={href}
                     onClick={(e) => {
                       e.preventDefault();
-                      console.log('[UserChattingBox] 링크 클릭 차단:', href);
                     }}
-                    className="text-white underline hover:text-primary-100 cursor-default" 
+                    className="text-white underline cursor-default hover:text-primary-100"
                     {...props}
                   >
                     {children}
@@ -75,23 +76,61 @@ const UserChattingBox = ({ message }: UserChattingBoxProps) => {
                 );
               },
               h1({ children, ...props }) {
-                return <h1 className="text-base font-bold text-white mt-2 mb-1" {...props}>{children}</h1>;
+                return (
+                  <h1
+                    className="mt-2 mb-1 text-base font-bold text-white"
+                    {...props}
+                  >
+                    {children}
+                  </h1>
+                );
               },
               h2({ children, ...props }) {
-                return <h2 className="text-sm font-semibold text-white mt-2 mb-1" {...props}>{children}</h2>;
+                return (
+                  <h2
+                    className="mt-2 mb-1 text-sm font-semibold text-white"
+                    {...props}
+                  >
+                    {children}
+                  </h2>
+                );
               },
               h3({ children, ...props }) {
-                return <h3 className="text-sm font-semibold text-white mt-1.5 mb-0.5" {...props}>{children}</h3>;
+                return (
+                  <h3
+                    className="text-sm font-semibold text-white mt-1.5 mb-0.5"
+                    {...props}
+                  >
+                    {children}
+                  </h3>
+                );
               },
               ul({ children, ...props }) {
-                return <ul className="list-disc list-inside my-1 space-y-0.5 text-sm" {...props}>{children}</ul>;
+                return (
+                  <ul
+                    className="list-disc list-inside my-1 space-y-0.5 text-sm"
+                    {...props}
+                  >
+                    {children}
+                  </ul>
+                );
               },
               ol({ children, ...props }) {
-                return <ol className="list-decimal list-inside my-1 space-y-0.5 text-sm" {...props}>{children}</ol>;
+                return (
+                  <ol
+                    className="list-decimal list-inside my-1 space-y-0.5 text-sm"
+                    {...props}
+                  >
+                    {children}
+                  </ol>
+                );
               },
               blockquote({ children, ...props }) {
                 return (
-                  <blockquote className="border-l-2 border-white/50 pl-2 py-1 my-1 italic text-white/90 text-sm" {...props}>
+                  <blockquote
+                    className="py-1 pl-2 my-1 text-sm italic border-l-2 border-white/50 text-white/90"
+                    {...props}
+                  >
                     {children}
                   </blockquote>
                 );
@@ -99,21 +138,48 @@ const UserChattingBox = ({ message }: UserChattingBoxProps) => {
               table({ children, ...props }) {
                 return (
                   <div className="overflow-x-auto my-1.5">
-                    <table className="min-w-full border border-white/30 text-xs" {...props}>{children}</table>
+                    <table
+                      className="min-w-full text-xs border border-white/30"
+                      {...props}
+                    >
+                      {children}
+                    </table>
                   </div>
                 );
               },
               thead({ children, ...props }) {
-                return <thead className="bg-primary-600" {...props}>{children}</thead>;
+                return (
+                  <thead className="bg-primary-600" {...props}>
+                    {children}
+                  </thead>
+                );
               },
               th({ children, ...props }) {
-                return <th className="border border-white/30 px-2 py-1 text-left font-semibold" {...props}>{children}</th>;
+                return (
+                  <th
+                    className="px-2 py-1 font-semibold text-left border border-white/30"
+                    {...props}
+                  >
+                    {children}
+                  </th>
+                );
               },
               td({ children, ...props }) {
-                return <td className="border border-white/30 px-2 py-1" {...props}>{children}</td>;
+                return (
+                  <td className="px-2 py-1 border border-white/30" {...props}>
+                    {children}
+                  </td>
+                );
               },
               p({ children, ...props }) {
-                return <p className="my-1 text-white leading-relaxed text-sm" {...props}>{children}</p>;
+                return (
+                  <p
+                    className="my-1 text-sm leading-relaxed text-white"
+                    {...props}
+                  >
+                    {children}
+                  </p>
+                );
               },
               hr({ ...props }) {
                 return <hr className="my-2 border-white/30" {...props} />;
@@ -123,7 +189,7 @@ const UserChattingBox = ({ message }: UserChattingBoxProps) => {
             {message.text}
           </ReactMarkdown>
         </div>
-        <div className="mt-2 text-xs text-white/70 transition-colors duration-300 group-hover:text-white/90">
+        <div className="mt-2 text-xs transition-colors duration-300 text-white/70 group-hover:text-white/90">
           {message.timestamp.toLocaleTimeString()}
         </div>
       </div>

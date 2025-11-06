@@ -1,10 +1,10 @@
 import { Text } from '@vpp/shared-ui';
 import ChattingHeaderPrompt from './HeaderPrompt';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuthStore } from '@vpp/core-logic';
 import { useChatInput } from '@/utils/inputProvider';
 
 const ChattingHeader = () => {
-  const { authUser } = useAuth();
+  const authUser = useAuthStore((s) => s.authUser);
   const { messages, historyMode } = useChatInput();
 
   const inChat = historyMode || (messages?.length ?? 0) > 1;

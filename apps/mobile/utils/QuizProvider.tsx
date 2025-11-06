@@ -1,4 +1,5 @@
-import { saveUserQuizResult, getCurrentUser } from '@vpp/core-logic';
+import { getCurrentUser } from '@vpp/core-logic';
+import { saveUserQuizResult } from '@vpp/core-logic/services/userService';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // 퀴즈 문제 타입 정의
@@ -6,10 +7,10 @@ export type QuizQuestion = {
   id: number;
   type: 'multiple' | 'ox' | 'short';
   question: string;
-  options?: string[]; // 객관식에서만 사용
+  options?: string[];
   correctAnswer: string;
   description: string;
-  point?: number; // 문제별 점수
+  point?: number;
 };
 
 // 답변 결과 타입
@@ -184,7 +185,9 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
 
       const summary = getQuizResult();
       const quizType = payload?.quizId ?? '전력시장 용어 퀴즈';
-      const score = Math.round((summary.correctCount / summary.totalQuestions) * 100);
+      const score = Math.round(
+        (summary.correctCount / summary.totalQuestions) * 100
+      );
       const timeSpent = 0; // TODO: 실제 소요 시간 계산 추가
 
       await saveUserQuizResult(
@@ -194,16 +197,17 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
         summary.correctCount,
         timeSpent
       );
-      
-      return { 
-        ok: true, 
-        message: `퀴즈 결과가 저장되었습니다. 점수: ${score}점` 
+
+      return {
+        ok: true,
+        message: `퀴즈 결과가 저장되었습니다. 점수: ${score}점`,
       };
     } catch (e) {
       console.error('퀴즈 결과 저장 실패:', e);
       return {
         ok: false,
-        message: e instanceof Error ? e.message : '퀴즈 결과 저장에 실패했습니다.',
+        message:
+          e instanceof Error ? e.message : '퀴즈 결과 저장에 실패했습니다.',
       };
     }
   };

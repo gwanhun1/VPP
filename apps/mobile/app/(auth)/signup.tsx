@@ -1,8 +1,16 @@
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Link, router } from 'expo-router';
 import tw from '../../utils/tailwind';
-import { getFirebaseAuth, initializeFirebase } from '@vpp/core-logic';
+import { getFirebaseAuth } from '@vpp/core-logic';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 export default function SignupScreen() {
@@ -12,7 +20,6 @@ export default function SignupScreen() {
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const onSubmit = async (): Promise<void> => {
-    // 중요: 기본 유효성
     if (!email || !password || !password2) {
       Alert.alert('입력 필요', '이메일과 비밀번호를 모두 입력하세요.');
       return;
@@ -23,7 +30,6 @@ export default function SignupScreen() {
     }
     try {
       setSubmitting(true);
-      initializeFirebase();
       const auth = getFirebaseAuth();
       if (!auth) throw new Error('Firebase Auth 초기화 실패');
       await createUserWithEmailAndPassword(auth, email.trim(), password);
@@ -41,11 +47,17 @@ export default function SignupScreen() {
       behavior={Platform.select({ ios: 'padding', android: undefined })}
       style={tw`flex-1 bg-white`}
     >
-      <View style={tw`flex-row items-center px-5 pt-12 pb-6 border-b border-gray-100`}>
+      <View
+        style={tw`flex-row items-center px-5 pt-12 pb-6 border-b border-gray-100`}
+      >
         <TouchableOpacity onPress={() => router.back()} style={tw`pr-3 py-2`}>
           <Text style={tw`text-[#14287f] font-semibold`}>{'‹ 뒤로'}</Text>
         </TouchableOpacity>
-        <Text style={tw`flex-1 text-center text-gray-900 font-semibold text-base`}>회원가입</Text>
+        <Text
+          style={tw`flex-1 text-center text-gray-900 font-semibold text-base`}
+        >
+          회원가입
+        </Text>
         <View style={tw`w-10`} />
       </View>
 
@@ -94,7 +106,10 @@ export default function SignupScreen() {
         <TouchableOpacity
           disabled={submitting}
           onPress={onSubmit}
-          style={[tw`bg-[#14287f] py-3.5 rounded-xl items-center`, submitting ? tw`opacity-60` : null]}
+          style={[
+            tw`bg-[#14287f] py-3.5 rounded-xl items-center`,
+            submitting ? tw`opacity-60` : null,
+          ]}
         >
           <Text style={tw`text-white font-semibold`}>
             {submitting ? '가입 중...' : '회원가입'}
@@ -104,7 +119,9 @@ export default function SignupScreen() {
         <View style={tw`mt-4 items-center`}>
           <Link href="/(auth)/login" asChild>
             <TouchableOpacity disabled={submitting}>
-              <Text style={tw`text-[#14287f] text-xs`}>이미 계정이 있으신가요? 로그인</Text>
+              <Text style={tw`text-[#14287f] text-xs`}>
+                이미 계정이 있으신가요? 로그인
+              </Text>
             </TouchableOpacity>
           </Link>
         </View>

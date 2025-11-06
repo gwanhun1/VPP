@@ -35,7 +35,6 @@ export type SkeletonProps = {
 const WebSkeleton = ({
   width,
   height,
-  // rounded가 명시되면 최우선 적용. 미지정(undefined)이면 className의 rounded-*가 적용되도록 함
   rounded,
   className = '',
   isOverlay = false,
@@ -45,18 +44,19 @@ const WebSkeleton = ({
   const baseClass = isLoading
     ? 'bg-neutral-400 dark:bg-neutral-600 animate-pulse border border-neutral-300 dark:border-neutral-500'
     : '';
-  // rounded 우선순위: prop이 명시되었을 때만 tailwind rounded 클래스를 최종에 배치하여 우선 적용
   const roundedClass =
-    typeof rounded === 'boolean' ? (rounded ? 'rounded-md' : 'rounded-none') : '';
+    typeof rounded === 'boolean'
+      ? rounded
+        ? 'rounded-md'
+        : 'rounded-none'
+      : '';
   const skeletonClass = `${baseClass} ${className} ${roundedClass}`.trim();
 
   if (!isLoading) {
-    // 로딩 끝난 상태면 children만 보여줌
     return children as React.ReactElement | null;
   }
 
   if (isOverlay && children) {
-    // 로딩 중이고, 오버레이 방식이면 children 위에 덮기
     return (
       <div className="overflow-hidden relative">
         {children}
@@ -66,8 +66,6 @@ const WebSkeleton = ({
     );
   }
 
-  // 로딩 중이고, 오버레이 아니면 그냥 스켈레톤 박스만 보여줌
-  // width/height가 명시된 경우에만 인라인 스타일 적용
   const style: React.CSSProperties | undefined =
     width !== undefined || height !== undefined ? { width, height } : undefined;
 

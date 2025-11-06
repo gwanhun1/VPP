@@ -9,13 +9,21 @@ type QuizResponseProps = {
 };
 
 const QuizResponse = ({ quizHistory }: QuizResponseProps) => {
-  // 최근 퀴즈 결과를 기반으로 통계 계산
   const totalQuizzes = quizHistory.length;
-  const totalQuestions = quizHistory.reduce((sum, quiz) => sum + quiz.totalQuestions, 0);
-  const totalCorrect = quizHistory.reduce((sum, quiz) => sum + quiz.correctAnswers, 0);
-  const averageScore = totalQuizzes > 0 
-    ? Math.round(quizHistory.reduce((sum, quiz) => sum + quiz.score, 0) / totalQuizzes)
-    : 0;
+  const totalQuestions = quizHistory.reduce(
+    (sum, quiz) => sum + quiz.totalQuestions,
+    0
+  );
+  const totalCorrect = quizHistory.reduce(
+    (sum, quiz) => sum + quiz.correctAnswers,
+    0
+  );
+  const averageScore =
+    totalQuizzes > 0
+      ? Math.round(
+          quizHistory.reduce((sum, quiz) => sum + quiz.score, 0) / totalQuizzes
+        )
+      : 0;
 
   return (
     <View style={tw`flex-col gap-2 p-2`}>

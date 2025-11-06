@@ -1,7 +1,6 @@
 import React from 'react';
 import { isWeb, cn } from '../../utils/platform';
 
-// 웹 환경에서 사용할 카드 컴포넌트
 const WebCard = ({
   variant = 'default',
   padding = 'default',
@@ -43,7 +42,7 @@ const WebCard = ({
 
   const classes = cn(
     baseClasses,
-    !backgroundColor && variantClasses[variant as keyof typeof variantClasses], // backgroundColor가 있으면 variant 무시
+    !backgroundColor && variantClasses[variant as keyof typeof variantClasses],
     paddingClasses[padding as keyof typeof paddingClasses],
     shadowClasses[shadow as keyof typeof shadowClasses],
     bordered && 'border border-neutral-200',
@@ -60,7 +59,6 @@ const WebCard = ({
   );
 };
 
-// 카드 헤더 컴포넌트
 export const WebCardHeader = ({
   className = '',
   children,
@@ -76,7 +74,6 @@ export const WebCardHeader = ({
   );
 };
 
-// 카드 본문 컴포넌트
 export const WebCardBody = ({
   className = '',
   children,
@@ -89,7 +86,6 @@ export const WebCardBody = ({
   );
 };
 
-// 카드 푸터 컴포넌트
 export const WebCardFooter = ({
   className = '',
   children,
@@ -105,7 +101,6 @@ export const WebCardFooter = ({
   );
 };
 
-// 네이티브 환경에서 사용할 카드 컴포넌트
 const NativeCard = ({
   variant = 'default',
   padding = 'default',
@@ -120,11 +115,11 @@ const NativeCard = ({
 
     const variantStyles = {
       default: { backgroundColor: '#ffffff' },
-      primary: { backgroundColor: '#eff6ff' }, // blue-50
-      secondary: { backgroundColor: '#fff9e6' }, // yellow-50
-      error: { backgroundColor: '#fef2f2' }, // red-50
-      success: { backgroundColor: '#f0fdf4' }, // green-50
-      warning: { backgroundColor: '#fff9e6' }, // orange-500
+      primary: { backgroundColor: '#eff6ff' },
+      secondary: { backgroundColor: '#fff9e6' },
+      error: { backgroundColor: '#fef2f2' },
+      success: { backgroundColor: '#f0fdf4' },
+      warning: { backgroundColor: '#fff9e6' },
     };
 
     const paddingStyles = {
@@ -171,7 +166,6 @@ const NativeCard = ({
     const cardStyle = {
       borderRadius: 8,
       overflow: 'hidden',
-      // backgroundColor prop이 있으면 우선 사용, 없으면 variant 사용
       ...(backgroundColor ? { backgroundColor } : variantStyles[variant]),
       ...paddingStyles[padding],
       ...shadowStyles[shadow],
@@ -188,7 +182,6 @@ const NativeCard = ({
   }
 };
 
-// 네이티브 환경에서 사용할 카드 섹션 컴포넌트들
 const NativeCardHeader = ({ children, ...props }: CardSectionProps) => {
   try {
     const { View } = require('react-native');

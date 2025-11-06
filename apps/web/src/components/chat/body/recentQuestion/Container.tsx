@@ -1,12 +1,17 @@
 import { Skeleton, Text } from '@vpp/shared-ui';
 import RecentQuestionBadge from './Badge';
 import { useEffect, useMemo, useState } from 'react';
-import { fetchUserChatSessions, type ChatSession } from '@vpp/core-logic';
-import { useAuth } from '@/contexts/AuthContext';
+import { 
+  fetchUserChatSessions, 
+  type ChatSession, 
+  useAuthStore, 
+  withRetry 
+} from '@vpp/core-logic';
 import { useChatInput } from '@/utils/inputProvider';
 
 const RecentQuestionContainer = () => {
-  const { authUser, firebaseReady } = useAuth();
+  const authUser = useAuthStore((s) => s.authUser);
+  const firebaseReady = useAuthStore((s) => s.firebaseReady);
   const { loadSession } = useChatInput();
   const [sessions, setSessions] = useState<Array<ChatSession & { id: string }>>(
     []
@@ -23,7 +28,7 @@ const RecentQuestionContainer = () => {
     const loadSessions = async () => {
       setLoading(true);
       try {
-        const list = await fetchChatSessionsWithRetry(authUser.uid);
+        const list = await withRetry(() => fetchUserChatSessions(authUser.uid));
         if (mounted) setSessions(list);
       } catch (error) {
         console.error('[RecentQuestionContainer] 세션 로드 실패:', error);
@@ -92,27 +97,3 @@ const RecentQuestionContainer = () => {
 };
 
 export default RecentQuestionContainer;
-
-async function fetchChatSessionsWithRetry(
-  uid: string,
-  maxAttempts = 3
-): Promise<Array<ChatSession & { id: string }>> {
-  let attempt = 0;
-  let lastError: unknown;
-
-  while (attempt < maxAttempts) {
-    try {
-      return await fetchUserChatSessions(uid);
-    } catch (error) {
-      lastError = error;
-      attempt += 1;
-      if (attempt >= maxAttempts) break;
-      const delayMs = 200 * attempt;
-      await new Promise((resolve) => {
-        setTimeout(resolve, delayMs);
-      });
-    }
-  }
-
-  throw lastError ?? new Error('fetchUserChatSessions failed');
-}

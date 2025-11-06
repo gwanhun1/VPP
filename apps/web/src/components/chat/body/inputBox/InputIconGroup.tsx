@@ -8,10 +8,7 @@ const InputIconGroup = () => {
 
   // 음성 인식 훅 사용
   const { isListening, startListening, stopListening } = useSpeechToText(
-    (text) => {
-      // 텍스트 인식 콜백은 유지하되 직접 setInputText는 하지 않음
-      // 확인 버튼을 누를 때만 적용하도록 변경
-    }
+    (text) => {}
   );
 
   return (

@@ -31,7 +31,6 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
     if (target.tagName === 'A' || target.closest('a')) {
       e.preventDefault();
       e.stopPropagation();
-      console.log('[AiChattingBox] 상위에서 링크 클릭 차단');
     }
   };
 

@@ -43,12 +43,6 @@ export default function ChatScreen() {
     : PROD_URL;
 
   useEffect(() => {
-    if (__DEV__) {
-      console.log('[WebView] currentUrl:', currentUrl);
-    }
-  }, [currentUrl]);
-
-  useEffect(() => {
     if (!webViewReady || !openSessionId || !webViewRef.current) return;
     try {
       const payload = JSON.stringify({

@@ -24,7 +24,7 @@ export default function MyPageScreen() {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      // 중요: 마이페이지 데이터 새로고침 로직과 연동 필요
+      //  마이페이지 데이터 새로고침 로직과 연동 필요
     } finally {
       setRefreshing(false);
     }
@@ -32,7 +32,6 @@ export default function MyPageScreen() {
 
   useEffect(() => {
     if (user === null) {
-      // if (user === null || user.providerId === 'anonymous') { 추후 소셜로그인 개발하면 연계
       router.replace('/(auth)');
     }
   }, [user, router]);

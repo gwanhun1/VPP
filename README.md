@@ -54,7 +54,7 @@ Both Platforms
 │     │  ├─ displayName: string|null
 │     │  ├─ email: string|null
 │     │  ├─ photoURL: string|null
-│     │  ├─ providerId: 'anonymous'|'google'|'naver'|'kakao'|'password'
+│     │  ├─ providerId: 'anonymous'|'google'|'password'
 │     │  ├─ createdAt: timestamp
 │     │  └─ updatedAt: timestamp
 │     ├─ devices (subcollection)
@@ -376,41 +376,35 @@ addRecentActivity(activity: Omit<RecentActivity, 'id' | 'createdAt'>): Promise<s
 getUserRecentActivities(uid: string, limitCount?: number): Promise<RecentActivity[]>
 ```
 
-### 웹 앱 Firebase 함수 (apps/web)
+### 웹 앱 연동 (WebView + Zustand + Core Logic)
 
-#### 웹뷰 인증 및 설정
+#### 인증/설정 초기화
 
 ```typescript
-// hooks/useWebViewAuth.ts
-- Firebase 설정 수신 및 초기화
-- 사용자 인증 상태 관리
-- 사용자 온라인 상태 업데이트 (userStatus 컬렉션)
-- 로그인/페이지뷰 활동 로그 (userActivities 컬렉션)
+// apps/web/src/hooks/useWebViewAuth.ts, useWebAuth.ts
+- Core Logic의 setFirebaseConfig / initializeFirebase 사용
+- onAuthStateChanged로 AuthUser 동기화
+- Zustand 전역 스토어(useAuthStore)로 상태 일원화
 ```
 
-#### 채팅 서비스 (웹뷰 통합)
+#### WebView 통신 레이어
 
 ```typescript
-// services/chatService.ts
-saveChatMessage(authUser: AuthUser, text: string, isUser: boolean, sessionId?: string): Promise<string>
-subscribeToChatMessages(authUser: AuthUser, sessionId: string | null, onMessagesUpdate: (messages: ChatMessage[]) => void): () => void
-createChatSession(authUser: AuthUser, title?: string): Promise<string>
+// core-logic/src/bridge/webview-bridge.ts
+webViewBridge.postMessage({ type: 'REQUEST_AUTH' })
+webViewBridge.sendAuth(authUser)
+webViewBridge.sendFirebaseConfig(config)
+webViewBridge.sendOpenSession(sessionId, messageId?)
 ```
 
-#### 사용자 활동 서비스 (웹뷰 통합)
+#### 공통 유틸리티
 
 ```typescript
-// services/userActivityService.ts
-logUserActivity(authUser: AuthUser, type: ActivityType, details: Partial<UserActivity['details']>, sessionId?: string): Promise<string>
-updateUserStatus(authUser: AuthUser, isOnline: boolean, sessionId?: string): Promise<void>
-subscribeToUserActivities(authUser: AuthUser, onActivitiesUpdate: (activities: UserActivity[]) => void, limitCount?: number): () => void
+// core-logic/src/utils/type-guards.ts
+isFirebaseTimestamp, toFirebaseTimestamp, toNumber, safeArrayAccess, safePropertyAccess
 
-// 편의 함수들
-logChatMessage(authUser: AuthUser, message: string, sessionId?: string): Promise<string>
-logPageView(authUser: AuthUser, page: string, url?: string): Promise<string>
-logLogin(authUser: AuthUser): Promise<string>
-logLogout(authUser: AuthUser): Promise<string>
-logQuizAttempt(authUser: AuthUser, quizType: string, score: number, sessionId?: string): Promise<string>
+// core-logic/src/utils/retry.ts
+withRetry(fn, { maxAttempts, delayMs, exponentialBackoff })
 ```
 
 #### 채팅 입력 프로바이더 (실시간 저장)
@@ -457,12 +451,16 @@ logQuizAttempt(authUser: AuthUser, quizType: string, score: number, sessionId?: 
 ### 실행 명령어
 
 ```bash
-# 웹 개발 서버
-npx nx serve web
+# 웹 개발 서버 (Nx 문제 우회 시)
+yarn --cwd apps/web vite --host 0.0.0.0 --port 5173
 
-# 모바일 앱 실행
-nx run mobile:run-ios
-nx run mobile:run-android
+# 웹 빌드
+cd core-logic && npx vite build
+cd shared-ui && npx vite build
+cd apps/web && npx vite build
+
+# 모바일 앱 실행 (Expo)
+cd apps/mobile && yarn start
 ```
 
 ### 환경 변수 설정
@@ -510,68 +508,10 @@ EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=your_google_client_id
 ### 주요 기술 스택
 
 - **Frontend**: React, React Native, TypeScript, Tailwind CSS
-- **State Management**: Zustand (Vanilla Store)
+- **State Management**: Zustand (Vanilla Store, @vpp/core-logic의 useAuthStore)
 - **Backend**: Firebase (Auth, Firestore, Functions)
-- **Build Tools**: Nx, Vite, Expo
+- **Build Tools**: Vite, Expo
 - **Authentication**: Firebase Auth + Google OAuth
-
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
-
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
-
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/react-native?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-## Finish your CI setup
-
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/Mf3FbaEAiU)
-
-## Run tasks
-
-To run the dev server for your app, use:
-
-```sh
-npx nx serve mobile
-```
-
-To create a production bundle:
-
-```sh
-npx nx build mobile
-```
-
-To see all available targets to run for a project, run:
-
-```sh
-npx nx show project mobile
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/react-native:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/react:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
 ## Install Nx Console
 

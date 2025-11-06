@@ -4,7 +4,7 @@ import {
   signInAnonymously,
   User,
 } from 'firebase/auth';
-import { getFirebaseAuth, initializeFirebase } from './app';
+import { getFirebaseAuth } from './app';
 import type { AuthProvider, AuthUser, AuthPersistence } from './types';
 
 export type AuthStateCallback = (user: AuthUser | null) => void;
@@ -54,7 +54,6 @@ function mapFirebaseUserToAuthUser(user: User): AuthUser {
  * @returns 리스너를 해제할 수 있는 함수
  */
 export function onAuthStateChanged(cb: AuthStateCallback): () => void {
-  initializeFirebase();
   const auth = getFirebaseAuth();
   if (!auth) {
     cb(null);
@@ -121,13 +120,11 @@ export async function getStoredUser(): Promise<AuthUser | null> {
  * @returns 로그인된 사용자의 AuthUser 정보
  */
 export async function signInAsGuest(): Promise<AuthUser> {
-  initializeFirebase();
   const auth = getFirebaseAuth();
   if (!auth) throw new Error('Firebase Auth가 초기화되지 않았습니다.');
 
   const userCredential = await signInAnonymously(auth);
   const user = userCredential.user;
-  // onAuthStateChanged 리스너가 저장 로직을 처리하므로, 여기서는 변환된 사용자 객체만 반환합니다.
   return mapFirebaseUserToAuthUser(user);
 }
 
@@ -147,7 +144,6 @@ export async function signOut(): Promise<void> {
  */
 export function getCurrentUser(): AuthUser | null {
   try {
-    initializeFirebase(); // Firebase 초기화 보장
     const auth = getFirebaseAuth();
 
     if (!auth) {

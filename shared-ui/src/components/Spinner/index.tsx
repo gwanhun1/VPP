@@ -5,29 +5,27 @@ export type SpinnerProps = {
   color?: string;
   overlay?: boolean;
   message?: string;
-  className?: string; // web 전용 클래스
+  className?: string;
   variant?: 'indeterminate' | 'determinate';
-  value?: number; // 0-100 (determinate에서만)
-  thickness?: number; // 원 스트로크 두께
-  trackColor?: string; // 트랙 색상
+  value?: number;
+  thickness?: number;
+  trackColor?: string;
 };
 
 const WebSpinner = ({
   size = 40,
-  color = '#60A5FA', // 하늘색으로 변경
+  color = '#60A5FA',
   overlay = false,
   message,
   className = '',
   variant = 'indeterminate',
   value = 0,
-  thickness = 2, // 더 얇게
-  trackColor = 'transparent', // 트랙 숨김
+  thickness = 2,
 }: SpinnerProps) => {
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  // 사진과 같은 부분적 원호 효과
-  const arcLength = circumference * 0.25; // 원주의 25%만 표시
+  const arcLength = circumference * 0.25;
 
   const spinner = (
     <div className={`flex flex-col justify-center items-center ${className}`}>

@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuthStore } from '@vpp/core-logic';
 import { useChatInput } from '@/utils/inputProvider';
 import { updateChatSession, deleteChatSession } from '@vpp/core-logic';
 
@@ -34,7 +34,7 @@ const HeaderMoreTooltip = ({
     top: 0,
     left: 0,
   });
-  const { authUser } = useAuth();
+  const authUser = useAuthStore((s) => s.authUser);
   const { currentSessionId, startNewChat } = useChatInput();
 
   // anchor 위치에 따라 툴팁 위치 계산
@@ -92,26 +92,27 @@ const HeaderMoreTooltip = ({
       alert('세션 정보를 찾을 수 없습니다.');
       return;
     }
-    
+
     const next = window.prompt('새 대화명을 입력하세요');
     if (!next || !next.trim()) {
       return;
     }
-    
+
     try {
-      const newTitle = next.trim().length > 30 
-        ? `${next.trim().substring(0, 30)}...` 
-        : next.trim();
-        
+      const newTitle =
+        next.trim().length > 30
+          ? `${next.trim().substring(0, 30)}...`
+          : next.trim();
+
       await updateChatSession(authUser.uid, currentSessionId, {
         title: newTitle,
       });
-      
+
       // 부모 컴포넌트에 제목 업데이트 알림
       if (onTitleUpdate) {
         onTitleUpdate(newTitle);
       }
-      
+
       onClose();
       alert('대화명이 수정되었습니다.');
     } catch (e) {
@@ -125,24 +126,20 @@ const HeaderMoreTooltip = ({
       alert('세션 정보를 찾을 수 없습니다.');
       return;
     }
-    
+
     const ok = window.confirm(
       '이 대화를 삭제하시겠습니까?\n삭제된 대화는 복구할 수 없습니다.'
     );
     if (!ok) return;
-    
+
     try {
       // 삭제 진행 중 표시
-      console.log('[HeaderMoreTooltip] 대화 삭제 시작:', currentSessionId);
-      
       await deleteChatSession(authUser.uid, currentSessionId);
-      
-      console.log('[HeaderMoreTooltip] 대화 삭제 완료');
-      
+
       // 삭제 후 새 채팅 상태로 초기화
       startNewChat();
       onClose();
-      
+
       alert('대화가 삭제되었습니다.');
     } catch (e) {
       console.error('[HeaderMoreTooltip] 대화 삭제 실패:', e);

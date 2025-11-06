@@ -2,7 +2,6 @@ import { StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
 import App from './app/app';
-import { AuthProvider } from './contexts/AuthContext';
 import './styles.css';
 
 const root = ReactDOM.createRoot(
@@ -18,9 +17,7 @@ root.render(
         v7_relativeSplatPath: true,
       }}
     >
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <App />
     </BrowserRouter>
   </StrictMode>
 );

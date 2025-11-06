@@ -23,15 +23,14 @@ import {
   subscribeToChatMessages,
 } from '../firebase/firestore';
 import { serverTimestamp, Timestamp } from 'firebase/firestore';
+import { toFirebaseTimestamp } from '../utils/type-guards';
 
 // 모바일 앱 호환성을 위한 타입 별칭
 export type ChatHistory = ChatSession & { id: string };
 import { getCurrentUser } from '../firebase/auth';
 
 // ===== 연속 학습일(Study Streak) 계산 유틸 =====
-// 중요: 서버 Timestamp를 기록하지만, 날짜 경계 비교는 Asia/Seoul 기준으로 처리
 function toSeoulDateString(d: Date): string {
-  // Intl을 사용해 'Asia/Seoul' 기준 연-월-일 문자열 생성
   const fmt = new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul',
     year: 'numeric',
@@ -54,7 +53,10 @@ function diffSeoulDays(a: Date, b: Date): number {
   // 일수 차이 계산을 위해 UTC 자정으로 재해석
   const toUTCFromSeoul = (s: string): number => {
     // s: YYYY-MM-DD (Seoul)
-    const [yy, mm, dd] = s.split('-').map((v) => Number(v));
+    const parts = s.split('-').map((v) => Number(v));
+    const yy = parts[0] ?? 0;
+    const mm = parts[1] ?? 1;
+    const dd = parts[2] ?? 1;
     // 서울 자정 시각을 UTC로 변환: Date.UTC(yy, mm-1, dd) - 9시간
     const utcMs = Date.UTC(yy, mm - 1, dd);
     const seoulOffsetMs = 9 * 60 * 60 * 1000;
@@ -68,12 +70,15 @@ function diffSeoulDays(a: Date, b: Date): number {
 
 function computeNextStudyDays(prev: UserStats | null, now: Date): number {
   if (!prev || !prev.lastStudyDate) return 1;
-  const last = (prev.lastStudyDate as unknown as Timestamp)?.toDate?.() ?? null;
-  if (!last) return 1;
+  
+  const timestamp = toFirebaseTimestamp(prev.lastStudyDate);
+  if (!timestamp) return 1;
+  
+  const last = timestamp.toDate();
   const d = diffSeoulDays(last, now);
-  if (d === 0) return prev.studyDays || 1; // 같은 날은 증가하지 않음
-  if (d === 1) return (prev.studyDays || 0) + 1; // 하루 차이면 +1
-  return 1; // 그 외는 리셋
+  if (d === 0) return prev.studyDays || 1;
+  if (d === 1) return (prev.studyDays || 0) + 1;
+  return 1;
 }
 
 // 외부에서 재사용 가능: 어떤 학습 활동이 발생했을 때 호출
@@ -293,9 +298,6 @@ export async function saveUserQuizResult(
     throw error;
   }
 }
-
-// 채팅 관련 함수들은 firestore.ts로 이동됨
-// 웹에서는 직접 firestore 함수들을 사용하세요
 
 // 최근 활동 조회
 export async function fetchUserRecentActivities(): Promise<RecentActivity[]> {

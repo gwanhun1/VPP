@@ -16,7 +16,7 @@ export default function TrendsScreen() {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      // 중요: 시장 동향 데이터 새로고침 로직과 연동 필요
+      // 시장 동향 데이터 새로고침 로직과 연동 필요
     } finally {
       setRefreshing(false);
     }
@@ -25,7 +25,11 @@ export default function TrendsScreen() {
     <>
       <AppHeader title="시장 동향" subtitle="실시간 시장 정보를 확인하세요" />
       <ScrollView
-        contentContainerStyle={{ paddingTop: 12, paddingBottom: 24, flexGrow: 1 }}
+        contentContainerStyle={{
+          paddingTop: 12,
+          paddingBottom: 24,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
