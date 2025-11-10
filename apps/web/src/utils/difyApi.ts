@@ -1,4 +1,4 @@
-const DIFY_API_KEY = 'app-jSwMKNtI1NmPU9EujLxrSdYy';
+const DIFY_API_KEY = 'app-Df2LZ2jObWx8n0CvgCDU7eRf';
 const DIFY_API_URL = 'https://api.dify.ai/v1/chat-messages';
 
 export interface DifyResponse {
