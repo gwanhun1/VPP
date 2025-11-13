@@ -2,15 +2,21 @@ import { getCurrentUser } from '@vpp/core-logic';
 import { saveUserQuizResult } from '@vpp/core-logic/services/userService';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-// 퀴즈 문제 타입 정의
-export type QuizQuestion = {
+// 단일 퀴즈 문제 타입
+export type Quiz = {
   id: number;
   type: 'multiple' | 'ox' | 'short';
   question: string;
   options?: string[];
   correctAnswer: string;
   description: string;
-  point?: number;
+  point: number;
+};
+
+// 일자별 퀴즈 데이터 타입
+export type QuizQuestion = {
+  day: number;
+  quiz: Quiz[];
 };
 
 // 답변 결과 타입
@@ -46,9 +52,12 @@ type QuizContextType = {
   prevStep: () => void;
 };
 type QuestionContextType = {
-  questions: QuizQuestion[];
+  allQuizData: QuizQuestion[];
+  currentDay: number;
+  setCurrentDay: (day: number) => void;
+  questions: Quiz[];
   setQuestions: (questions: QuizQuestion[]) => void;
-  currentQuestion: QuizQuestion | null;
+  currentQuestion: Quiz | null;
 };
 type ResultContextType = {
   results: AnswerResult[];
@@ -72,7 +81,9 @@ const QuizContext = createContext<
 export const QuizProvider = ({ children }: { children: ReactNode }) => {
   const [answer, _setAnswer] = useState<AnswerType>({});
   const [step, _setStep] = useState<number>(0);
-  const [questions, _setQuestions] = useState<QuizQuestion[]>([]);
+  const [allQuizData, _setAllQuizData] = useState<QuizQuestion[]>([]);
+  const [currentDay, _setCurrentDay] = useState<number>(1);
+  const [questions, _setQuestions] = useState<Quiz[]>([]);
   const [results, _setResults] = useState<AnswerResult[]>([]);
   const [answerStates, _setAnswerStates] = useState<
     Record<number, 'correct' | 'incorrect' | null>
@@ -135,8 +146,24 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // 문제 관리
-  const setQuestions = (questions: QuizQuestion[]) => {
-    _setQuestions(questions);
+  const setQuestions = (quizData: QuizQuestion[]) => {
+    _setAllQuizData(quizData);
+    // 첫 번째 날의 퀴즈를 기본으로 설정
+    if (quizData.length > 0 && quizData[0].quiz) {
+      _setQuestions(quizData[0].quiz);
+      _setCurrentDay(quizData[0].day);
+    }
+  };
+
+  const setCurrentDay = (day: number) => {
+    const dayData = allQuizData.find((data) => data.day === day);
+    if (dayData) {
+      _setCurrentDay(day);
+      _setQuestions(dayData.quiz);
+      _setStep(0); // 새로운 날을 선택하면 처음부터 시작
+      _setAnswer({});
+      _setAnswerStates({});
+    }
   };
 
   const currentQuestion = questions[step] || null;
@@ -227,6 +254,9 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
         nextStep,
         prevStep,
         // 문제 관련
+        allQuizData,
+        currentDay,
+        setCurrentDay,
         questions,
         setQuestions,
         currentQuestion,
