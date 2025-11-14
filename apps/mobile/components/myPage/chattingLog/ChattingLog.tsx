@@ -11,6 +11,7 @@ import { ScrollView, View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import tw from '../../../utils/tailwind';
+import { useSettingsStore } from '../../hooks/useSettingsStore';
 
 import ChattingLogCard from './ChattingLogCard';
 
@@ -20,6 +21,7 @@ const ChattingLog = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const primaryColor = tw.color('primary');
   const router = useRouter();
+  const darkMode = useSettingsStore((s) => s.darkMode);
 
   useEffect(() => {
     let mounted = true;
@@ -65,7 +67,14 @@ const ChattingLog = () => {
       <CardHeader>
         <View style={tw`flex-row items-center gap-2`}>
           <View
-            style={tw`w-8 p-2 rounded-xl items-center justify-center bg-gray-200`}
+            style={[
+              tw`w-8 p-2 rounded-xl items-center justify-center`,
+              {
+                backgroundColor: darkMode
+                  ? '#1f2937'
+                  : tw.color('gray-200') || '#e5e7eb',
+              },
+            ]}
           >
             <MaterialIcons name="chat" size={16} color={primaryColor} />
           </View>

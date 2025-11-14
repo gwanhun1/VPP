@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 
 import tw from '../../../utils/tailwind';
+import { useSettingsStore } from '../../hooks/useSettingsStore';
 
 import QuizResponse from './QuizResponse';
 
@@ -17,6 +18,7 @@ const MyQuizPage = () => {
   const [quizHistory, setQuizHistory] = useState<QuizResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [user] = useState(() => getCurrentUser());
+  const darkMode = useSettingsStore((s) => s.darkMode);
 
   useEffect(() => {
     if (user && user.providerId !== 'anonymous') {
@@ -41,7 +43,14 @@ const MyQuizPage = () => {
       <CardHeader>
         <View style={tw`flex-row items-center gap-2`}>
           <View
-            style={tw`w-8 p-2 rounded-xl items-center justify-center bg-gray-200`}
+            style={[
+              tw`w-8 p-2 rounded-xl items-center justify-center`,
+              {
+                backgroundColor: darkMode
+                  ? '#1f2937'
+                  : tw.color('gray-200') || '#e5e7eb',
+              },
+            ]}
           >
             <MaterialIcons name="emoji-events" size={16} color={primaryColor} />
           </View>

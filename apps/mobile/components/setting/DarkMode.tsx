@@ -16,7 +16,14 @@ const DarkMode = () => {
     <Card bordered>
       <View style={tw`flex-row items-center gap-2 mb-2`}>
         <View
-          style={tw`w-8 p-2 rounded-xl items-center justify-center bg-gray-200`}
+          style={[
+            tw`w-8 p-2 rounded-xl items-center justify-center`,
+            {
+              backgroundColor: isEnabled
+                ? '#1f2937'
+                : tw.color('gray-200') || '#e5e7eb',
+            },
+          ]}
         >
           <MaterialIcons name="dark-mode" size={16} color={primaryColor} />
         </View>

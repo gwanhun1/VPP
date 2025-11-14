@@ -1,13 +1,14 @@
 import {
   DarkTheme,
   DefaultTheme,
-  ThemeProvider,
+  ThemeProvider as NavigationThemeProvider,
 } from '@react-navigation/native';
 import { setFirebaseConfig, initializeFirebase } from '@vpp/core-logic';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useSettingsStore } from '../components/hooks/useSettingsStore';
+import { ThemeProvider as UIThemeProvider } from '@vpp/shared-ui';
 
 WebBrowser.maybeCompleteAuthSession();
 (() => {
@@ -89,11 +90,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={darkMode ? darkTheme : lightTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </ThemeProvider>
+    <UIThemeProvider mode={darkMode ? 'dark' : 'light'}>
+      <NavigationThemeProvider value={darkMode ? darkTheme : lightTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </NavigationThemeProvider>
+    </UIThemeProvider>
   );
 }
