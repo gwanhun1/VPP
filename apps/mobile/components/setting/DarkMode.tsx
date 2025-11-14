@@ -38,6 +38,7 @@ const DarkMode = () => {
           value={isEnabled}
           onValueChange={toggleSwitch}
           trackColor={{ false: '#e5e7eb', true: subColor }}
+          disabled
         />
       </View>
     </Card>
