@@ -57,9 +57,14 @@ const RecentQuestionContainer = () => {
   );
 
   const hasData = sessionsWithTitle.length > 0;
+  const hasAnyContent = loading || hasData;
 
   return (
-    <div className="flex flex-col px-4 border-b">
+    <div
+      className={`flex flex-col px-4 border-b overflow-hidden transition-all duration-200 ${
+        hasAnyContent ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
+      }`}
+    >
       <button
         type="button"
         className="flex justify-between items-center w-full py-1.5"

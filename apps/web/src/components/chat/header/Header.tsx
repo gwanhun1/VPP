@@ -10,14 +10,14 @@ const ChattingHeader = () => {
   const inChat = historyMode || (messages?.length ?? 0) > 1;
 
   return (
-    <header className="flex overflow-hidden relative flex-col justify-center px-4 h-14 sm:h-32 bg-primary">
+    <header className="flex overflow-hidden relative flex-col justify-center px-4 h-20 sm:h-32 bg-primary">
       <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/2 -translate-y-1/2 bg-white/5"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full -translate-x-1/2 translate-y-1/2 bg-secondary/10"></div>
 
       {inChat ? (
         <ChattingHeaderPrompt />
       ) : (
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center">
           <div className="flex gap-3 items-center">
             {/* AI 아이콘 */}
             <div className="flex justify-center items-center p-3 rounded-xl backdrop-blur-sm bg-white/20">
@@ -25,7 +25,7 @@ const ChattingHeader = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                className="w-4 h-4 text-white"
+                className="w-6 h-6 text-white"
                 aria-hidden="true"
               >
                 <path
@@ -37,16 +37,17 @@ const ChattingHeader = () => {
             </div>
 
             {/* 텍스트 섹션 */}
-            <Text variant="h4" weight="bold" color="white">
-              전력시장 AI
-            </Text>
+            <div className="flex flex-col justify-center">
+              <Text variant="h4" weight="bold" color="white">
+                전력시장 AI
+              </Text>
+              <Text variant="body2" className="text-secondary-dark">
+                {authUser
+                  ? `${authUser.displayName || authUser.email || '사용자'}님`
+                  : '전문가 어시스턴트'}
+              </Text>
+            </div>
           </div>
-
-          <Text variant="body2" className="text-secondary-dark">
-            {authUser
-              ? `${authUser.displayName || authUser.email || '사용자'} 님`
-              : '전문가 어시스턴트'}
-          </Text>
         </div>
       )}
     </header>
