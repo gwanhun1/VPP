@@ -16,6 +16,7 @@
     "mobile:prebuild": "cd apps/mobile && yarn expo prebuild",
     "mobile:update": "cd apps/mobile && yarn expo update",
     "mobile:doctor": "cd apps/mobile && yarn expo doctor",
+    "build:web": "vite build --config apps/web/vite.config.ts",
     "build": "yarn build:web"
   },
   "engines": {
