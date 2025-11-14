@@ -253,7 +253,7 @@ const ChattingMessage = () => {
                         authUser.displayName || authUser.email || '사용자'
                       }님`
                     : ''
-                }! 전력시장 AI 어시스턴트입니다. 🔋\n복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요. 쉽고 정확하게 설명해드릴게요!`,
+                }! \n 🔋 복잡한 전력시장 용어나 개념에 대해 궁금한 것이 있으시면 언제든 물어보세요.`,
                 isUser: false,
                 timestamp: new Date('2025-07-15T12:42:33.312Z'),
               }}
