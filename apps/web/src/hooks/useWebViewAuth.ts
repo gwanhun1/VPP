@@ -5,10 +5,8 @@ import {
   initializeFirebase,
   updateUserDevice,
   addRecentActivity,
-  getFirebaseAuth,
   useAuthStore,
 } from '@vpp/core-logic';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 type WebViewMessage = {
   type: string;
@@ -43,8 +41,6 @@ declare global {
     };
   }
 }
-
-// 테스트 하드코딩 제거: 자동 로그인 함수 삭제
 
 /**
  * 웹뷰에서 모바일 앱으로부터 인증 정보를 받아 처리하는 훅
@@ -91,7 +87,7 @@ export function useWebViewAuth() {
           const authData = data as WebViewMessage;
           setAuthUser(authData.payload || null);
 
-          // 인증 정보 수신 시 사용자 상태 업데이트 및 로그인 활동 기록 (새로운 구조 사용)
+          // 모바일 앱에서 전달받은 인증 정보로 사용자 상태 업데이트 및 활동 기록
           if (authData.payload) {
             const userPayload = authData.payload;
             (async () => {
@@ -104,26 +100,6 @@ export function useWebViewAuth() {
                 }
                 // 준비 상태에서만 진행
                 if (!firebaseReadyRef.current) return;
-
-                // 개발 편의: 테스트 계정(password provider)일 때만, 개발 모드에서 이메일/비밀번호 로그인
-                if (
-                  import.meta.env.DEV &&
-                  userPayload.providerId === 'password' &&
-                  userPayload.email === 'test@test.com'
-                ) {
-                  const auth = getFirebaseAuth();
-                  if (auth && auth.currentUser?.uid !== userPayload.uid) {
-                    try {
-                      await signInWithEmailAndPassword(
-                        auth,
-                        'test@test.com',
-                        'testtest'
-                      );
-                    } catch {
-                      // dev 로그인 실패는 무시하고 진행
-                    }
-                  }
-                }
 
                 // 웹 디바이스 정보 업데이트
                 const deviceId = `webview_${Date.now()}`;

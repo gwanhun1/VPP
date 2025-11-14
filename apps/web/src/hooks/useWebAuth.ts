@@ -8,6 +8,7 @@ import {
   updateUserDevice,
   addRecentActivity,
   useAuthStore,
+  webViewBridge,
 } from '@vpp/core-logic';
 
 // 개발 환경에서 사용할 Firebase 설정
@@ -21,14 +22,21 @@ const DEV_FIREBASE_CONFIG = {
 };
 
 export function useWebAuth() {
-  const { setAuthUser, setFirebaseReady, setIsLoading, setIsWebView } = useAuthStore();
+  const { setAuthUser, setFirebaseReady, setIsLoading, setIsWebView } =
+    useAuthStore();
   const authUser = useAuthStore((s) => s.authUser);
   const firebaseReady = useAuthStore((s) => s.firebaseReady);
   const isLoading = useAuthStore((s) => s.isLoading);
 
   useEffect(() => {
+    const isWebViewEnv = webViewBridge.isWebView();
+    if (isWebViewEnv) {
+      setIsWebView(true);
+      return;
+    }
+
     setIsWebView(false);
-    
+
     if (import.meta.env.DEV) {
       try {
         // Firebase 설정
@@ -53,7 +61,8 @@ export function useWebAuth() {
               } else {
                 const rawProvider = user.providerData[0]?.providerId;
                 if (rawProvider === 'google.com') mappedProvider = 'google';
-                else if (rawProvider === 'password') mappedProvider = 'password';
+                else if (rawProvider === 'password')
+                  mappedProvider = 'password';
                 else mappedProvider = undefined;
               }
 
@@ -103,7 +112,7 @@ export function useWebAuth() {
       // 프로덕션 환경에서는 웹 로그인 비활성화
       setIsLoading(false);
     }
-    
+
     return () => {
       // Cleanup
     };
