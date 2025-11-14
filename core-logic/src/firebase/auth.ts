@@ -10,6 +10,9 @@ import type { AuthProvider, AuthUser, AuthPersistence } from './types';
 export type AuthStateCallback = (user: AuthUser | null) => void;
 
 const AUTH_USER_STORAGE_KEY = '@Auth/user';
+const AUTH_LOGIN_AT_KEY = '@Auth/loginAt';
+const AUTH_SESSION_EXPIRED_KEY = '@Auth/sessionExpired';
+const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
  * Firebase의 User 객체를 우리가 정의한 AuthUser 객체로 변환합니다.
@@ -64,7 +67,29 @@ export function onAuthStateChanged(cb: AuthStateCallback): () => void {
     auth,
     async (user: User | null) => {
       if (user) {
-        // 사용자가 로그인한 경우
+        // 사용자가 로그인한 경우 세션 만료 여부를 먼저 확인
+        try {
+          const now = Date.now();
+          const storedLoginAt = await AsyncStorage.getItem(AUTH_LOGIN_AT_KEY);
+          let loginAt = storedLoginAt ? Number(storedLoginAt) : NaN;
+
+          if (!storedLoginAt || Number.isNaN(loginAt)) {
+            loginAt = now;
+            await AsyncStorage.setItem(AUTH_LOGIN_AT_KEY, String(now));
+          }
+
+          if (now - loginAt > SESSION_MAX_AGE_MS) {
+            await AsyncStorage.setItem(AUTH_SESSION_EXPIRED_KEY, '1');
+            const authInstance = getFirebaseAuth();
+            if (authInstance) {
+              await authInstance.signOut();
+            }
+            return;
+          }
+        } catch (error) {
+          console.error('세션 만료 검사 실패:', error);
+        }
+
         const authUser = mapFirebaseUserToAuthUser(user);
         try {
           // 사용자 정보를 JSON 문자열로 변환하여 AsyncStorage에 저장합니다.
@@ -90,6 +115,7 @@ export function onAuthStateChanged(cb: AuthStateCallback): () => void {
         try {
           // AsyncStorage에서 사용자 정보를 삭제합니다.
           await AsyncStorage.removeItem(AUTH_USER_STORAGE_KEY);
+          await AsyncStorage.removeItem(AUTH_LOGIN_AT_KEY);
         } catch (error) {
           console.error('AsyncStorage: 사용자 정보 삭제 실패', error);
         }
@@ -112,6 +138,20 @@ export async function getStoredUser(): Promise<AuthUser | null> {
   } catch (error) {
     console.error('AsyncStorage: 사용자 정보 불러오기 실패', error);
     return null;
+  }
+}
+
+export async function wasSessionExpired(): Promise<boolean> {
+  try {
+    const flag = await AsyncStorage.getItem(AUTH_SESSION_EXPIRED_KEY);
+    if (flag === '1') {
+      await AsyncStorage.removeItem(AUTH_SESSION_EXPIRED_KEY);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('AsyncStorage: 세션 만료 플래그 확인 실패', error);
+    return false;
   }
 }
 

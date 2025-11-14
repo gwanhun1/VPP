@@ -21,6 +21,10 @@ const DEV_FIREBASE_CONFIG = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+const WEB_LOGIN_AT_KEY = 'auth:loginAt';
+const WEB_SESSION_EXPIRED_KEY = 'auth:sessionExpired';
+const WEB_SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
 export function useWebAuth() {
   const { setAuthUser, setFirebaseReady, setIsLoading, setIsWebView } =
     useAuthStore();
@@ -47,13 +51,35 @@ export function useWebAuth() {
         // 인증 상태 변화 감지
         const auth = getFirebaseAuth();
         if (auth) {
-          // 웹 브라우저에서는 기본적으로 로그아웃 상태로 시작
-          auth.signOut().catch(() => {
-            // 로그아웃 실패는 무시 (이미 로그아웃 상태일 수 있음)
-          });
-
           const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
+              let expired = false;
+              try {
+                const now = Date.now();
+                const storedLoginAt =
+                  window.localStorage.getItem(WEB_LOGIN_AT_KEY);
+                let loginAt = storedLoginAt ? Number(storedLoginAt) : NaN;
+
+                if (!storedLoginAt || Number.isNaN(loginAt)) {
+                  loginAt = now;
+                  window.localStorage.setItem(WEB_LOGIN_AT_KEY, String(now));
+                }
+
+                if (now - loginAt > WEB_SESSION_MAX_AGE_MS) {
+                  window.localStorage.setItem(WEB_SESSION_EXPIRED_KEY, '1');
+                  await auth.signOut();
+                  expired = true;
+                }
+              } catch (error) {
+                console.warn('웹 세션 만료 검사 실패:', error);
+              }
+
+              if (expired) {
+                setAuthUser(null);
+                setIsLoading(false);
+                return;
+              }
+
               // Firebase provider 값을 도메인 타입(AuthProvider)으로 매핑
               let mappedProvider: AuthUser['providerId'];
               if (user.isAnonymous) {
@@ -97,6 +123,11 @@ export function useWebAuth() {
               }
             } else {
               setAuthUser(null);
+              try {
+                window.localStorage.removeItem(WEB_LOGIN_AT_KEY);
+              } catch {
+                // no-op
+              }
             }
             setIsLoading(false);
           });

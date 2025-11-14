@@ -84,12 +84,14 @@ export const useSpeechToText = (onTextReceived?: (text: string) => void) => {
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      setText(transcript);
+      if (event.results && event.results[0] && event.results[0][0]) {
+        const transcript = event.results[0][0].transcript;
+        setText(transcript);
 
-      // 콜백 함수가 제공되었다면 호출
-      if (onTextReceived) {
-        onTextReceived(transcript);
+        // 콜백 함수가 제공되었다면 호출
+        if (onTextReceived) {
+          onTextReceived(transcript);
+        }
       }
     };
 
