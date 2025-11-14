@@ -18,6 +18,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@core-logic': path.resolve(__dirname, '../../core-logic/src'),
+      '@vpp/core-logic': path.resolve(__dirname, '../../core-logic/src'),
       '@vpp/shared-ui': path.resolve(__dirname, '../../shared-ui/src'),
       'react-native': 'react-native-web',
     },
