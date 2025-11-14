@@ -8,6 +8,7 @@ import { View, Platform } from 'react-native';
 import { Spinner } from '@vpp/shared-ui';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { useLocalSearchParams } from 'expo-router';
+import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 
 /**
  * AI 채팅 화면
@@ -34,6 +35,7 @@ export default function ChatScreen() {
   const [webViewReady, setWebViewReady] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [devUrlIndex, setDevUrlIndex] = useState(0);
+  const darkMode = useSettingsStore((s) => s.darkMode);
   const { openSessionId, openMessageId } = useLocalSearchParams<{
     openSessionId?: string;
     openMessageId?: string;
@@ -151,7 +153,13 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={{ flex: 1, position: 'relative' }}>
+    <View
+      style={{
+        flex: 1,
+        position: 'relative',
+        backgroundColor: darkMode ? '#17171B' : '#ffffff',
+      }}
+    >
       <WebView
         originWhitelist={['*']}
         ref={webViewRef}
@@ -187,7 +195,7 @@ export default function ChatScreen() {
           style={{
             position: 'absolute',
             inset: 0,
-            backgroundColor: '#fff',
+            backgroundColor: darkMode ? '#17171B' : '#ffffff',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 9999,

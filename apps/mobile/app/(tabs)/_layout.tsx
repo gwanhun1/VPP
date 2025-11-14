@@ -2,19 +2,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
 import { View, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 
 export default function TabLayout() {
+  const darkMode = useSettingsStore((s) => s.darkMode);
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
 
     if (Platform.OS === 'android') {
-      StatusBar.setBackgroundColor('#14287f');
+      StatusBar.setBackgroundColor(darkMode ? '#17171B' : '#14287f');
       StatusBar.setTranslucent(true);
     }
-  }, []);
+  }, [darkMode]);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      style={{ flex: 1, backgroundColor: darkMode ? '#17171B' : '#ffffff' }}
+    >
       <SafeAreaView
         style={{
           backgroundColor: '#14287f',
@@ -23,15 +27,17 @@ export default function TabLayout() {
       />
 
       {/* 메인 콘텐츠 영역 */}
-      <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <View
+        style={{ flex: 1, backgroundColor: darkMode ? '#17171B' : '#ffffff' }}
+      >
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarActiveTintColor: '#14287f',
-            tabBarInactiveTintColor: '#666666',
+            tabBarActiveTintColor: darkMode ? '#ffcc80' : '#14287f',
+            tabBarInactiveTintColor: darkMode ? '#9ca3af' : '#666666',
             tabBarStyle: {
-              backgroundColor: '#ffffff',
-              borderTopColor: '#e0e0e0',
+              backgroundColor: darkMode ? '#17171B' : '#ffffff',
+              borderTopColor: darkMode ? '#333333' : '#e0e0e0',
               paddingBottom: Platform.OS === 'ios' ? 5 : 10,
               height: Platform.OS === 'ios' ? 60 : 65,
             },
@@ -96,7 +102,7 @@ export default function TabLayout() {
       {/* ✅ iOS 하단 Safe Area 처리 */}
       <SafeAreaView
         style={{
-          backgroundColor: '#ffffff',
+          backgroundColor: darkMode ? '#17171B' : '#ffffff',
           flex: 0,
         }}
       />

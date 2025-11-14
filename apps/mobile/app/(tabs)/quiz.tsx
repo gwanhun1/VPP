@@ -5,6 +5,7 @@ import Quiz from '../../components/quiz';
 import QuizHeader from '../../components/quiz/QuizHeader';
 import { QuizProvider } from '../../utils/QuizProvider';
 import useResponsive from '../../utils/useResponsive';
+import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 
 /**
  * 용어 퀴즈 화면
@@ -15,6 +16,7 @@ import useResponsive from '../../utils/useResponsive';
 export default function QuizScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
   const [refreshing, setRefreshing] = useState(false);
+  const darkMode = useSettingsStore((s) => s.darkMode);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -26,34 +28,38 @@ export default function QuizScreen() {
   }, []);
   return (
     <QuizProvider>
-      <QuizHeader />
-      <ScrollView
-        contentContainerStyle={{
-          paddingTop: 12,
-          paddingBottom: 24,
-          flexGrow: 1,
-        }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#14287f"
-          />
-        }
+      <View
+        style={{ flex: 1, backgroundColor: darkMode ? '#17171B' : '#ffffff' }}
       >
-        <View
-          style={{
-            alignSelf: 'center',
-            width: '100%',
-            maxWidth: containerMaxWidth,
-            paddingHorizontal: horizontalPadding,
-            rowGap: 12,
+        <QuizHeader />
+        <ScrollView
+          contentContainerStyle={{
+            paddingTop: 12,
+            paddingBottom: 24,
+            flexGrow: 1,
           }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor="#14287f"
+            />
+          }
         >
-          <Quiz />
-        </View>
-      </ScrollView>
+          <View
+            style={{
+              alignSelf: 'center',
+              width: '100%',
+              maxWidth: containerMaxWidth,
+              paddingHorizontal: horizontalPadding,
+              rowGap: 12,
+            }}
+          >
+            <Quiz />
+          </View>
+        </ScrollView>
+      </View>
     </QuizProvider>
   );
 }

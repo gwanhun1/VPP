@@ -6,8 +6,8 @@ import {
 import { setFirebaseConfig, initializeFirebase } from '@vpp/core-logic';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { useColorScheme } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import { useSettingsStore } from '../components/hooks/useSettingsStore';
 
 WebBrowser.maybeCompleteAuthSession();
 (() => {
@@ -52,8 +52,34 @@ WebBrowser.maybeCompleteAuthSession();
   }
 })();
 
+const lightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#14287f',
+    background: '#ffffff',
+    card: '#ffffff',
+    text: '#0f172a',
+    border: DefaultTheme.colors.border,
+    notification: '#ff9800',
+  },
+};
+
+const darkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: '#ffcc80',
+    background: '#17171B',
+    card: '#0f172a',
+    text: '#f9fafb',
+    border: DarkTheme.colors.border,
+    notification: '#ff9800',
+  },
+};
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const darkMode = useSettingsStore((s) => s.darkMode);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -63,7 +89,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={darkMode ? darkTheme : lightTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />

@@ -4,6 +4,7 @@ import { RefreshControl, ScrollView, View } from 'react-native';
 import Setting from '../../components/setting';
 import SettingHeader from '../../components/setting/SettingHeader';
 import useResponsive from '../../utils/useResponsive';
+import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 
 /**
  * 설정 화면
@@ -12,6 +13,7 @@ import useResponsive from '../../utils/useResponsive';
 export default function SettingsScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
   const [refreshing, setRefreshing] = useState(false);
+  const darkMode = useSettingsStore((s) => s.darkMode);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -23,7 +25,9 @@ export default function SettingsScreen() {
   }, []);
 
   return (
-    <>
+    <View
+      style={{ flex: 1, backgroundColor: darkMode ? '#17171B' : '#ffffff' }}
+    >
       <SettingHeader />
       <ScrollView
         contentContainerStyle={{
@@ -52,6 +56,6 @@ export default function SettingsScreen() {
           <Setting />
         </View>
       </ScrollView>
-    </>
+    </View>
   );
 }

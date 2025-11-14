@@ -4,6 +4,7 @@ import { RefreshControl, ScrollView, View } from 'react-native';
 import AppHeader from '../../components/common/AppHeader';
 import Trends from '../../components/trends';
 import useResponsive from '../../utils/useResponsive';
+import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 /**
  * 시장 동향 화면
  * - 주식, 암호화폐, 부동산 등의 시장 동향 정보 제공
@@ -12,6 +13,7 @@ import useResponsive from '../../utils/useResponsive';
 export default function TrendsScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
   const [refreshing, setRefreshing] = useState(false);
+  const darkMode = useSettingsStore((s) => s.darkMode);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -22,7 +24,9 @@ export default function TrendsScreen() {
     }
   }, []);
   return (
-    <>
+    <View
+      style={{ flex: 1, backgroundColor: darkMode ? '#17171B' : '#ffffff' }}
+    >
       <AppHeader title="시장 동향" subtitle="실시간 시장 정보를 확인하세요" />
       <ScrollView
         contentContainerStyle={{
@@ -51,6 +55,6 @@ export default function TrendsScreen() {
           <Trends />
         </View>
       </ScrollView>
-    </>
+    </View>
   );
 }
