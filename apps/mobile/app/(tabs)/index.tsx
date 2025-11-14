@@ -25,7 +25,8 @@ const DEV_URL_CANDIDATES = Platform.select({
   default: ['http://127.0.0.1:5173'],
 });
 
-const PROD_URL = 'https://vpp-two.vercel.app';
+const PROD_URL =
+  process.env.EXPO_PUBLIC_WEB_BASE_URL ?? 'https://vpp-web.vercel.app';
 
 export default function ChatScreen() {
   const webViewRef = useRef<WebView>(null);
