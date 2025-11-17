@@ -158,7 +158,7 @@ const Trends = () => {
         <View style={tw`flex-col gap-4`}>
           <TrendsStatus loading={loading} error={error} smp={smp} rec={rec} />
           <TrendFilter />
-          <TrendContainer trends={trends} />
+          <TrendContainer trends={trends} loading={loading} />
         </View>
       </View>
     </ScrollView>

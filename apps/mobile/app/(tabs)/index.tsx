@@ -16,6 +16,8 @@ import { useSettingsStore } from '../../components/hooks/useSettingsStore';
  * - 투자 상담, 시장 분석, 용어 설명 등 제공
  * - VPP 디자인 시스템 적용
  */
+type ThemeMode = 'light' | 'dark';
+
 const DEV_URL_CANDIDATES = Platform.select({
   ios: [
     'http://localhost:5173',
@@ -80,6 +82,19 @@ export default function ChatScreen() {
     []
   );
 
+  const postThemeModeToWeb = useCallback((mode: ThemeMode): void => {
+    if (!webViewRef.current) return;
+    const payload = JSON.stringify({
+      type: 'THEME_MODE',
+      payload: { mode },
+    });
+    try {
+      webViewRef.current.postMessage(payload);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // 로그인 상태 감지 → WebView로 전달
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((authUser: AuthUser | null) => {
@@ -92,6 +107,11 @@ export default function ChatScreen() {
 
     return unsubscribe;
   }, [postAuthToWeb, webViewReady]);
+
+  useEffect(() => {
+    if (!webViewReady) return;
+    postThemeModeToWeb(darkMode ? 'dark' : 'light');
+  }, [darkMode, webViewReady, postThemeModeToWeb]);
 
   // WebView → RN 메시지 수신
   const handleMessage = (event: WebViewMessageEvent) => {
@@ -145,6 +165,7 @@ export default function ChatScreen() {
     // Firebase 설정을 먼저 전달하여 Web이 초기화된 뒤 AUTH를 처리하도록 보장
     postFirebaseConfigToWeb();
     postAuthToWeb(user);
+    postThemeModeToWeb(darkMode ? 'dark' : 'light');
     setIsLoading(false);
   };
 
