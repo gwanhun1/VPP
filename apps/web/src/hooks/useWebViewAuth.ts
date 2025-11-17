@@ -10,9 +10,9 @@ import {
 
 type ThemeMode = 'light' | 'dark';
 
-type WebViewMessage = {
-  type: string;
-  payload?: unknown;
+type AuthMessage = {
+  type: 'AUTH';
+  payload: AuthUser | null;
 };
 
 type OpenSessionMessage = {
@@ -42,12 +42,19 @@ type FirebaseConfigMessage = {
   };
 };
 
-// React Native WebView 타입 확장
+type WebViewMessage =
+  | AuthMessage
+  | FirebaseConfigMessage
+  | OpenSessionMessage
+  | ThemeModeMessage;
+
+// React Native WebView / 전역 유틸 타입 확장
 declare global {
   interface Window {
     ReactNativeWebView?: {
       postMessage: (message: string) => void;
     };
+    vppSetThemeMode?: (mode: ThemeMode) => void;
   }
 }
 
@@ -87,14 +94,10 @@ export function useWebViewAuth() {
     // 모바일 앱으로부터 메시지 수신 처리
     const handleMessage = (event: MessageEvent) => {
       try {
-        const data:
-          | WebViewMessage
-          | FirebaseConfigMessage
-          | OpenSessionMessage
-          | ThemeModeMessage = JSON.parse(event.data);
+        const data = JSON.parse(event.data) as WebViewMessage;
 
         if (data.type === 'THEME_MODE') {
-          const themeData = data as ThemeModeMessage;
+          const themeData = data;
           const mode = themeData.payload?.mode;
           if (mode === 'light' || mode === 'dark') {
             try {
@@ -123,7 +126,7 @@ export function useWebViewAuth() {
         }
 
         if (data.type === 'AUTH') {
-          const authData = data as WebViewMessage;
+          const authData = data;
           setAuthUser(authData.payload || null);
 
           // 모바일 앱에서 전달받은 인증 정보로 사용자 상태 업데이트 및 활동 기록
@@ -168,7 +171,7 @@ export function useWebViewAuth() {
             })();
           }
         } else if (data.type === 'FIREBASE_CONFIG') {
-          const configData = data as FirebaseConfigMessage;
+          const configData = data;
           setFirebaseConfig(configData.payload);
           // Firebase 설정 후 즉시 초기화
           try {
@@ -179,7 +182,7 @@ export function useWebViewAuth() {
             // no-op
           }
         } else if (data.type === 'OPEN_SESSION') {
-          const sessionData = data as OpenSessionMessage;
+          const sessionData = data;
           setOpenSessionId(sessionData.payload.sessionId);
           setOpenMessageId(sessionData.payload.messageId ?? null);
         }

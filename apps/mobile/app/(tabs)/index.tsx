@@ -4,11 +4,12 @@ import {
   getFirebaseConfig,
 } from '@vpp/core-logic';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Platform } from 'react-native';
+import { View, Platform, Text, Pressable } from 'react-native';
 import { Spinner } from '@vpp/shared-ui';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { useLocalSearchParams } from 'expo-router';
 import { useSettingsStore } from '../../components/hooks/useSettingsStore';
+import tw from '../../utils/tailwind';
 
 /**
  * AI 채팅 화면
@@ -37,6 +38,7 @@ export default function ChatScreen() {
   const [webViewReady, setWebViewReady] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [devUrlIndex, setDevUrlIndex] = useState(0);
+  const [webError, setWebError] = useState<string | null>(null);
   const darkMode = useSettingsStore((s) => s.darkMode);
   const { openSessionId, openMessageId } = useLocalSearchParams<{
     openSessionId?: string;
@@ -167,19 +169,31 @@ export default function ChatScreen() {
     postAuthToWeb(user);
     postThemeModeToWeb(darkMode ? 'dark' : 'light');
     setIsLoading(false);
+    setWebError(null);
   };
 
   const handleLoadStart = () => {
     setIsLoading(true);
+    setWebError(null);
+  };
+
+  const handleRetry = () => {
+    if (webViewRef.current) {
+      setIsLoading(true);
+      setWebError(null);
+      webViewRef.current.reload();
+    }
   };
 
   return (
     <View
-      style={{
-        flex: 1,
-        position: 'relative',
-        backgroundColor: darkMode ? '#17171B' : '#ffffff',
-      }}
+      style={[
+        tw`flex-1`,
+        {
+          position: 'relative',
+          backgroundColor: darkMode ? '#17171B' : '#ffffff',
+        },
+      ]}
     >
       <WebView
         originWhitelist={['*']}
@@ -189,7 +203,7 @@ export default function ChatScreen() {
         bounces={false}
         overScrollMode="never"
         // 전체 화면 채움 + iOS 자동 인셋/액세서리 바 비활성화
-        style={{ flex: 1 }}
+        style={tw`flex-1`}
         automaticallyAdjustContentInsets={false}
         contentInsetAdjustmentBehavior="never"
         hideKeyboardAccessoryView
@@ -198,6 +212,42 @@ export default function ChatScreen() {
         onMessage={handleMessage} // RN <-> WebView 통신 연결
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
+        renderError={() => (
+          <View
+            style={[
+              tw`flex-1 items-center justify-center px-6`,
+              { backgroundColor: '#ffffff' },
+            ]}
+          >
+            <View style={tw`items-center gap-3`}>
+              <View style={tw`mb-2`}>
+                <Spinner size={24} message={undefined} />
+              </View>
+              <View>
+                <Text
+                  style={tw`text-base font-semibold text-center text-gray-900`}
+                >
+                  페이지를 불러오지 못했어요
+                </Text>
+                <Text style={tw`mt-1 text-xs text-center text-gray-600`}>
+                  {webError ||
+                    '네트워크 상태를 확인하시거나 잠시 후 다시 시도해 주세요.'}
+                </Text>
+              </View>
+              <Pressable
+                onPress={handleRetry}
+                style={[
+                  tw`mt-3 px-5 py-2.5 rounded-full items-center`,
+                  { backgroundColor: '#2563EB' },
+                ]}
+              >
+                <Text style={tw`text-sm font-semibold text-white`}>
+                  다시 시도
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
         onError={(e) => {
           // iOS 시뮬레이터에서 localhost/127.0.0.1 해석 문제 시 대체 URL로 재시도
           if (__DEV__) {
@@ -208,19 +258,23 @@ export default function ChatScreen() {
             }
           }
           console.warn('WebView load error:', e.nativeEvent);
+          setIsLoading(false);
+          const description =
+            typeof e.nativeEvent.description === 'string'
+              ? e.nativeEvent.description
+              : '';
+          setWebError(
+            description || '페이지를 불러오는 중 문제가 발생했습니다.'
+          );
         }}
       />
 
       {isLoading ? (
         <View
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: darkMode ? '#17171B' : '#ffffff',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-          }}
+          style={[
+            tw`absolute inset-0 items-center justify-center`,
+            { backgroundColor: '#ffffff', zIndex: 9999 },
+          ]}
         >
           <Spinner size={36} message="로딩 중..." />
         </View>
