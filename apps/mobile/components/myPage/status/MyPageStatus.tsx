@@ -18,7 +18,7 @@ type DisplayStats = {
 };
 
 const MyPageStatus = () => {
-  const primaryColor = tw.color('primary-500');
+  const primaryColor = tw.color('primary-600');
   const subColor = tw.color('secondary-500');
   const redColor = tw.color('red-500');
   const greenColor = tw.color('green-500');

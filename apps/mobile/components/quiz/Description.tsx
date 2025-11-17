@@ -3,13 +3,17 @@ import { Card, Text } from '@vpp/shared-ui';
 import { View } from 'react-native';
 
 import tw from '../../utils/tailwind';
+import { useSettingsStore } from '../hooks/useSettingsStore';
 
 type DescriptionProps = {
   description?: string;
 };
 
 const Description = ({ description }: DescriptionProps) => {
-  const subColor = tw.color('secondary');
+  const secondary = tw.color('secondary');
+  const secondary400 = tw.color('secondary-400') ?? secondary;
+  const darkMode = useSettingsStore((s) => s.darkMode);
+  const subColor = darkMode ? secondary400 : secondary;
 
   return (
     <View style={tw`mt-2`}>

@@ -65,9 +65,7 @@ const ShortAnswerQuestion = ({ quiz }: ShortAnswerQuestionProps) => {
           </Button>
         </View>
         {!isCorrect && (
-          <Text variant="caption" color="gray">
-            정답을 입력한 뒤 확인을 눌러주세요.
-          </Text>
+          <Text variant="caption">정답을 입력한 뒤 확인을 눌러주세요.</Text>
         )}
       </View>
 

@@ -9,6 +9,8 @@ const Assist = () => {
   const primaryColor = tw.color('primary');
   const subColor = tw.color('secondary');
   const darkMode = useSettingsStore((s) => s.darkMode);
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   return (
     <TouchableOpacity>
@@ -25,7 +27,7 @@ const Assist = () => {
                 },
               ]}
             >
-              <MaterialIcons name="help" size={16} color={primaryColor} />
+              <MaterialIcons name="help" size={16} color={iconColor} />
             </View>
             <View>
               <Text variant="subtitle2" color="primary" weight="semibold">

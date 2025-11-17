@@ -9,6 +9,8 @@ const DarkMode = () => {
   const primaryColor = tw.color('primary');
   const subColor = tw.color('secondary');
   const isEnabled = useSettingsStore((s) => s.darkMode);
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
+  const iconColor = isEnabled ? primaryColor600 : primaryColor;
   const setDarkMode = useSettingsStore((s) => s.setDarkMode);
   const toggleSwitch = () => setDarkMode(!isEnabled);
 
@@ -25,7 +27,11 @@ const DarkMode = () => {
             },
           ]}
         >
-          <MaterialIcons name="dark-mode" size={16} color={primaryColor} />
+          <MaterialIcons
+            name="dark-mode"
+            size={16}
+            color={isEnabled ? primaryColor600 : primaryColor}
+          />
         </View>
         <Text variant="h6" color="primary" weight="semibold">
           화면 설정

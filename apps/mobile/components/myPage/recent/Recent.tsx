@@ -2,6 +2,7 @@ import {
   fetchUserRecentActivities,
   onAuthStateChanged,
   type AuthUser,
+  type RecentActivity,
 } from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -13,12 +14,16 @@ import { useSettingsStore } from '../../hooks/useSettingsStore';
 
 import RecentCard from './RecentCard';
 
+type RecentActivityWithId = RecentActivity & { id: string };
+
 const Recent = () => {
-  const [activities, setActivities] = useState<RecentActivity[]>([]);
+  const [activities, setActivities] = useState<RecentActivityWithId[]>([]);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   useEffect(() => {
     let mounted = true;
@@ -66,7 +71,7 @@ const Recent = () => {
               },
             ]}
           >
-            <MaterialIcons name="history" size={16} color={primaryColor} />
+            <MaterialIcons name="history" size={16} color={iconColor} />
           </View>
           <Text variant="h6" weight="semibold" color="primary">
             최근 활동
@@ -83,7 +88,7 @@ const Recent = () => {
         <View style={tw`py-8 items-center`}>
           <ActivityIndicator
             size="small"
-            color={tw.color('primary-500') ?? '#14287f'}
+            color={tw.color('primary-600') ?? '#14287f'}
           />
           <View style={tw`mt-2`}>
             <Text variant="body2" color="muted">

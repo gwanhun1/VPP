@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Link, router } from 'expo-router';
 import tw from '../../utils/tailwind';
 import { getFirebaseAuth } from '@vpp/core-logic';
@@ -22,8 +30,7 @@ export default function LoginScreen() {
       await signInWithEmailAndPassword(auth, email.trim(), password);
       router.replace('/(tabs)');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '로그인에 실패했습니다';
-      Alert.alert('로그인 오류', msg);
+      Alert.alert('로그인 오류', '로그인에 실패했습니다');
     } finally {
       setSubmitting(false);
     }
@@ -34,15 +41,21 @@ export default function LoginScreen() {
       behavior={Platform.select({ ios: 'padding', android: undefined })}
       style={tw`flex-1 bg-white`}
     >
-      <View style={tw`flex-row items-center px-5 pt-12 pb-6 border-b border-gray-100`}> 
-        <TouchableOpacity onPress={() => router.back()} style={tw`pr-3 py-2`}> 
+      <View
+        style={tw`flex-row items-center px-5 pt-12 pb-6 border-b border-gray-100`}
+      >
+        <TouchableOpacity onPress={() => router.back()} style={tw`pr-3 py-2`}>
           <Text style={tw`text-[#14287f] font-semibold`}>{'‹ 뒤로'}</Text>
         </TouchableOpacity>
-        <Text style={tw`flex-1 text-center text-gray-900 font-semibold text-base`}>로그인</Text>
+        <Text
+          style={tw`flex-1 text-center text-gray-900 font-semibold text-base`}
+        >
+          로그인
+        </Text>
         <View style={tw`w-10`} />
       </View>
 
-      <View style={tw`flex-1 px-6 pt-8`}> 
+      <View style={tw`flex-1 px-6 pt-8`}>
         <View style={tw`mb-4`}>
           <Text style={tw`mb-2 text-gray-700 text-xs`}>아이디 (이메일)</Text>
           <TextInput

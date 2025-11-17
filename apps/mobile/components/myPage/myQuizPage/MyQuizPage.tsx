@@ -15,10 +15,12 @@ import QuizResponse from './QuizResponse';
 
 const MyQuizPage = () => {
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const [quizHistory, setQuizHistory] = useState<QuizResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [user] = useState(() => getCurrentUser());
   const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   useEffect(() => {
     if (user && user.providerId !== 'anonymous') {
@@ -52,7 +54,7 @@ const MyQuizPage = () => {
               },
             ]}
           >
-            <MaterialIcons name="emoji-events" size={16} color={primaryColor} />
+            <MaterialIcons name="emoji-events" size={16} color={iconColor} />
           </View>
           <Text variant="h6" weight="semibold" color="primary">
             퀴즈 성과

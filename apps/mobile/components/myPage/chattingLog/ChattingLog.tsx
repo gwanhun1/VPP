@@ -20,8 +20,10 @@ const ChattingLog = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const router = useRouter();
   const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   useEffect(() => {
     let mounted = true;
@@ -76,7 +78,7 @@ const ChattingLog = () => {
               },
             ]}
           >
-            <MaterialIcons name="chat" size={16} color={primaryColor} />
+            <MaterialIcons name="chat" size={16} color={iconColor} />
           </View>
           <Text variant="h6" weight="semibold" color="primary">
             AI 채팅 기록
@@ -93,7 +95,7 @@ const ChattingLog = () => {
         <View style={tw`py-8 items-center`}>
           <ActivityIndicator
             size="small"
-            color={tw.color('primary-500') ?? '#14287f'}
+            color={tw.color('primary-600') ?? '#14287f'}
           />
           <View style={tw`mt-2`}>
             <Text variant="body2" color="muted">

@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
+import { useSettingsStore } from '../../hooks/useSettingsStore';
 
 type TrendCardProps = {
   trend: {
@@ -19,6 +20,9 @@ type TrendCardProps = {
 
 const TrendCard = ({ trend }: TrendCardProps) => {
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
+  const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   return (
     <Card bordered>
@@ -64,13 +68,13 @@ const TrendCard = ({ trend }: TrendCardProps) => {
         <Card variant="primary">
           <View style={tw`flex-row items-center gap-4`}>
             <View style={tw`flex-row items-center gap-2`}>
-              <AntDesign name="calendar" size={14} color={primaryColor} />
+              <AntDesign name="calendar" size={14} color={iconColor} />
               <Text variant="body2" color="primary">
                 {format(trend.date, 'yyyy-MM-dd')}
               </Text>
             </View>
             <View style={tw`flex-row items-center gap-2`}>
-              <AntDesign name="clock-circle" size={14} color={primaryColor} />
+              <AntDesign name="clock-circle" size={14} color={iconColor} />
               <Text variant="body2" color="primary">
                 {format(trend.date, 'HH:mm')}
               </Text>

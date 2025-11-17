@@ -21,8 +21,10 @@ const BookMark = () => {
   const [loading, setLoading] = useState(false);
   const [user] = useState(() => getCurrentUser());
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const router = useRouter();
   const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   useEffect(() => {
     if (user && user.providerId !== 'anonymous') {
@@ -61,7 +63,7 @@ const BookMark = () => {
               },
             ]}
           >
-            <MaterialIcons name="bookmark" size={16} color={primaryColor} />
+            <MaterialIcons name="bookmark" size={16} color={iconColor} />
           </View>
           <Text variant="h6" weight="semibold" color="primary">
             북마크한 답변
@@ -79,7 +81,7 @@ const BookMark = () => {
           <View style={tw`flex-1 items-center justify-center py-8`}>
             <ActivityIndicator
               size="small"
-              color={tw.color('primary-500') ?? '#14287f'}
+              color={tw.color('primary-600') ?? '#14287f'}
             />
             <View style={tw`mt-2`}>
               <Text variant="body2" color="muted">

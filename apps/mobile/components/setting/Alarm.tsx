@@ -9,7 +9,9 @@ import AlarmButtonGroup from './AlarmButtonGroup';
 
 const Alarm = () => {
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   return (
     <Card bordered>
@@ -24,7 +26,7 @@ const Alarm = () => {
             },
           ]}
         >
-          <MaterialIcons name="notifications" size={16} color={primaryColor} />
+          <MaterialIcons name="notifications" size={16} color={iconColor} />
         </View>
         <Text variant="h6" color="primary" weight="semibold">
           알림 설정

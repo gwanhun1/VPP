@@ -8,9 +8,11 @@ import { useSettingsStore } from '../hooks/useSettingsStore';
 
 const Language = () => {
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const lang = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
 
   const [open, setOpen] = useState(false);
 
@@ -48,7 +50,7 @@ const Language = () => {
             },
           ]}
         >
-          <MaterialIcons name="language" size={16} color={primaryColor} />
+          <MaterialIcons name="language" size={16} color={iconColor} />
         </View>
         <Text variant="h6" color="primary" weight="semibold">
           언어 설정
@@ -68,7 +70,9 @@ const Language = () => {
         <Pressable
           accessibilityRole="button"
           onPress={() => setOpen(true)}
-          style={tw`min-w-28 px-3 py-2 rounded-xl border border-gray-300 bg-white flex-row items-center justify-between`}
+          style={tw`min-w-28 px-3 py-2 rounded-xl border ${
+            darkMode ? 'border-gray-700' : 'border-gray-300'
+          } flex-row items-center justify-between`}
         >
           <Text color="primary" weight="medium">
             {selectedLabel}
@@ -76,7 +80,7 @@ const Language = () => {
           <MaterialIcons
             name={open ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
             size={20}
-            color={primaryColor}
+            color={iconColor}
           />
         </Pressable>
       </View>
@@ -112,11 +116,7 @@ const Language = () => {
                     {o.label}
                   </Text>
                   {lang === o.value ? (
-                    <MaterialIcons
-                      name="check"
-                      size={18}
-                      color={primaryColor}
-                    />
+                    <MaterialIcons name="check" size={18} color={iconColor} />
                   ) : null}
                 </Pressable>
               ))}

@@ -20,12 +20,14 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 
 import tw from '../../../utils/tailwind';
+import { useSettingsStore } from '../../hooks/useSettingsStore';
 
 const UserProfile = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [displayNameInput, setDisplayNameInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
+  const darkMode = useSettingsStore((s) => s.darkMode);
 
   useEffect(() => {
     setUser(getCurrentUser());
@@ -119,7 +121,7 @@ const UserProfile = () => {
   };
 
   return (
-    <Card bordered backgroundColor="white">
+    <Card bordered>
       <View style={tw`flex-row items-center gap-4`}>
         {/* 프로필 이미지 또는 기본 아이콘 */}
         <View style={tw`relative`}>
@@ -133,7 +135,9 @@ const UserProfile = () => {
             <View
               style={[
                 tw`w-16 h-16 rounded-full items-center justify-center`,
-                { backgroundColor: '#f3f4f6' },
+                {
+                  backgroundColor: darkMode ? '#1f2937' : '#f3f4f6',
+                },
               ]}
             >
               <Text variant="h2" weight="bold" color="muted">
@@ -173,13 +177,18 @@ const UserProfile = () => {
                 editable={!isSaving}
                 autoFocus
                 style={[
-                  tw`flex-1 px-3 border border-gray-200 rounded-lg text-gray-900`,
+                  tw`flex-1 px-3 border rounded-lg`,
                   {
                     height: 32,
                     fontSize: 14,
                     lineHeight: 18,
                     paddingVertical: 0,
                     textAlignVertical: 'center',
+                    borderColor: darkMode
+                      ? tw.color('gray-600') || '#4b5563'
+                      : tw.color('gray-200') || '#e5e7eb',
+                    color: darkMode ? '#e5e7eb' : '#111827',
+                    backgroundColor: darkMode ? '#030712' : '#ffffff',
                   },
                 ]}
               />
@@ -197,7 +206,14 @@ const UserProfile = () => {
                 )}
               </TouchableOpacity>
               <TouchableOpacity
-                style={tw`h-8 px-3 rounded-lg bg-gray-100 items-center justify-center`}
+                style={[
+                  tw`h-8 px-3 rounded-lg items-center justify-center`,
+                  {
+                    backgroundColor: darkMode
+                      ? '#374151'
+                      : tw.color('gray-100') || '#f3f4f6',
+                  },
+                ]}
                 onPress={handleCancelEdit}
                 disabled={isSaving}
               >
@@ -247,7 +263,16 @@ const UserProfile = () => {
         </View>
       </View>
       {/* 구분선 및 로그아웃 액션 */}
-      <View style={tw`border-t border-gray-200 mt-3 pt-3`}>
+      <View
+        style={[
+          tw`border-t mt-3 pt-3`,
+          {
+            borderColor: darkMode
+              ? tw.color('gray-700') || '#374151'
+              : tw.color('gray-200') || '#e5e7eb',
+          },
+        ]}
+      >
         <TouchableOpacity
           style={tw`flex-row items-center justify-between py-2`}
           onPress={() => {

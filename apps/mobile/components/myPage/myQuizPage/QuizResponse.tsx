@@ -32,7 +32,7 @@ const QuizResponse = ({ quizHistory }: QuizResponseProps) => {
           총 풀어본 문제
         </Text>
         <Text variant="h6" weight="bold" color="primary">
-          {totalQuestions} 문제
+          {totalQuestions}
         </Text>
       </View>
       <View style={tw`flex-row justify-between items-center gap-2`}>
@@ -40,7 +40,7 @@ const QuizResponse = ({ quizHistory }: QuizResponseProps) => {
           정답 수
         </Text>
         <Text variant="h6" weight="bold" color="secondary">
-          {totalCorrect} 문제
+          {totalCorrect}
         </Text>
       </View>
       <View style={tw`flex-row justify-between items-center gap-2`}>
@@ -48,7 +48,7 @@ const QuizResponse = ({ quizHistory }: QuizResponseProps) => {
           평균 점수
         </Text>
         <Text variant="h6" weight="bold" color="primary">
-          {averageScore} 점
+          {averageScore}
         </Text>
       </View>
       {totalQuizzes > 0 && (

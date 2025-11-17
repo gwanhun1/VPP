@@ -4,11 +4,15 @@ import { Alert, View } from 'react-native';
 
 import { useQuiz } from '../../utils/QuizProvider';
 import tw from '../../utils/tailwind';
+import { useSettingsStore } from '../hooks/useSettingsStore';
 
 import QuizActionButton from './QuizActionButton';
 
 const QuizButtonGroup = () => {
   const primaryColor = tw.color('primary');
+  const primaryColor600 = tw.color('primary-600') ?? primaryColor;
+  const darkMode = useSettingsStore((s) => s.darkMode);
+  const iconColor = darkMode ? primaryColor600 : primaryColor;
   const {
     step,
     nextStep,
@@ -53,10 +57,7 @@ const QuizButtonGroup = () => {
     Alert.alert(
       '퀴즈 완료 🙌',
       `총 ${result.totalQuestions}문제 중 ${result.correctCount}문제 맞춤\n정답률: ${percentage}%\n점수: ${result.totalScore}점\n\n오답 ${result.wrongCount}개\n\n${saveResult.message}`,
-      [
-        { text: '다시 풀기', onPress: () => resetQuiz() }, 
-        { text: '확인' }
-      ]
+      [{ text: '다시 풀기', onPress: () => resetQuiz() }, { text: '확인' }]
     );
   };
 
@@ -72,7 +73,7 @@ const QuizButtonGroup = () => {
         rounded="full"
       >
         <View style={tw`flex-row items-center gap-1`}>
-          <AntDesign name="left" size={12} color={primaryColor} />
+          <AntDesign name="left" size={12} color={iconColor} />
           <Text variant="body" weight="bold" color="primary">
             이전
           </Text>
