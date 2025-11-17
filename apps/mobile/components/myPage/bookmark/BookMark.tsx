@@ -5,9 +5,10 @@ import {
 } from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 import tw from '../../../utils/tailwind';
 import { useSettingsStore } from '../../hooks/useSettingsStore';
@@ -26,13 +27,7 @@ const BookMark = () => {
   const darkMode = useSettingsStore((s) => s.darkMode);
   const iconColor = darkMode ? primaryColor600 : primaryColor;
 
-  useEffect(() => {
-    if (user && user.providerId !== 'anonymous') {
-      loadBookmarks();
-    }
-  }, [user]);
-
-  const loadBookmarks = async () => {
+  const loadBookmarks = useCallback(async () => {
     setLoading(true);
     try {
       const userChatBookmarks = user
@@ -47,7 +42,15 @@ const BookMark = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user && user.providerId !== 'anonymous') {
+        void loadBookmarks();
+      }
+    }, [user, loadBookmarks])
+  );
 
   return (
     <Card bordered>

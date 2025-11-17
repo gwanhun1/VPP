@@ -1,6 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Card } from '@vpp/shared-ui';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { Card, Text } from '@vpp/shared-ui';
+import { TouchableOpacity, View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 
@@ -37,13 +37,7 @@ const BookmarkCard = ({ text, onPress, icon = 'stars' }: BookmarkCardProps) => {
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
       <Card bordered>
         <View style={tw`flex flex-row justify-between items-center`}>
-          <Text
-            style={tw`max-w-66 text-primary text-sm`}
-            numberOfLines={2}
-            ellipsizeMode="tail"
-          >
-            {truncatedText}
-          </Text>
+          <Text color="primary">{truncatedText}</Text>
           <MaterialIcons name={icon} size={20} color={subColor} />
         </View>
       </Card>
