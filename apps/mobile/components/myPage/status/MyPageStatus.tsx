@@ -1,14 +1,8 @@
-import {
-  onAuthStateChanged,
-  type AuthUser,
-  fetchUserStats,
-  countUserBookmarkedMessages,
-} from '@vpp/core-logic';
 import { Card, Text } from '@vpp/shared-ui';
-import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import tw from '../../../utils/tailwind';
+import { useMyPageStore } from '../../hooks/useMyPageStore';
 
 type DisplayStats = {
   learnedTerms: number;
@@ -23,57 +17,8 @@ const MyPageStatus = () => {
   const redColor = tw.color('red-500');
   const greenColor = tw.color('green-500');
 
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [stats, setStats] = useState<DisplayStats>({
-    learnedTerms: 0,
-    bookmarks: 0,
-    quizScore: 0,
-    studyDays: 0,
-  });
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadUserData = async (uid: string) => {
-      try {
-        const [userStats, bookmarkCount] = await Promise.all([
-          fetchUserStats(),
-          countUserBookmarkedMessages(uid),
-        ]);
-        if (isMounted) {
-          setStats({
-            learnedTerms: userStats?.learnedTerms ?? 0,
-            bookmarks: bookmarkCount,
-            quizScore: userStats?.quizScore ?? 0,
-            studyDays: userStats?.studyDays ?? 0,
-          });
-        }
-      } catch (error) {
-        console.error('[MyPageStatus] 통계 로드 실패:', error);
-      }
-    };
-
-    const unsubscribe = onAuthStateChanged((authUser: AuthUser | null) => {
-      if (!isMounted) return;
-      setUser(authUser);
-
-      if (authUser && authUser.providerId !== 'anonymous') {
-        void loadUserData(authUser.uid);
-      } else {
-        setStats({
-          learnedTerms: 0,
-          bookmarks: 0,
-          quizScore: 0,
-          studyDays: 0,
-        });
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
-  }, []);
+  const user = useMyPageStore((s) => s.user);
+  const stats: DisplayStats = useMyPageStore((s) => s.stats);
 
   if (!user || user.providerId === 'anonymous') {
     return (

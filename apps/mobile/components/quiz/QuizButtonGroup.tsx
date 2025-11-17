@@ -1,8 +1,9 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { Text } from '@vpp/shared-ui';
-import { Alert, View } from 'react-native';
+import { Button, Card, Text } from '@vpp/shared-ui';
+import { Alert, Modal, View } from 'react-native';
+import { useState } from 'react';
 
-import { useQuiz } from '../../utils/QuizProvider';
+import { useQuiz, type QuizResult } from '../../utils/QuizProvider';
 import tw from '../../utils/tailwind';
 import { useSettingsStore } from '../hooks/useSettingsStore';
 
@@ -24,6 +25,9 @@ const QuizButtonGroup = () => {
     resetQuiz,
     submitResults,
   } = useQuiz();
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [lastResult, setLastResult] = useState<QuizResult | null>(null);
+  const [lastSaveMessage, setLastSaveMessage] = useState<string | undefined>();
 
   const handleNextStep = () => {
     if (!hasAnswer) {
@@ -54,6 +58,10 @@ const QuizButtonGroup = () => {
     // Firebase에 퀴즈 결과 저장
     const saveResult = await submitResults();
 
+    setLastResult(result);
+    setLastSaveMessage(saveResult.message);
+    setShowResultModal(true);
+
     Alert.alert(
       '퀴즈 완료 🙌',
       `총 ${result.totalQuestions}문제 중 ${result.correctCount}문제 맞춤\n정답률: ${percentage}%\n점수: ${result.totalScore}점\n\n오답 ${result.wrongCount}개\n\n${saveResult.message}`,
@@ -79,7 +87,6 @@ const QuizButtonGroup = () => {
           </Text>
         </View>
       </QuizActionButton>
-
       <QuizActionButton
         onPress={isLastQuestion ? handleComplete : handleNextStep}
         disabled={!hasAnswer}
@@ -93,6 +100,65 @@ const QuizButtonGroup = () => {
           {!isLastQuestion && <AntDesign name="right" size={12} color="#fff" />}
         </View>
       </QuizActionButton>
+
+      <Modal
+        visible={showResultModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowResultModal(false)}
+      >
+        <View style={tw`flex-1 items-center justify-center bg-black/40 px-4`}>
+          <Card bordered>
+            <View style={tw`p-4 gap-3`}>
+              <Text variant="h5" weight="bold" color="primary">
+                퀴즈 결과
+              </Text>
+              {lastResult ? (
+                <View style={tw`gap-1`}>
+                  <Text variant="body2" color="primary">
+                    총 문제 수: {lastResult.totalQuestions}
+                  </Text>
+                  <Text variant="body2" color="primary">
+                    정답 수: {lastResult.correctCount}
+                  </Text>
+                  <Text variant="body2" color="primary">
+                    오답 수: {lastResult.wrongCount}
+                  </Text>
+                  <Text variant="body2" color="primary">
+                    정답률:{' '}
+                    {Math.round(
+                      (lastResult.correctCount /
+                        (lastResult.totalQuestions || 1)) *
+                        100
+                    )}
+                    %
+                  </Text>
+                  <Text variant="body2" color="primary">
+                    점수: {lastResult.totalScore}점
+                  </Text>
+                </View>
+              ) : null}
+              {lastSaveMessage ? (
+                <Text variant="caption" color="muted">
+                  {lastSaveMessage}
+                </Text>
+              ) : null}
+              <View style={tw`flex-row justify-end gap-2 mt-2`}>
+                <Button
+                  variant="outline"
+                  onPress={() => {
+                    setShowResultModal(false);
+                    resetQuiz();
+                  }}
+                >
+                  다시 풀기
+                </Button>
+                <Button onPress={() => setShowResultModal(false)}>닫기</Button>
+              </View>
+            </View>
+          </Card>
+        </View>
+      </Modal>
     </View>
   );
 };

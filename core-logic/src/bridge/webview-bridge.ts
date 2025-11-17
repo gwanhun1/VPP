@@ -4,6 +4,7 @@ export type WebViewMessageType =
   | 'AUTH'
   | 'FIREBASE_CONFIG'
   | 'OPEN_SESSION'
+  | 'THEME_MODE'
   | 'REQUEST_AUTH'
   | 'REQUEST_FIREBASE_CONFIG';
 
@@ -81,7 +82,9 @@ class WebViewBridge {
           await this.delay(this.options.retryDelay);
         } else {
           console.error(
-            `[WebViewBridge] Failed to post message after ${maxRetries + 1} attempts:`,
+            `[WebViewBridge] Failed to post message after ${
+              maxRetries + 1
+            } attempts:`,
             error
           );
           return false;
@@ -106,7 +109,10 @@ class WebViewBridge {
     });
   }
 
-  async sendOpenSession(sessionId: string, messageId?: string): Promise<boolean> {
+  async sendOpenSession(
+    sessionId: string,
+    messageId?: string
+  ): Promise<boolean> {
     return this.postMessage({
       type: 'OPEN_SESSION',
       payload: { sessionId, messageId },
@@ -121,14 +127,18 @@ class WebViewBridge {
     return this.postMessage({ type: 'REQUEST_FIREBASE_CONFIG' });
   }
 
-  addEventListener(
-    handler: (event: MessageEvent) => void
-  ): () => void {
+  addEventListener(handler: (event: MessageEvent) => void): () => void {
     const win = globalThis as WindowWithWebView & {
-      addEventListener?: (type: string, handler: (event: MessageEvent) => void) => void;
-      removeEventListener?: (type: string, handler: (event: MessageEvent) => void) => void;
+      addEventListener?: (
+        type: string,
+        handler: (event: MessageEvent) => void
+      ) => void;
+      removeEventListener?: (
+        type: string,
+        handler: (event: MessageEvent) => void
+      ) => void;
     };
-    
+
     if (!win.addEventListener) {
       return () => {
         // No-op

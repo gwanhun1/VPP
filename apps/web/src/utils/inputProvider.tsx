@@ -45,32 +45,27 @@ const ChatInputContext = createContext<ChatInputContextType | undefined>(
   undefined
 );
 
-export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
-  const [inputText, setInputTextInternal] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [historyMode, setHistoryMode] = useState(false);
-  const [focusMessageId, setFocusMessageId] = useState<string | null>(null);
-  const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
+type ChatDomainParams = {
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  setHistoryMode: React.Dispatch<React.SetStateAction<boolean>>;
+  setFocusMessageId: React.Dispatch<React.SetStateAction<string | null>>;
+};
 
-  // setInputText 래퍼 - 디버깅용
-  const setInputText = useCallback(
-    (value: string | ((prev: string) => string)) => {
-      setInputTextInternal(value);
-    },
-    []
-  );
-
-  const currentSessionIdRef = useRef<string | null>(null);
-  const difyConversationIdRef = useRef<string | null>(null);
-  const lastUserMsgIdRef = useRef<string | null>(null);
-
+const useChatDomain = ({
+  setMessages,
+  setHistoryMode,
+  setFocusMessageId,
+}: ChatDomainParams) => {
   const authUser = useAuthStore((s) => s.authUser);
   const firebaseReady = useAuthStore((s) => s.firebaseReady);
   const openSessionId = useAuthStore((s) => s.openSessionId);
   const openMessageId = useAuthStore((s) => s.openMessageId);
   const clearOpenSessionId = useAuthStore((s) => s.clearOpenSessionId);
 
-  // 세션 생성 또는 기존 세션 반환
+  const currentSessionIdRef = useRef<string | null>(null);
+  const difyConversationIdRef = useRef<string | null>(null);
+  const lastUserMsgIdRef = useRef<string | null>(null);
+
   const ensureSession = useCallback(async (): Promise<string> => {
     if (!authUser || !firebaseReady) {
       throw new Error('사용자 인증이 필요합니다.');
@@ -90,7 +85,6 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     return sessionId;
   }, [authUser, firebaseReady]);
 
-  // Firebase에 메시지 저장
   const saveMessage = useCallback(
     async (
       text: string,
@@ -117,25 +111,21 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
-      // 메시지 ID 업데이트
       setMessages((prev) =>
         prev.map((msg) =>
           msg.text === text && !msg.messageId ? { ...msg, messageId } : msg
         )
       );
 
-      // 사용자 메시지면 참조 저장
       if (isUser) {
         lastUserMsgIdRef.current = messageId;
 
-        // 첫 메시지면 세션 제목 업데이트
         if (isFirstMessage) {
           await updateChatSession(authUser.uid, sessionId, {
             title: text.length > 30 ? `${text.substring(0, 30)}...` : text,
           });
         }
 
-        // 활동 로그
         await addRecentActivity(authUser.uid, {
           type: 'chat',
           title: '채팅 메시지',
@@ -145,8 +135,101 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
       return messageId;
     },
-    [authUser, ensureSession]
+    [authUser, ensureSession, setMessages]
   );
+
+  const loadSession = useCallback(
+    async (sessionId: string, targetMessageId?: string) => {
+      if (!authUser || !firebaseReady) return;
+
+      try {
+        const rawMessages = await fetchChatMessages(authUser.uid, sessionId);
+
+        const mapped: Message[] = rawMessages.map((m, idx) => ({
+          id: Date.now() + idx,
+          text: m.text,
+          isUser: m.role === 'user',
+          timestamp: m.timestamp instanceof Date ? m.timestamp : new Date(),
+          messageId: (m as { id?: string }).id,
+          isBookmarked: (m as { isBookmarked?: boolean }).isBookmarked,
+        }));
+
+        setMessages(mapped);
+        currentSessionIdRef.current = sessionId;
+        setHistoryMode(true);
+        difyConversationIdRef.current = null;
+
+        if (targetMessageId) {
+          setFocusMessageId(targetMessageId);
+        }
+      } catch (error) {
+        console.error('[loadSession] 오류:', error);
+      }
+    },
+    [authUser, firebaseReady, setMessages, setHistoryMode, setFocusMessageId]
+  );
+
+  const startNewChat = useCallback(() => {
+    setMessages([]);
+    currentSessionIdRef.current = null;
+    setHistoryMode(false);
+    setFocusMessageId(null);
+    difyConversationIdRef.current = null;
+    lastUserMsgIdRef.current = null;
+  }, [setMessages, setHistoryMode, setFocusMessageId]);
+
+  useEffect(() => {
+    if (openSessionId && authUser && firebaseReady) {
+      loadSession(openSessionId, openMessageId ?? undefined).then(() => {
+        clearOpenSessionId?.();
+      });
+    }
+  }, [
+    openSessionId,
+    openMessageId,
+    authUser,
+    firebaseReady,
+    loadSession,
+    clearOpenSessionId,
+  ]);
+
+  return {
+    authUser,
+    firebaseReady,
+    ensureSession,
+    saveMessage,
+    loadSession,
+    startNewChat,
+    currentSessionIdRef,
+    difyConversationIdRef,
+    lastUserMsgIdRef,
+  };
+};
+
+export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
+  const [inputText, setInputTextInternal] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [historyMode, setHistoryMode] = useState(false);
+  const [focusMessageId, setFocusMessageId] = useState<string | null>(null);
+  const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
+  const setInputText = useCallback(
+    (value: string | ((prev: string) => string)) => {
+      setInputTextInternal(value);
+    },
+    []
+  );
+  const {
+    authUser,
+    saveMessage,
+    loadSession,
+    startNewChat,
+    currentSessionIdRef,
+    difyConversationIdRef,
+  } = useChatDomain({
+    setMessages,
+    setHistoryMode,
+    setFocusMessageId,
+  });
 
   const handleSendMessage = useCallback(async () => {
     const trimmed = inputText.trim();
@@ -225,66 +308,13 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     saveMessage,
     messages.length,
     setInputTextInternal,
+    difyConversationIdRef,
   ]);
 
-  // 기존 세션 로드
-  const loadSession = useCallback(
-    async (sessionId: string, targetMessageId?: string) => {
-      if (!authUser || !firebaseReady) return;
-
-      try {
-        const rawMessages = await fetchChatMessages(authUser.uid, sessionId);
-
-        const mapped: Message[] = rawMessages.map((m, idx) => ({
-          id: Date.now() + idx,
-          text: m.text,
-          isUser: m.role === 'user',
-          timestamp: m.timestamp instanceof Date ? m.timestamp : new Date(),
-          messageId: (m as { id?: string }).id,
-          isBookmarked: (m as { isBookmarked?: boolean }).isBookmarked,
-        }));
-
-        setMessages(mapped);
-        currentSessionIdRef.current = sessionId;
-        setHistoryMode(true);
-        difyConversationIdRef.current = null;
-
-        if (targetMessageId) {
-          setFocusMessageId(targetMessageId);
-        }
-      } catch (error) {
-        console.error('[loadSession] 오류:', error);
-      }
-    },
-    [authUser, firebaseReady]
-  );
-
-  // 새 채팅 시작
-  const startNewChat = useCallback(() => {
-    setMessages([]);
-    currentSessionIdRef.current = null;
-    setHistoryMode(false);
+  const wrappedStartNewChat = useCallback(() => {
+    startNewChat();
     setInputTextInternal('');
-    setFocusMessageId(null);
-    difyConversationIdRef.current = null;
-    lastUserMsgIdRef.current = null;
-  }, []);
-
-  // 모바일에서 세션 열기
-  useEffect(() => {
-    if (openSessionId && authUser && firebaseReady) {
-      loadSession(openSessionId, openMessageId ?? undefined).then(() => {
-        clearOpenSessionId?.();
-      });
-    }
-  }, [
-    openSessionId,
-    openMessageId,
-    authUser,
-    firebaseReady,
-    loadSession,
-    clearOpenSessionId,
-  ]);
+  }, [startNewChat]);
 
   return (
     <ChatInputContext.Provider
@@ -295,7 +325,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
         setMessages,
         handleSendMessage,
         loadSession,
-        startNewChat,
+        startNewChat: wrappedStartNewChat,
         historyMode,
         currentSessionId: currentSessionIdRef.current,
         focusMessageId,

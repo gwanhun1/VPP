@@ -8,9 +8,11 @@ import {
   useAuthStore,
 } from '@vpp/core-logic';
 
+type ThemeMode = 'light' | 'dark';
+
 type WebViewMessage = {
   type: string;
-  payload?: AuthUser | null;
+  payload?: unknown;
 };
 
 type OpenSessionMessage = {
@@ -18,6 +20,13 @@ type OpenSessionMessage = {
   payload: {
     sessionId: string;
     messageId?: string;
+  };
+};
+
+type ThemeModeMessage = {
+  type: 'THEME_MODE';
+  payload: {
+    mode: ThemeMode;
   };
 };
 
@@ -81,7 +90,37 @@ export function useWebViewAuth() {
         const data:
           | WebViewMessage
           | FirebaseConfigMessage
-          | OpenSessionMessage = JSON.parse(event.data);
+          | OpenSessionMessage
+          | ThemeModeMessage = JSON.parse(event.data);
+
+        if (data.type === 'THEME_MODE') {
+          const themeData = data as ThemeModeMessage;
+          const mode = themeData.payload?.mode;
+          if (mode === 'light' || mode === 'dark') {
+            try {
+              if (typeof window !== 'undefined' && window.vppSetThemeMode) {
+                // 앱 루트(main.tsx)의 ThemeProvider 모드까지 함께 변경
+                window.vppSetThemeMode(mode);
+              } else {
+                // 예비: setter가 아직 없으면 직접 html.class와 localStorage만 갱신
+                if (typeof document !== 'undefined') {
+                  const rootEl = document.documentElement;
+                  if (mode === 'dark') {
+                    rootEl.classList.add('dark');
+                  } else {
+                    rootEl.classList.remove('dark');
+                  }
+                }
+                if (typeof window !== 'undefined' && window.localStorage) {
+                  window.localStorage.setItem('vpp:web-theme', mode);
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }
+          return;
+        }
 
         if (data.type === 'AUTH') {
           const authData = data as WebViewMessage;
@@ -182,7 +221,13 @@ export function useWebViewAuth() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [setAuthUser, setIsWebView, setFirebaseReady, setOpenSessionId, setOpenMessageId]);
+  }, [
+    setAuthUser,
+    setIsWebView,
+    setFirebaseReady,
+    setOpenSessionId,
+    setOpenMessageId,
+  ]);
 
   const requestAuth = () => {
     if (isWebView && window.ReactNativeWebView) {

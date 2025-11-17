@@ -1,44 +1,20 @@
-import {
-  fetchUserQuizHistory,
-  getCurrentUser,
-  type QuizResult,
-} from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 import { useSettingsStore } from '../../hooks/useSettingsStore';
+import { useMyPageStore } from '../../hooks/useMyPageStore';
 
 import QuizResponse from './QuizResponse';
 
 const MyQuizPage = () => {
   const primaryColor = tw.color('primary');
   const primaryColor600 = tw.color('primary-600') ?? primaryColor;
-  const [quizHistory, setQuizHistory] = useState<QuizResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [user] = useState(() => getCurrentUser());
+  const quizHistory = useMyPageStore((s) => s.quizHistory);
+  const loading = useMyPageStore((s) => s.quizHistoryLoading);
   const darkMode = useSettingsStore((s) => s.darkMode);
   const iconColor = darkMode ? primaryColor600 : primaryColor;
-
-  useEffect(() => {
-    if (user && user.providerId !== 'anonymous') {
-      loadQuizHistory();
-    }
-  }, [user]);
-
-  const loadQuizHistory = async () => {
-    setLoading(true);
-    try {
-      const history = await fetchUserQuizHistory();
-      setQuizHistory(history);
-    } catch (error) {
-      console.error('퀴즈 기록 로드 실패:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <Card bordered>

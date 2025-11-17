@@ -39,12 +39,12 @@ const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
       <AiMessageHeader />
       <AiMessageSkeleton isLoading={isLoadingSkeleton}>
         <div
-          className="p-4 text-gray-800 bg-white rounded-2xl rounded-tl-sm border shadow-sm border-primary-50 
+          className="p-4 text-gray-800 dark:text-neutral-100 bg-white dark:bg-[#0a1120] rounded-2xl rounded-tl-sm border shadow-sm border-primary-50 dark:border-neutral-800 
                       transition-opacity duration-500 
-                      hover:shadow-lg hover:shadow-primary-100/50 
-                      hover:border-primary-100 
+                      hover:shadow-lg hover:shadow-primary-100/50 dark:hover:shadow-primary-900/40 
+                      hover:border-primary-100 dark:hover:border-primary-700 
                       hover:transform hover:scale-[1.02] 
-                      hover:bg-gradient-to-br hover:from-white hover:to-primary-25/30
+                      hover:bg-gradient-to-br hover:from-white hover:to-primary-25/30 dark:hover:from-[#020617] dark:hover:to-primary-950/40
                       cursor-pointer
                       opacity-100"
         >

@@ -20,14 +20,14 @@
   }
 
   #root {
-    @apply max-w-[430px] mx-auto min-h-screen bg-white;
+    @apply max-w-[430px] mx-auto min-h-screen bg-white dark:bg-[#020617];
   }
 
   /* 스크롤 가능한 영역과 입력 요소는 터치 허용 */
   textarea,
   input,
   button,
-  [role="button"],
+  [role='button'],
   a,
   .overflow-y-auto,
   .overflow-auto {

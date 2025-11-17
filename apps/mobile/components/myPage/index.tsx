@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import tw from '../../utils/tailwind';
+import { useMyPageData } from '../hooks/useMyPageStore';
 
 import BookMark from './bookmark/BookMark';
 import ChattingLog from './chattingLog/ChattingLog';
@@ -10,6 +11,8 @@ import MyPageStatus from './status/MyPageStatus';
 import UserProfile from './profile/UserProfile';
 
 const MyPage = () => {
+  useMyPageData();
+
   return (
     <View style={tw`flex-col gap-4`}>
       <UserProfile />

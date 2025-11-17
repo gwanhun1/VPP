@@ -47,12 +47,14 @@ export function App() {
   // 웹뷰가 아닌 환경에서 로그인되지 않은 경우 로그인 모달만 표시
   if (!isWebView && firebaseReady && !isLoading && !authUser) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-[#020617]">
         <div className="text-center">
           <h1 className="mb-4 text-2xl font-bold">VPP 웹 서비스</h1>
-          <p className="mb-1 text-gray-600">로그인이 필요합니다.</p>
+          <p className="mb-1 text-gray-600 dark:text-gray-300">
+            로그인이 필요합니다.
+          </p>
           {sessionExpired ? (
-            <p className="mb-3 text-xs text-red-600">
+            <p className="mb-3 text-xs text-red-600 dark:text-red-400">
               보안상 30일이 지나 다시 로그인이 필요합니다.
             </p>
           ) : (
@@ -71,17 +73,17 @@ export function App() {
   // 로딩 중일 때
   if (!isWebView && isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-[#020617]">
         <div className="text-center">
           <div className="mx-auto mb-4 w-8 h-8 rounded-full border-b-2 border-blue-600 animate-spin"></div>
-          <p className="text-gray-600">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-300">로딩 중...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-100 dark:bg-[#020617]">
       <ChattingPage />
     </div>
   );

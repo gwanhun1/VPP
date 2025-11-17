@@ -39,9 +39,10 @@ const WebButton = ({
     secondary:
       'bg-secondary text-white hover:bg-secondary-dark active:bg-secondary-dark',
     outline:
-      'border-2 border-primary-200 text-primary hover:bg-primary-50 active:bg-primary-100',
-    ghost: 'text-primary hover:bg-primary-50 active:bg-primary-100',
-    link: 'text-primary underline hover:text-primary-dark active:text-primary-dark p-0 h-auto',
+      'border-2 border-primary-200 text-primary hover:bg-primary-50 active:bg-primary-100 dark:border-primary-500 dark:text-primary-200 dark:hover:bg-primary-900/40 dark:active:bg-primary-900/60',
+    ghost:
+      'text-primary hover:bg-primary-50 active:bg-primary-100 dark:text-primary-200 dark:hover:bg-primary-900/40 dark:active:bg-primary-900/60',
+    link: 'text-primary underline hover:text-primary-dark active:text-primary-dark p-0 h-auto dark:text-primary-200 dark:hover:text-primary-100 dark:active:text-primary-50',
   };
 
   const sizeClasses = {

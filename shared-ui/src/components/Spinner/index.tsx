@@ -1,4 +1,5 @@
 import { isWeb } from '../../utils/platform';
+import { useIsDarkMode } from '../../utils/theme';
 
 export type SpinnerProps = {
   size?: number;
@@ -110,6 +111,7 @@ const NativeSpinner = ({
   overlay = false,
   message,
 }: SpinnerProps) => {
+  const isDark = useIsDarkMode();
   try {
     const { ActivityIndicator, View, Text } = require('react-native');
     const content = (
@@ -119,7 +121,13 @@ const NativeSpinner = ({
           color={color}
         />
         {message ? (
-          <Text style={{ marginTop: 8, color: '#475569', fontSize: 12 }}>
+          <Text
+            style={{
+              marginTop: 8,
+              color: isDark ? '#e5e7eb' : '#475569',
+              fontSize: 12,
+            }}
+          >
             {message}
           </Text>
         ) : null}
@@ -135,7 +143,9 @@ const NativeSpinner = ({
           right: 0,
           top: 0,
           bottom: 0,
-          backgroundColor: 'rgba(255,255,255,0.7)',
+          backgroundColor: isDark
+            ? 'rgba(23,23,27,0.7)'
+            : 'rgba(255,255,255,0.7)',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 9999,

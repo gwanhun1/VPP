@@ -70,10 +70,10 @@ function diffSeoulDays(a: Date, b: Date): number {
 
 function computeNextStudyDays(prev: UserStats | null, now: Date): number {
   if (!prev || !prev.lastStudyDate) return 1;
-  
+
   const timestamp = toFirebaseTimestamp(prev.lastStudyDate);
   if (!timestamp) return 1;
-  
+
   const last = timestamp.toDate();
   const d = diffSeoulDays(last, now);
   if (d === 0) return prev.studyDays || 1;
@@ -300,7 +300,9 @@ export async function saveUserQuizResult(
 }
 
 // 최근 활동 조회
-export async function fetchUserRecentActivities(): Promise<RecentActivity[]> {
+export async function fetchUserRecentActivities(): Promise<
+  Array<RecentActivity & { id: string }>
+> {
   const currentUser = getCurrentUser();
   if (!currentUser || currentUser.providerId === 'anonymous') {
     return [];

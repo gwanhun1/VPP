@@ -3,6 +3,7 @@ const { join } = require('path');
 const sharedConfig = require('../../tailwind-config/src/tailwind.config.js');
 
 module.exports = {
+  darkMode: 'class',
   content: [
     join(
       __dirname,

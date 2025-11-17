@@ -5,12 +5,15 @@ type RecentQuestionBadgeProps = {
   onClick?: () => void;
 };
 
-const RecentQuestionBadge = ({ question, onClick }: RecentQuestionBadgeProps) => {
+const RecentQuestionBadge = ({
+  question,
+  onClick,
+}: RecentQuestionBadgeProps) => {
   return (
     <Button variant="outline" rounded="full" onClick={onClick}>
       <Text
         variant="body2"
-        className="whitespace-nowrap text-primary-700"
+        className="whitespace-nowrap text-primary-700 dark:text-primary-200"
         weight="medium"
       >
         {question}

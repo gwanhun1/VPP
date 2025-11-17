@@ -60,7 +60,6 @@ const WebSkeleton = ({
     return (
       <div className="overflow-hidden relative">
         {children}
-        <div className={`absolute inset-0 w-full h-full bg-white`} />
         <div className={`absolute inset-0 w-full h-full ${skeletonClass}`} />
       </div>
     );

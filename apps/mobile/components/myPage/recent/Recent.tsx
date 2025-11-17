@@ -1,61 +1,23 @@
-import {
-  fetchUserRecentActivities,
-  onAuthStateChanged,
-  type AuthUser,
-  type RecentActivity,
-} from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { ScrollView, View, ActivityIndicator } from 'react-native';
 
 import tw from '../../../utils/tailwind';
 import { useSettingsStore } from '../../hooks/useSettingsStore';
+import { useMyPageStore } from '../../hooks/useMyPageStore';
 
 import RecentCard from './RecentCard';
 
-type RecentActivityWithId = RecentActivity & { id: string };
-
 const Recent = () => {
-  const [activities, setActivities] = useState<RecentActivityWithId[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const user = useMyPageStore((s) => s.user);
+  const activities = useMyPageStore((s) => s.recentActivities);
+  const loading = useMyPageStore((s) => s.recentLoading);
   const primaryColor = tw.color('primary');
   const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const darkMode = useSettingsStore((s) => s.darkMode);
   const iconColor = darkMode ? primaryColor600 : primaryColor;
-
-  useEffect(() => {
-    let mounted = true;
-
-    const unsubscribe = onAuthStateChanged((authUser) => {
-      if (!mounted) return;
-      setUser(authUser);
-
-      if (authUser && authUser.providerId !== 'anonymous') {
-        void loadRecentActivities();
-      } else {
-        setActivities([]);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      unsubscribe();
-    };
-  }, []);
-
-  const loadRecentActivities = async () => {
-    setLoading(true);
-    try {
-      const recentActivities = await fetchUserRecentActivities();
-      setActivities(recentActivities);
-    } catch (error) {
-      console.error('최근 활동 로드 실패:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const hasActivities = useMemo(() => activities.length > 0, [activities]);
 
   return (
     <Card bordered>
@@ -96,7 +58,7 @@ const Recent = () => {
             </Text>
           </View>
         </View>
-      ) : activities.length > 0 ? (
+      ) : hasActivities ? (
         <ScrollView style={tw`max-h-60`}>
           <View style={tw`flex-col`}>
             {activities.map((activity, idx) => (

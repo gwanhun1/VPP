@@ -93,27 +93,39 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
   const setAnswer = (id: number, value: string) => {
     _setAnswer((prev) => ({ ...prev, [id]: value }));
 
-    // 즉시 답변 검증
     const question = questions.find((q) => q.id === id);
-    if (question) {
-      const isCorrect =
-        value.toLowerCase().trim() ===
-        question.correctAnswer.toLowerCase().trim();
+    if (!question) {
+      return;
+    }
+
+    // 주관식은 입력 시에는 결과/상태를 초기화만 하고, 별도 확인 동작에서 채점
+    if (question.type === 'short') {
       _setAnswerStates((prev) => ({
         ...prev,
-        [id]: isCorrect ? 'correct' : 'incorrect',
+        [id]: null,
       }));
-
-      // 결과 저장
-      const result: AnswerResult = {
-        questionId: id,
-        userAnswer: value,
-        correctAnswer: question.correctAnswer,
-        isCorrect,
-        description: question.description,
-      };
-      addResult(result);
+      _setResults((prev) => prev.filter((r) => r.questionId !== id));
+      return;
     }
+
+    // 객관식/OX는 선택과 동시에 즉시 채점
+    const normalizedValue = value.toLowerCase().trim();
+    const normalizedCorrect = question.correctAnswer.toLowerCase().trim();
+    const isCorrect = normalizedValue === normalizedCorrect;
+
+    _setAnswerStates((prev) => ({
+      ...prev,
+      [id]: isCorrect ? 'correct' : 'incorrect',
+    }));
+
+    const result: AnswerResult = {
+      questionId: id,
+      userAnswer: value,
+      correctAnswer: question.correctAnswer,
+      isCorrect,
+      description: question.description,
+    };
+    addResult(result);
   };
 
   // 답변 상태 조회
@@ -125,7 +137,40 @@ export const QuizProvider = ({ children }: { children: ReactNode }) => {
 
   // 답변 검증 (기존 호환성을 위해 유지)
   const checkAnswer = (questionId: number): AnswerResult | null => {
-    return results.find((r) => r.questionId === questionId) || null;
+    const existing = results.find((r) => r.questionId === questionId);
+    if (existing) {
+      return existing;
+    }
+
+    const question = questions.find((q) => q.id === questionId);
+    if (!question) {
+      return null;
+    }
+
+    const userValue = answer[questionId];
+    if (typeof userValue !== 'string') {
+      return null;
+    }
+
+    const normalizedValue = userValue.toLowerCase().trim();
+    const normalizedCorrect = question.correctAnswer.toLowerCase().trim();
+    const isCorrect = normalizedValue === normalizedCorrect;
+
+    _setAnswerStates((prev) => ({
+      ...prev,
+      [questionId]: isCorrect ? 'correct' : 'incorrect',
+    }));
+
+    const result: AnswerResult = {
+      questionId,
+      userAnswer: userValue,
+      correctAnswer: question.correctAnswer,
+      isCorrect,
+      description: question.description,
+    };
+
+    addResult(result);
+    return result;
   };
 
   // 단계 관리

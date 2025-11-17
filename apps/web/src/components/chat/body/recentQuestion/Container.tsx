@@ -61,7 +61,7 @@ const RecentQuestionContainer = () => {
 
   return (
     <div
-      className={`flex flex-col px-4 border-b overflow-hidden transition-all duration-200 ${
+      className={`flex flex-col px-4 border-b dark:border-neutral-800 overflow-hidden transition-all duration-200 ${
         hasAnyContent ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
       }`}
     >

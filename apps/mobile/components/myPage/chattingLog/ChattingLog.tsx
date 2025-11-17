@@ -1,61 +1,24 @@
-import {
-  fetchUserChatHistory,
-  onAuthStateChanged,
-  type AuthUser,
-  type ChatHistory,
-} from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { ScrollView, View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import tw from '../../../utils/tailwind';
 import { useSettingsStore } from '../../hooks/useSettingsStore';
+import { useMyPageStore } from '../../hooks/useMyPageStore';
 
 import ChattingLogCard from './ChattingLogCard';
 
 const ChattingLog = () => {
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const user = useMyPageStore((s) => s.user);
+  const chatHistory = useMyPageStore((s) => s.chatHistory);
+  const loading = useMyPageStore((s) => s.chatHistoryLoading);
   const primaryColor = tw.color('primary');
   const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const router = useRouter();
   const darkMode = useSettingsStore((s) => s.darkMode);
   const iconColor = darkMode ? primaryColor600 : primaryColor;
-
-  useEffect(() => {
-    let mounted = true;
-
-    const unsubscribe = onAuthStateChanged((authUser) => {
-      if (!mounted) return;
-      setUser(authUser);
-
-      if (authUser && authUser.providerId !== 'anonymous') {
-        void loadChatHistory();
-      } else {
-        setChatHistory([]);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      unsubscribe();
-    };
-  }, []);
-
-  const loadChatHistory = async () => {
-    setLoading(true);
-    try {
-      const history = await fetchUserChatHistory();
-      setChatHistory(history);
-    } catch (error) {
-      console.error('채팅 기록 로드 실패:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOpenSession = useCallback(
     (sessionId: string) => {

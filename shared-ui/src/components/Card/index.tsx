@@ -1,5 +1,6 @@
 import React from 'react';
 import { isWeb, cn } from '../../utils/platform';
+import { useIsDarkMode } from '../../utils/theme';
 
 const WebCard = ({
   variant = 'default',
@@ -12,15 +13,16 @@ const WebCard = ({
   children,
   ...props
 }: CardProps) => {
+  useIsDarkMode();
   const baseClasses = 'rounded-lg overflow-hidden transition-all';
 
   const variantClasses = {
-    default: 'bg-white',
-    primary: 'bg-blue-50',
-    secondary: 'bg-yellow-50',
-    error: 'bg-red-50',
-    success: 'bg-green-50',
-    warning: 'bg-orange-50',
+    default: 'bg-white dark:bg-[#111827]',
+    primary: 'bg-blue-50 dark:bg-[#020617]',
+    secondary: 'bg-yellow-50 dark:bg-[#1f2937]',
+    error: 'bg-red-50 dark:bg-[#1f2937]',
+    success: 'bg-green-50 dark:bg-[#022c22]',
+    warning: 'bg-orange-50 dark:bg-[#1f2937]',
   };
 
   const paddingClasses = {
@@ -45,12 +47,16 @@ const WebCard = ({
     !backgroundColor && variantClasses[variant as keyof typeof variantClasses],
     paddingClasses[padding as keyof typeof paddingClasses],
     shadowClasses[shadow as keyof typeof shadowClasses],
-    bordered && 'border border-neutral-200',
+    bordered && 'border border-neutral-200 dark:border-neutral-700',
     hoverEffect && 'hover:shadow-lg hover:-translate-y-0.5',
     className
   );
 
-  const style = backgroundColor ? { backgroundColor } : {};
+  const resolvedBackgroundColor = backgroundColor;
+
+  const style = resolvedBackgroundColor
+    ? { backgroundColor: resolvedBackgroundColor }
+    : {};
 
   return (
     <div className={classes} style={style} {...props}>
@@ -110,17 +116,27 @@ const NativeCard = ({
   children,
   ...props
 }: CardProps) => {
+  const isDark = useIsDarkMode();
   try {
     const { View } = require('react-native');
 
-    const variantStyles = {
-      default: { backgroundColor: '#ffffff' },
-      primary: { backgroundColor: '#eff6ff' },
-      secondary: { backgroundColor: '#fff9e6' },
-      error: { backgroundColor: '#fef2f2' },
-      success: { backgroundColor: '#f0fdf4' },
-      warning: { backgroundColor: '#fff9e6' },
-    };
+    const variantStyles = isDark
+      ? {
+          default: { backgroundColor: '#0a1120' },
+          primary: { backgroundColor: '#020617' },
+          secondary: { backgroundColor: '#1f2937' },
+          error: { backgroundColor: '#1f2937' },
+          success: { backgroundColor: '#022c22' },
+          warning: { backgroundColor: '#1f2937' },
+        }
+      : ({
+          default: { backgroundColor: '#ffffff' },
+          primary: { backgroundColor: '#eff6ff' },
+          secondary: { backgroundColor: '#fff9e6' },
+          error: { backgroundColor: '#fef2f2' },
+          success: { backgroundColor: '#f0fdf4' },
+          warning: { backgroundColor: '#fff9e6' },
+        } as const);
 
     const paddingStyles = {
       none: { padding: 0 },
@@ -163,13 +179,15 @@ const NativeCard = ({
       },
     };
 
+    const borderColor = isDark ? '#0a1120' : '#e2e8f0';
+
     const cardStyle = {
-      borderRadius: 8,
+      borderRadius: 18,
       overflow: 'hidden',
       ...(backgroundColor ? { backgroundColor } : variantStyles[variant]),
       ...paddingStyles[padding],
       ...shadowStyles[shadow],
-      ...(bordered && { borderWidth: 1, borderColor: '#e2e8f0' }),
+      ...(bordered && { borderWidth: 1, borderColor }),
     };
 
     return (

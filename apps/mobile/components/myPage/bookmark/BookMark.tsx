@@ -1,56 +1,26 @@
-import {
-  fetchUserBookmarkedMessages,
-  getCurrentUser,
-  type ChatBookmarkedMessage,
-} from '@vpp/core-logic';
 import { Card, CardHeader, Text } from '@vpp/shared-ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useCallback, useState } from 'react';
+import { useMemo } from 'react';
 import { ScrollView, View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 
 import tw from '../../../utils/tailwind';
 import { useSettingsStore } from '../../hooks/useSettingsStore';
+import { useMyPageStore } from '../../hooks/useMyPageStore';
 
 import BookmarkCard from './BookmarkCard';
 
 const BookMark = () => {
-  const [chatBookmarks, setChatBookmarks] = useState<ChatBookmarkedMessage[]>(
-    []
-  );
-  const [loading, setLoading] = useState(false);
-  const [user] = useState(() => getCurrentUser());
+  const user = useMyPageStore((s) => s.user);
+  const chatBookmarks = useMyPageStore((s) => s.bookmarks);
+  const loading = useMyPageStore((s) => s.bookmarksLoading);
   const primaryColor = tw.color('primary');
   const primaryColor600 = tw.color('primary-600') ?? primaryColor;
   const router = useRouter();
   const darkMode = useSettingsStore((s) => s.darkMode);
   const iconColor = darkMode ? primaryColor600 : primaryColor;
 
-  const loadBookmarks = useCallback(async () => {
-    setLoading(true);
-    try {
-      const userChatBookmarks = user
-        ? await fetchUserBookmarkedMessages(user.uid, {
-            sessionLimit: 20,
-            perSessionLimit: 20,
-          })
-        : [];
-      setChatBookmarks(userChatBookmarks);
-    } catch (error) {
-      console.error('북마크 로드 실패:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (user && user.providerId !== 'anonymous') {
-        void loadBookmarks();
-      }
-    }, [user, loadBookmarks])
-  );
+  const hasBookmarks = useMemo(() => chatBookmarks.length > 0, [chatBookmarks]);
 
   return (
     <Card bordered>
@@ -95,7 +65,7 @@ const BookMark = () => {
         ) : (
           <ScrollView style={tw`max-h-72`}>
             <View style={tw`flex-col`}>
-              {chatBookmarks.length > 0 ? (
+              {hasBookmarks ? (
                 chatBookmarks.map((bm, idx) => (
                   <View
                     key={`${bm.sessionId}_${bm.id}`}

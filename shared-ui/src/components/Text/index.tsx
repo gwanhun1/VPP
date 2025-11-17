@@ -1,5 +1,6 @@
 import React from 'react';
 import { isWeb, cn } from '../../utils/platform';
+import { useIsDarkMode } from '../../utils/theme';
 
 const WebText = ({
   variant = 'body',
@@ -12,6 +13,7 @@ const WebText = ({
   children,
   ...props
 }: TextProps) => {
+  const isDark = useIsDarkMode();
   const baseClasses = 'transition-colors';
 
   const variantClasses = {
@@ -32,7 +34,7 @@ const WebText = ({
 
   const colorClasses = {
     default: 'text-neutral-900',
-    primary: 'text-primary',
+    primary: isDark ? 'text-primary-300' : 'text-primary',
     secondary: 'text-secondary',
     muted: 'text-neutral-400',
     success: 'text-success',
@@ -133,6 +135,7 @@ const NativeText = ({
   children,
   ...props
 }: TextProps) => {
+  const isDark = useIsDarkMode();
   try {
     const { Text } = require('react-native');
 
@@ -159,7 +162,7 @@ const NativeText = ({
     };
 
     // 색상 매핑
-    const colorStyles = {
+    const baseColorStyles = {
       default: '#1e293b',
       primary: '#14287f',
       secondary: '#f6a20b',
@@ -169,7 +172,16 @@ const NativeText = ({
       error: '#ef4444',
       info: '#3b82f6',
       white: '#ffffff',
-    };
+    } as const;
+
+    const colorStyles = isDark
+      ? {
+          ...baseColorStyles,
+          default: '#e5e7eb',
+          muted: '#9ca3af',
+          primary: '#8292d0',
+        }
+      : baseColorStyles;
 
     // 무게 매핑
     const weightStyles = {

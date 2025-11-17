@@ -29,7 +29,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
               </SyntaxHighlighter>
             ) : (
               <code
-                className="bg-primary-50 text-primary-700 px-1 py-0.5 rounded text-xs font-mono"
+                className="bg-primary-50 text-primary-700 px-1 py-0.5 rounded text-xs font-mono dark:bg-primary-950 dark:text-primary-200"
                 {...rest}
               >
                 {children}
@@ -43,7 +43,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
                 onClick={(e) => {
                   e.preventDefault();
                 }}
-                className="underline cursor-default text-primary-600 hover:text-primary-700"
+                className="underline cursor-default text-primary-600 hover:text-primary-700 dark:text-primary-300 dark:hover:text-primary-200"
                 {...props}
               >
                 {children}
@@ -53,7 +53,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           h1({ children, ...props }) {
             return (
               <h1
-                className="mt-2 mb-1 text-base font-bold text-primary-800"
+                className="mt-2 mb-1 text-base font-bold text-primary-800 dark:text-primary-200"
                 {...props}
               >
                 {children}
@@ -63,7 +63,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           h2({ children, ...props }) {
             return (
               <h2
-                className="mt-2 mb-1 text-sm font-semibold text-primary-700"
+                className="mt-2 mb-1 text-sm font-semibold text-primary-700 dark:text-primary-200"
                 {...props}
               >
                 {children}
@@ -73,7 +73,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           h3({ children, ...props }) {
             return (
               <h3
-                className="text-sm font-semibold text-primary-600 mt-1.5 mb-0.5"
+                className="text-sm font-semibold text-primary-600 mt-1.5 mb-0.5 dark:text-primary-200"
                 {...props}
               >
                 {children}
@@ -103,7 +103,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           blockquote({ children, ...props }) {
             return (
               <blockquote
-                className="py-1 pl-2 my-1 text-sm italic text-gray-700 border-l-2 border-primary-300 bg-primary-25"
+                className="py-1 pl-2 my-1 text-sm italic text-gray-700 border-l-2 border-primary-300 bg-primary-25 dark:text-neutral-100 dark:border-primary-800 dark:bg-neutral-900"
                 {...props}
               >
                 {children}
@@ -114,7 +114,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
             return (
               <div className="overflow-x-auto my-1.5">
                 <table
-                  className="min-w-full text-xs border border-gray-300"
+                  className="min-w-full text-xs border border-gray-300 dark:border-neutral-700"
                   {...props}
                 >
                   {children}
@@ -124,7 +124,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           },
           thead({ children, ...props }) {
             return (
-              <thead className="bg-primary-50" {...props}>
+              <thead className="bg-primary-50 dark:bg-neutral-900" {...props}>
                 {children}
               </thead>
             );
@@ -132,7 +132,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           th({ children, ...props }) {
             return (
               <th
-                className="px-2 py-1 font-semibold text-left border border-gray-300"
+                className="px-2 py-1 font-semibold text-left border border-gray-300 dark:border-neutral-700"
                 {...props}
               >
                 {children}
@@ -141,7 +141,10 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           },
           td({ children, ...props }) {
             return (
-              <td className="px-2 py-1 border border-gray-300" {...props}>
+              <td
+                className="px-2 py-1 border border-gray-300 dark:border-neutral-700"
+                {...props}
+              >
                 {children}
               </td>
             );
@@ -149,7 +152,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           p({ children, ...props }) {
             return (
               <p
-                className="my-1 text-sm leading-relaxed text-gray-800"
+                className="my-1 text-sm leading-relaxed text-gray-800 dark:text-neutral-100"
                 {...props}
               >
                 {children}
@@ -157,7 +160,12 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
             );
           },
           hr({ ...props }) {
-            return <hr className="my-2 border-gray-300" {...props} />;
+            return (
+              <hr
+                className="my-2 border-gray-300 dark:border-neutral-700"
+                {...props}
+              />
+            );
           },
         }}
       >

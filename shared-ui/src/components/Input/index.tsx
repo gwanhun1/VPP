@@ -1,4 +1,5 @@
 import { isWeb, cn } from '../../utils/platform';
+import { useIsDarkMode } from '../../utils/theme';
 
 const WebInput = ({
   variant = 'default',
@@ -89,6 +90,7 @@ const NativeInput = ({
   placeholder,
   ...props
 }: InputProps) => {
+  const isDark = useIsDarkMode();
   try {
     const { View, TextInput, Text } = require('react-native');
 
@@ -99,7 +101,7 @@ const NativeInput = ({
       lg: { fontSize: 18, paddingVertical: 10, paddingHorizontal: 20 },
     };
 
-    const variantStyles = {
+    const baseVariantStyles = {
       default: {
         borderWidth: 1,
         borderColor: '#cbd5e1',
@@ -119,12 +121,37 @@ const NativeInput = ({
         backgroundColor: 'transparent',
         borderRadius: 0,
       },
-    };
+    } as const;
+
+    const variantStyles = isDark
+      ? {
+          ...baseVariantStyles,
+          default: {
+            borderWidth: 1,
+            borderColor: '#4b5563',
+            backgroundColor: '#1f1f24',
+            borderRadius: 6,
+          },
+          filled: {
+            borderWidth: 1,
+            borderColor: '#374151',
+            backgroundColor: '#111827',
+            borderRadius: 6,
+          },
+          flushed: {
+            borderWidth: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: '#4b5563',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+          },
+        }
+      : baseVariantStyles;
 
     let inputStyle = {
       ...variantStyles[variant],
       ...sizeStyles[size],
-      color: '#1e293b',
+      color: isDark ? '#e5e7eb' : '#1e293b',
     };
 
     if (error) {
@@ -141,7 +168,7 @@ const NativeInput = ({
     if (disabled) {
       inputStyle = {
         ...inputStyle,
-        backgroundColor: '#f8fafc',
+        backgroundColor: isDark ? '#111827' : '#f8fafc',
       };
     }
 
@@ -152,9 +179,11 @@ const NativeInput = ({
       marginBottom: 4,
     };
 
+    const baseHelperColor = error ? '#ef4444' : success ? '#10b981' : '#6b7280';
+
     const helperTextStyle = {
       fontSize: 12,
-      color: error ? '#ef4444' : success ? '#10b981' : '#6b7280',
+      color: isDark && !error && !success ? '#9ca3af' : baseHelperColor,
       marginTop: 4,
     };
 
@@ -165,7 +194,7 @@ const NativeInput = ({
           style={inputStyle}
           placeholder={placeholder}
           editable={!disabled}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={isDark ? '#6b7280' : '#9ca3af'}
           {...props}
         />
         {helperText && <Text style={helperTextStyle}>{helperText}</Text>}

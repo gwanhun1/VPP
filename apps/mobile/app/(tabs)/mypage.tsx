@@ -13,22 +13,24 @@ import AppHeader from '../../components/common/AppHeader';
 import MyPage from '../../components/myPage';
 import tw from '../../utils/tailwind';
 import useResponsive from '../../utils/useResponsive';
+import { useMyPageStore } from '../../components/hooks/useMyPageStore';
 
 export default function MyPageScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const refreshAll = useMyPageStore((s) => s.refreshAll);
 
   const user = getCurrentUser();
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      //  마이페이지 데이터 새로고침 로직과 연동 필요
+      await refreshAll();
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshAll]);
 
   useEffect(() => {
     if (user === null) {
