@@ -1,10 +1,12 @@
 import { Badge, Text } from '@vpp/shared-ui';
 import { TouchableOpacity } from 'react-native';
 
+import type { TrendsFilter } from '../../hooks/useTrends';
+
 type FilterButtonsProps = {
   title: string;
-  id: number;
-  filter: number;
+  id: TrendsFilter;
+  filter: TrendsFilter;
   onPress: () => void;
 };
 

@@ -1,28 +1,25 @@
-import { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 
 import AppHeader from '../../components/common/AppHeader';
 import Trends from '../../components/trends';
 import useResponsive from '../../utils/useResponsive';
 import { useSettingsStore } from '../../components/hooks/useSettingsStore';
-/**
- * 시장 동향 화면
- * - 주식, 암호화폐, 부동산 등의 시장 동향 정보 제공
- * - VPP 디자인 시스템 적용
- */
+import { useTrends } from '../../components/hooks/useTrends';
+
 export default function TrendsScreen() {
   const { containerMaxWidth, horizontalPadding } = useResponsive();
-  const [refreshing, setRefreshing] = useState(false);
   const darkMode = useSettingsStore((s) => s.darkMode);
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      // 시장 동향 데이터 새로고침 로직과 연동 필요
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
+  const {
+    loading,
+    error,
+    refreshing,
+    smp,
+    rec,
+    trends,
+    filter,
+    setFilter,
+    refresh,
+  } = useTrends();
   return (
     <View
       style={{ flex: 1, backgroundColor: darkMode ? '#17171B' : '#ffffff' }}
@@ -38,7 +35,7 @@ export default function TrendsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={handleRefresh}
+            onRefresh={refresh}
             tintColor="#14287f"
           />
         }
@@ -52,7 +49,15 @@ export default function TrendsScreen() {
             rowGap: 12,
           }}
         >
-          <Trends />
+          <Trends
+            loading={loading}
+            error={error}
+            smp={smp}
+            rec={rec}
+            trends={trends}
+            filter={filter}
+            onFilterChange={setFilter}
+          />
         </View>
       </ScrollView>
     </View>
