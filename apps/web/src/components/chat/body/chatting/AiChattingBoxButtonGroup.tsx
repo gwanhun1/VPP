@@ -43,22 +43,37 @@ const AiChattingBoxButtonGroup = ({
     }
   };
 
+  const buildCopyText = (raw: string): string => {
+    let result = raw;
+
+    // HTML 태그 제거
+    result = result.replace(/<[^>]+>/g, '');
+
+    // 헤딩 마크다운 제거
+    result = result.replace(/^#{1,6}\s*/gm, '');
+
+    // 굵게/기울임 마크다운 제거
+    result = result.replace(/\*\*(.*?)\*\*/g, '$1');
+    result = result.replace(/\*(.*?)\*/g, '$1');
+
+    // 인라인 코드 마크다운 제거
+    result = result.replace(/`([^`]+)`/g, '$1');
+
+    return result.trim();
+  };
+
   const handleCopyClick = async () => {
-    const resetTimer = () =>
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 2000);
+    const copyText = buildCopyText(messageText);
 
     try {
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(messageText);
+        await navigator.clipboard.writeText(copyText);
         setCopySuccess(true);
-        resetTimer();
         return;
       }
 
       const textArea = document.createElement('textarea');
-      textArea.value = messageText;
+      textArea.value = copyText;
       textArea.style.position = 'fixed';
       textArea.style.opacity = '0';
       textArea.setAttribute('readonly', '');
@@ -73,12 +88,23 @@ const AiChattingBoxButtonGroup = ({
       }
 
       setCopySuccess(true);
-      resetTimer();
     } catch (err) {
       console.error('Failed to copy text: ', err);
       setCopySuccess(false);
     }
   };
+
+  useEffect(() => {
+    if (!copySuccess) return;
+
+    const timer = setTimeout(() => {
+      setCopySuccess(false);
+    }, 1500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [copySuccess]);
 
   return (
     <div className="flex">
