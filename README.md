@@ -1,6 +1,67 @@
 # VPP (Virtual Power Plant) - 가상발전소 플랫폼
 
-VPP는 React Native(모바일)와 React(웹) 기반의 가상발전소 플랫폼으로, Firebase를 통한 실시간 데이터 동기화와 AI 채팅 기능을 제공합니다.
+VPP는 전력시장과 가상발전소(VPP)를 쉽게 이해하고 학습할 수 있도록 돕는 **AI 기반 에너지 학습/상담 서비스**입니다.  
+웹과 모바일 앱에서 모두 사용할 수 있으며, 실시간 채팅, 용어 사전, 퀴즈, 학습 통계 등을 통해 전력·에너지 개념을 단계적으로 익힐 수 있습니다.
+
+## 🎯 서비스 개요
+
+- **목표**  
+  복잡한 전력시장·재생에너지 개념을 누구나 이해할 수 있도록,
+  대화형 AI와 시각화/퀴즈 기능을 결합한 학습 경험을 제공합니다.
+
+- **형태**
+
+  - 웹: 브라우저에서 접속하는 VPP 학습·상담 서비스
+  - 모바일 앱: Expo 기반 React Native 앱, 웹 서비스를 WebView로 통합하여 동일한 경험 제공
+
+- **핵심 가치**
+  - 전력·에너지 비전문가도 쉽게 접근 가능한 설명
+  - 실제 용어/사례 기반 Q&A
+  - 학습 히스토리와 퀴즈를 통한 반복 학습 지원
+
+## ✨ 주요 기능
+
+- **AI 채팅 어시스턴트**
+
+  - 전력시장, 가상발전소(VPP), 재생에너지 관련 질문을 자유롭게 질의응답
+  - 업로드된 문서/자료를 바탕으로 한 문서 기반 답변 제공
+  - 이전 대화 세션을 불러와 이어서 질문 가능
+
+- **용어 사전 & 북마크**
+
+  - 전력·에너지 관련 용어를 사전 형태로 제공
+  - 궁금한 용어를 북마크해 나만의 학습 리스트 구성
+
+- **퀴즈 & 학습 통계**
+
+  - 전력시장 용어 중심의 퀴즈 제공
+  - 정답률, 학습 일수, 누적 퀴즈 수 등 학습 지표 확인
+
+- **최근 활동 피드**
+
+  - 최근 채팅, 퀴즈, 북마크 활동을 한 눈에 확인
+  - 다시 보고 싶은 활동으로 빠르게 이동
+
+- **멀티 플랫폼 사용성**
+  - 하나의 Firebase 백엔드를 기준으로 웹/모바일에서 동일한 계정과 데이터를 사용
+  - 모바일 앱은 WebView + 네이티브 기능(Firebase Auth 등)을 조합하여 구현
+
+## 🧭 주요 사용 시나리오
+
+- **전력시장/에너지 개념 빠르게 이해하기**
+
+  1. 궁금한 개념을 AI 채팅에 질문합니다.
+  2. 요약/예시/추가 설명을 받은 뒤, 관련 용어를 북마크합니다.
+  3. 이후 퀴즈에서 같은 개념을 다시 확인하며 이해도를 점검합니다.
+
+- **보고서·자료를 읽다가 막혔을 때**
+
+  1. 문서 내용을 복사해 붙여넣고, 이해 안 되는 부분을 질문합니다.
+  2. AI가 문장 단위로 의미를 풀어주고, 필요하면 추가 예시를 제시합니다.
+
+- **학습 히스토리 기반 복습**
+  1. 최근 활동 피드에서 이전 채팅/퀴즈 기록을 확인합니다.
+  2. 다시 열고 싶은 세션을 선택해 AI와 이어서 대화하거나, 관련 퀴즈를 재도전합니다.
 
 ## 🏗️ 아키텍처 개요
 
@@ -401,10 +462,10 @@ webViewBridge.sendOpenSession(sessionId, messageId?)
 
 ```typescript
 // core-logic/src/utils/type-guards.ts
-isFirebaseTimestamp, toFirebaseTimestamp, toNumber, safeArrayAccess, safePropertyAccess
+isFirebaseTimestamp, toFirebaseTimestamp, toNumber, safeArrayAccess, safePropertyAccess;
 
 // core-logic/src/utils/retry.ts
-withRetry(fn, { maxAttempts, delayMs, exponentialBackoff })
+withRetry(fn, { maxAttempts, delayMs, exponentialBackoff });
 ```
 
 #### 채팅 입력 프로바이더 (실시간 저장)
@@ -439,12 +500,11 @@ withRetry(fn, { maxAttempts, delayMs, exponentialBackoff })
 
 #### 3. 사용자 상태 추적
 
-```
+````
 1. 로그인 시: userStatus 온라인 상태 업데이트
 2. 페이지 뷰: userActivities에 페이지 방문 로그
 3. 채팅 활동: 실시간 활동 추적
 4. 로그아웃 시: 오프라인 상태 업데이트
-```
 
 ## 🔧 개발 환경 설정
 
@@ -461,7 +521,7 @@ cd apps/web && npx vite build
 
 # 모바일 앱 실행 (Expo)
 cd apps/mobile && yarn start
-```
+````
 
 ### 환경 변수 설정
 
