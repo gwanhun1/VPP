@@ -8,6 +8,17 @@ type AiMessageContentProps = {
 };
 
 const AiMessageContent = ({ text }: AiMessageContentProps) => {
+  const normalizeText = (raw: string): string => {
+    let result = raw;
+
+    // HTML 태그 제거 (span, em 등)
+    result = result.replace(/<[^>]+>/g, '');
+
+    return result;
+  };
+
+  const normalizedText = normalizeText(text);
+
   return (
     <div className="max-w-none prose prose-sm">
       <ReactMarkdown
@@ -169,7 +180,7 @@ const AiMessageContent = ({ text }: AiMessageContentProps) => {
           },
         }}
       >
-        {text}
+        {normalizedText}
       </ReactMarkdown>
     </div>
   );

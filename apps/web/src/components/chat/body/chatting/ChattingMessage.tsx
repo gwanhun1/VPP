@@ -144,12 +144,10 @@ const ChattingMessage = () => {
   }, [focusMessageId, consumeFocusMessage]);
 
   useEffect(() => {
-    if (!messagesEndRef.current || !scrollContainerRef.current) return;
+    if (!scrollContainerRef.current) return;
 
-    messagesEndRef.current.scrollIntoView({
-      behavior: 'smooth',
-      block: 'end',
-    });
+    const container = scrollContainerRef.current;
+    container.scrollTop = container.scrollHeight;
   }, [messages, isGeneratingResponse]);
 
   const showWelcomeScreen = messages.length === 0 && !isGeneratingResponse;
@@ -252,7 +250,7 @@ const ChattingMessage = () => {
         }}
       >
         {showWelcomeScreen ? (
-          <div className="flex flex-col justify-between pb-20 min-h-full">
+          <div className="flex flex-col justify-between pb-6 min-h-full">
             <AiChattingBox
               message={{
                 id: 1752583353312,
@@ -271,7 +269,7 @@ const ChattingMessage = () => {
             <PromptHintBox />
           </div>
         ) : (
-          <div className="flex flex-col justify-between pb-20 min-h-full">
+          <div className="flex flex-col justify-between pb-4 min-h-full">
             <div className="flex flex-col gap-4">
               {messages.map((message) => (
                 <div
@@ -305,7 +303,7 @@ const ChattingMessage = () => {
                   />
                 </div>
               )}
-              <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} className="h-24" />
             </div>
             {showHintBox && <PromptHintBox />}
           </div>
