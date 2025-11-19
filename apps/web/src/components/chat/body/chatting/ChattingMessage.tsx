@@ -143,6 +143,15 @@ const ChattingMessage = () => {
     }
   }, [focusMessageId, consumeFocusMessage]);
 
+  useEffect(() => {
+    if (!messagesEndRef.current || !scrollContainerRef.current) return;
+
+    messagesEndRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+    });
+  }, [messages, isGeneratingResponse]);
+
   const showWelcomeScreen = messages.length === 0 && !isGeneratingResponse;
   const showHintBox = !historyMode && !currentSessionId && messages.length <= 2;
 
@@ -243,7 +252,7 @@ const ChattingMessage = () => {
         }}
       >
         {showWelcomeScreen ? (
-          <div className="flex flex-col justify-between min-h-full">
+          <div className="flex flex-col justify-between pb-20 min-h-full">
             <AiChattingBox
               message={{
                 id: 1752583353312,
@@ -262,7 +271,7 @@ const ChattingMessage = () => {
             <PromptHintBox />
           </div>
         ) : (
-          <div className="flex flex-col justify-between min-h-full">
+          <div className="flex flex-col justify-between pb-20 min-h-full">
             <div className="flex flex-col gap-4">
               {messages.map((message) => (
                 <div
