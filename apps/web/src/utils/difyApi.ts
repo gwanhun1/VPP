@@ -1,5 +1,6 @@
-const DIFY_API_KEY = 'app-zlT4Fjp1Z0dPuN3l6X5kgA51';
-const DIFY_API_URL = 'https://api.dify.ai/v1/chat-messages';
+const DIFY_API_KEY = import.meta.env.VITE_DIFY_API_KEY;
+const DIFY_API_URL =
+  import.meta.env.VITE_DIFY_API_URL || 'https://api.dify.ai/v1/chat-messages';
 
 export interface DifyResponse {
   answer: string;
@@ -9,8 +10,13 @@ export interface DifyResponse {
 
 export const callDifyAPI = async (
   message: string,
-  conversationId?: string
+  conversationId?: string,
+  userId = 'web-user'
 ): Promise<{ answer: string; conversationId: string }> => {
+  if (!DIFY_API_KEY) {
+    throw new Error('Dify API Key가 설정되지 않았습니다.');
+  }
+
   try {
     const response = await fetch(DIFY_API_URL, {
       method: 'POST',
@@ -23,7 +29,7 @@ export const callDifyAPI = async (
         query: message,
         response_mode: 'blocking',
         conversation_id: conversationId || '',
-        user: 'web-user',
+        user: userId,
       }),
     });
 

@@ -12,6 +12,7 @@ import {
   fetchChatMessages,
   sendChatMessage,
   updateChatSession,
+  getChatSession,
   addRecentActivity,
   useAuthStore,
 } from '@vpp/core-logic';
@@ -143,6 +144,14 @@ const useChatDomain = ({
       if (!authUser || !firebaseReady) return;
 
       try {
+        // 세션 정보 로드하여 Dify conversation ID 복원
+        const session = await getChatSession(authUser.uid, sessionId);
+        if (session?.difyConversationId) {
+          difyConversationIdRef.current = session.difyConversationId;
+        } else {
+          difyConversationIdRef.current = null;
+        }
+
         const rawMessages = await fetchChatMessages(authUser.uid, sessionId);
 
         const mapped: Message[] = rawMessages.map((m, idx) => ({
@@ -157,7 +166,6 @@ const useChatDomain = ({
         setMessages(mapped);
         currentSessionIdRef.current = sessionId;
         setHistoryMode(true);
-        difyConversationIdRef.current = null;
 
         if (targetMessageId) {
           setFocusMessageId(targetMessageId);
@@ -223,6 +231,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     saveMessage,
     loadSession,
     startNewChat,
+    ensureSession,
     currentSessionIdRef,
     difyConversationIdRef,
   } = useChatDomain({
@@ -258,15 +267,27 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
       // 2. 사용자 메시지 Firebase 저장 (명시적 타임스탬프 사용)
       await saveMessage(trimmed, true, isFirstMessage, userTimestamp);
 
+      // 세션 ID 확보 (saveMessage 내부에서도 호출되지만, 여기서도 필요)
+      const sessionId = await ensureSession();
+
       // 3. Dify API 호출
       const response = await callDifyAPI(
         trimmed,
-        difyConversationIdRef.current || undefined
+        difyConversationIdRef.current || undefined,
+        authUser.uid
       );
 
       // 4. conversation_id 저장
       if (response.conversationId) {
+        const isNewConversation =
+          difyConversationIdRef.current !== response.conversationId;
         difyConversationIdRef.current = response.conversationId;
+
+        if (isNewConversation) {
+          await updateChatSession(authUser.uid, sessionId, {
+            difyConversationId: response.conversationId,
+          });
+        }
       }
 
       // AI 응답 타임스탬프 (사용자 메시지보다 최소 1ms 이후)
@@ -309,6 +330,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
     messages.length,
     setInputTextInternal,
     difyConversationIdRef,
+    ensureSession,
   ]);
 
   const wrappedStartNewChat = useCallback(() => {

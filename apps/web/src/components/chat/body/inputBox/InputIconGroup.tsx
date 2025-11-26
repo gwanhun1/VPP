@@ -4,11 +4,14 @@ import { useSpeechToText } from './VoiceInput';
 import VoiceModal from './VoiceModal';
 
 const InputIconGroup = () => {
-  const { handleSendMessage, inputText, isGeneratingResponse } = useChatInput();
+  const { handleSendMessage, inputText, setInputText, isGeneratingResponse } =
+    useChatInput();
 
   // 음성 인식 훅 사용
   const { isListening, startListening, stopListening } = useSpeechToText(
-    (text) => {}
+    (text) => {
+      setInputText((prev) => prev + (prev ? ' ' : '') + text);
+    }
   );
 
   return (
@@ -20,7 +23,11 @@ const InputIconGroup = () => {
         isIconOnly
         disabled={isGeneratingResponse}
         onClick={() => {
-          startListening();
+          if (isListening) {
+            stopListening();
+          } else {
+            startListening();
+          }
         }}
         className={isListening ? 'animate-pulse' : ''}
       >

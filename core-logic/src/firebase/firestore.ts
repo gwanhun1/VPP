@@ -194,6 +194,7 @@ export type ChatSession = {
   messageCount: number;
   platform: 'web' | 'mobile';
   source: 'webview' | 'native';
+  difyConversationId?: string | null; // Dify 대화 컨텍스트 유지를 위한 ID
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };

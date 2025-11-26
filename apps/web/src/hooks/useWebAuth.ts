@@ -11,8 +11,8 @@ import {
   webViewBridge,
 } from '@vpp/core-logic';
 
-// 개발 환경에서 사용할 Firebase 설정
-const DEV_FIREBASE_CONFIG = {
+// Firebase 설정
+const FIREBASE_CONFIG = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -23,6 +23,7 @@ const DEV_FIREBASE_CONFIG = {
 
 const WEB_LOGIN_AT_KEY = 'auth:loginAt';
 const WEB_SESSION_EXPIRED_KEY = 'auth:sessionExpired';
+const WEB_DEVICE_ID_KEY = 'auth:deviceId';
 const WEB_SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function useWebAuth() {
@@ -41,106 +42,105 @@ export function useWebAuth() {
 
     setIsWebView(false);
 
-    if (import.meta.env.DEV) {
-      try {
-        // Firebase 설정
-        setFirebaseConfig(DEV_FIREBASE_CONFIG);
-        initializeFirebase();
-        setFirebaseReady(true);
+    try {
+      // Firebase 설정
+      setFirebaseConfig(FIREBASE_CONFIG);
+      initializeFirebase();
+      setFirebaseReady(true);
 
-        // 인증 상태 변화 감지
-        const auth = getFirebaseAuth();
-        if (auth) {
-          const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-              let expired = false;
-              try {
-                const now = Date.now();
-                const storedLoginAt =
-                  window.localStorage.getItem(WEB_LOGIN_AT_KEY);
-                let loginAt = storedLoginAt ? Number(storedLoginAt) : NaN;
+      // 인증 상태 변화 감지
+      const auth = getFirebaseAuth();
+      if (auth) {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            let expired = false;
+            try {
+              const now = Date.now();
+              const storedLoginAt =
+                window.localStorage.getItem(WEB_LOGIN_AT_KEY);
+              let loginAt = storedLoginAt ? Number(storedLoginAt) : NaN;
 
-                if (!storedLoginAt || Number.isNaN(loginAt)) {
-                  loginAt = now;
-                  window.localStorage.setItem(WEB_LOGIN_AT_KEY, String(now));
-                }
-
-                if (now - loginAt > WEB_SESSION_MAX_AGE_MS) {
-                  window.localStorage.setItem(WEB_SESSION_EXPIRED_KEY, '1');
-                  await auth.signOut();
-                  expired = true;
-                }
-              } catch (error) {
-                console.warn('웹 세션 만료 검사 실패:', error);
+              if (!storedLoginAt || Number.isNaN(loginAt)) {
+                loginAt = now;
+                window.localStorage.setItem(WEB_LOGIN_AT_KEY, String(now));
               }
 
-              if (expired) {
-                setAuthUser(null);
-                setIsLoading(false);
-                return;
+              if (now - loginAt > WEB_SESSION_MAX_AGE_MS) {
+                window.localStorage.setItem(WEB_SESSION_EXPIRED_KEY, '1');
+                await auth.signOut();
+                expired = true;
               }
-
-              // Firebase provider 값을 도메인 타입(AuthProvider)으로 매핑
-              let mappedProvider: AuthUser['providerId'];
-              if (user.isAnonymous) {
-                mappedProvider = 'anonymous';
-              } else {
-                const rawProvider = user.providerData[0]?.providerId;
-                if (rawProvider === 'google.com') mappedProvider = 'google';
-                else if (rawProvider === 'password')
-                  mappedProvider = 'password';
-                else mappedProvider = undefined;
-              }
-
-              const authUser: AuthUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                providerId: mappedProvider,
-              };
-
-              setAuthUser(authUser);
-
-              // 웹 디바이스 정보 업데이트
-              try {
-                const deviceId = `web_${Date.now()}`;
-                await updateUserDevice(user.uid, deviceId, {
-                  expoPushToken: null,
-                  fcmToken: null,
-                  platform: 'web',
-                  appVersion: '1.0.0',
-                });
-
-                // 로그인 활동 기록
-                await addRecentActivity(user.uid, {
-                  type: 'study',
-                  title: '웹에서 로그인',
-                  description: 'VPP 웹 서비스에 접속했습니다.',
-                });
-              } catch (error) {
-                console.warn('사용자 정보 업데이트 실패:', error);
-              }
-            } else {
-              setAuthUser(null);
-              try {
-                window.localStorage.removeItem(WEB_LOGIN_AT_KEY);
-              } catch {
-                // no-op
-              }
+            } catch (error) {
+              console.warn('웹 세션 만료 검사 실패:', error);
             }
-            setIsLoading(false);
-          });
 
-          return unsubscribe;
-        }
-      } catch (error) {
-        console.error('Firebase 초기화 실패:', error);
-        setFirebaseReady(false);
-        setIsLoading(false);
+            if (expired) {
+              setAuthUser(null);
+              setIsLoading(false);
+              return;
+            }
+
+            // Firebase provider 값을 도메인 타입(AuthProvider)으로 매핑
+            let mappedProvider: AuthUser['providerId'];
+            if (user.isAnonymous) {
+              mappedProvider = 'anonymous';
+            } else {
+              const rawProvider = user.providerData[0]?.providerId;
+              if (rawProvider === 'google.com') mappedProvider = 'google';
+              else if (rawProvider === 'password') mappedProvider = 'password';
+              else mappedProvider = undefined;
+            }
+
+            const authUser: AuthUser = {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+              providerId: mappedProvider,
+            };
+
+            setAuthUser(authUser);
+
+            // 웹 디바이스 정보 업데이트
+            try {
+              let deviceId = window.localStorage.getItem(WEB_DEVICE_ID_KEY);
+              if (!deviceId) {
+                deviceId = `web_${Date.now()}`;
+                window.localStorage.setItem(WEB_DEVICE_ID_KEY, deviceId);
+              }
+
+              await updateUserDevice(user.uid, deviceId, {
+                expoPushToken: null,
+                fcmToken: null,
+                platform: 'web',
+                appVersion: '1.0.0',
+              });
+
+              // 로그인 활동 기록
+              await addRecentActivity(user.uid, {
+                type: 'study',
+                title: '웹에서 로그인',
+                description: 'VPP 웹 서비스에 접속했습니다.',
+              });
+            } catch (error) {
+              console.warn('사용자 정보 업데이트 실패:', error);
+            }
+          } else {
+            setAuthUser(null);
+            try {
+              window.localStorage.removeItem(WEB_LOGIN_AT_KEY);
+            } catch {
+              // no-op
+            }
+          }
+          setIsLoading(false);
+        });
+
+        return unsubscribe;
       }
-    } else {
-      // 프로덕션 환경에서는 웹 로그인 비활성화
+    } catch (error) {
+      console.error('Firebase 초기화 실패:', error);
+      setFirebaseReady(false);
       setIsLoading(false);
     }
 

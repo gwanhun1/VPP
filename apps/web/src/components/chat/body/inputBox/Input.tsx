@@ -17,7 +17,7 @@ const ChattingInput = ({ onFocus, onBlur }: ChattingInputProps) => {
       disabled={isGeneratingResponse}
       onChange={(e) => {
         setInputText(e.target.value);
-        e.target.style.height = '40px';
+        e.target.style.height = 'auto';
         const scrollHeight = e.target.scrollHeight;
         e.target.style.height =
           Math.min(scrollHeight, window.innerHeight * 0.25) + 'px';
