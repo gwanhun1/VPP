@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#14287f"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.gwanhun.vppmobile"
     },
     "web": {
       "bundler": "metro",
@@ -41,6 +42,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "061bc0d0-b9ed-4067-98ee-d9a2d481c0b7"
+      }
     }
   }
 }
