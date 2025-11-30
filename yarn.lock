@@ -7716,7 +7716,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vpp/core-logic@workspace:*, @vpp/core-logic@workspace:core-logic":
+"@vpp/core-logic@npm:*, @vpp/core-logic@workspace:core-logic":
   version: 0.0.0-use.local
   resolution: "@vpp/core-logic@workspace:core-logic"
   dependencies:
@@ -7728,7 +7728,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@vpp/shared-ui@workspace:*, @vpp/shared-ui@workspace:shared-ui":
+"@vpp/shared-ui@npm:*, @vpp/shared-ui@workspace:shared-ui":
   version: 0.0.0-use.local
   resolution: "@vpp/shared-ui@workspace:shared-ui"
   dependencies:
@@ -23239,8 +23239,8 @@ __metadata:
     "@react-navigation/native": "npm:^7.1.6"
     "@types/react": "npm:~19.1.10"
     "@types/react-native": "npm:^0.73.0"
-    "@vpp/core-logic": "workspace:*"
-    "@vpp/shared-ui": "workspace:*"
+    "@vpp/core-logic": "npm:*"
+    "@vpp/shared-ui": "npm:*"
     date-fns: "npm:^4.1.0"
     eslint: "npm:^9.25.0"
     eslint-config-expo: "npm:~10.0.0"

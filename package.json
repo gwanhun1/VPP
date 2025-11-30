@@ -17,7 +17,8 @@
     "mobile:update": "cd apps/mobile && yarn expo update",
     "mobile:doctor": "cd apps/mobile && yarn expo doctor",
     "build:web": "vite build --config apps/web/vite.config.ts",
-    "build": "yarn build:web"
+    "build": "yarn build:web",
+    "eas-build-pre-install": "corepack enable"
   },
   "engines": {
     "node": ">=20.0.0"
