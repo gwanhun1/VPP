@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, Alert, Text } from 'react-native';
+import { View, Alert, Text, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import tw from '../../utils/tailwind';
@@ -59,25 +59,28 @@ export default function AuthScreen() {
   return redirect ? (
     <Redirect href="/(tabs)" />
   ) : (
-    <SafeAreaView style={tw`flex-1 bg-white`}>
-      <View style={tw`flex-1 px-6 pt-12`}>
-        <View style={tw`flex-1`}>
-          <AuthHeader />
-          {sessionExpired ? (
-            <View style={tw`mt-3 mb-2 px-3 py-2 rounded-lg bg-red-50`}>
-              <Text style={tw`text-xs text-red-600`}>
-                보안상 30일이 지나 다시 로그인이 필요합니다.
-              </Text>
-            </View>
-          ) : null}
-          <SocialLoginButtons loading={loading} onLogin={run} />
-          <FeatureIntro />
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <SafeAreaView style={tw`flex-1 bg-white`}>
+        <View style={tw`flex-1 px-6 pt-12`}>
+          <View style={tw`flex-1`}>
+            <AuthHeader />
+            {sessionExpired ? (
+              <View style={tw`mt-3 mb-2 px-3 py-2 rounded-lg bg-red-50`}>
+                <Text style={tw`text-xs text-red-600`}>
+                  보안상 30일이 지나 다시 로그인이 필요합니다.
+                </Text>
+              </View>
+            ) : null}
+            <SocialLoginButtons loading={loading} onLogin={run} />
+            <FeatureIntro />
+          </View>
+
+          <TermsAgreement />
         </View>
 
-        <TermsAgreement />
-      </View>
-
-      <LoadingOverlay loading={loading} />
-    </SafeAreaView>
+        <LoadingOverlay loading={loading} />
+      </SafeAreaView>
+    </>
   );
 }

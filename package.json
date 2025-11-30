@@ -20,7 +20,7 @@
     "build": "yarn build:web"
   },
   "engines": {
-    "node": "22.x"
+    "node": ">=20.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",
@@ -73,7 +73,6 @@
     "tailwind-config",
     "core-logic"
   ],
-  "packageManager": "yarn@4.9.2",
   "dependencies": {
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -82,5 +81,6 @@
     "react-syntax-highlighter": "^16.1.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1"
-  }
+  },
+  "packageManager": "yarn@4.9.2+sha512.1fc009bc09d13cfd0e19efa44cbfc2b9cf6ca61482725eb35bbc5e257e093ebf4130db6dfe15d604ff4b79efd8e1e8e99b25fa7d0a6197c9f9826358d4d65c3c"
 }

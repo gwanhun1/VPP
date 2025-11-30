@@ -19,14 +19,11 @@ import tw from '../../utils/tailwind';
  */
 type ThemeMode = 'light' | 'dark';
 
-const DEV_URL_CANDIDATES = Platform.select({
-  ios: [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://192.168.0.40:5173',
-  ],
-  android: ['http://10.0.2.2:5173'],
-  default: ['http://127.0.0.1:5173'],
+const DEV_URL = Platform.select({
+  // 개발 시: 모바일에서 항상 Vite dev 서버에 직접 붙도록 고정
+  ios: 'http://192.168.0.5:5173',
+  android: 'http://10.0.2.2:5173',
+  default: 'http://localhost:5173',
 });
 
 const PROD_URL =
@@ -37,7 +34,6 @@ export default function ChatScreen() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [webViewReady, setWebViewReady] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [devUrlIndex, setDevUrlIndex] = useState(0);
   const [webError, setWebError] = useState<string | null>(null);
   const darkMode = useSettingsStore((s) => s.darkMode);
   const { openSessionId, openMessageId } = useLocalSearchParams<{
@@ -45,9 +41,7 @@ export default function ChatScreen() {
     openMessageId?: string;
   }>();
 
-  const currentUrl = __DEV__
-    ? DEV_URL_CANDIDATES?.[devUrlIndex] ?? DEV_URL_CANDIDATES?.[0] ?? PROD_URL
-    : PROD_URL;
+  const currentUrl = __DEV__ && DEV_URL ? DEV_URL : PROD_URL;
 
   useEffect(() => {
     if (!webViewReady || !openSessionId || !webViewRef.current) return;
@@ -169,7 +163,6 @@ export default function ChatScreen() {
     postAuthToWeb(user);
     postThemeModeToWeb(darkMode ? 'dark' : 'light');
     setIsLoading(false);
-    setWebError(null);
   };
 
   const handleLoadStart = () => {
@@ -212,51 +205,8 @@ export default function ChatScreen() {
         onMessage={handleMessage} // RN <-> WebView 통신 연결
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
-        renderError={() => (
-          <View
-            style={[
-              tw`flex-1 items-center justify-center px-6`,
-              { backgroundColor: '#ffffff' },
-            ]}
-          >
-            <View style={tw`items-center gap-3`}>
-              <View style={tw`mb-2`}>
-                <Spinner size={24} message={undefined} />
-              </View>
-              <View>
-                <Text
-                  style={tw`text-base font-semibold text-center text-gray-900`}
-                >
-                  페이지를 불러오지 못했어요
-                </Text>
-                <Text style={tw`mt-1 text-xs text-center text-gray-600`}>
-                  {webError ||
-                    '네트워크 상태를 확인하시거나 잠시 후 다시 시도해 주세요.'}
-                </Text>
-              </View>
-              <Pressable
-                onPress={handleRetry}
-                style={[
-                  tw`mt-3 px-5 py-2.5 rounded-full items-center`,
-                  { backgroundColor: '#2563EB' },
-                ]}
-              >
-                <Text style={tw`text-sm font-semibold text-white`}>
-                  다시 시도
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        )}
+        renderError={() => <View style={tw`flex-1 bg-white`} />}
         onError={(e) => {
-          // iOS 시뮬레이터에서 localhost/127.0.0.1 해석 문제 시 대체 URL로 재시도
-          if (__DEV__) {
-            const next = (DEV_URL_CANDIDATES?.length ?? 0) - 1;
-            if (devUrlIndex < next) {
-              setDevUrlIndex((idx) => idx + 1);
-              return;
-            }
-          }
           console.warn('WebView load error:', e.nativeEvent);
           setIsLoading(false);
           const description =
@@ -277,6 +227,40 @@ export default function ChatScreen() {
           ]}
         >
           <Spinner size={36} message="로딩 중..." />
+        </View>
+      ) : null}
+
+      {webError ? (
+        <View
+          style={[
+            tw`absolute inset-0 items-center justify-center px-6`,
+            { backgroundColor: '#ffffff', zIndex: 9998 },
+          ]}
+        >
+          <View style={tw`items-center gap-3`}>
+            <View>
+              <Text
+                style={tw`text-base font-semibold text-center text-gray-900`}
+              >
+                페이지를 불러오지 못했어요
+              </Text>
+              <Text style={tw`mt-1 text-xs text-center text-gray-600`}>
+                {webError ||
+                  '네트워크 상태를 확인하시거나 잠시 후 다시 시도해 주세요.'}
+              </Text>
+            </View>
+            <Pressable
+              onPress={handleRetry}
+              style={[
+                tw`mt-3 px-5 py-2.5 rounded-full items-center`,
+                { backgroundColor: '#2563EB' },
+              ]}
+            >
+              <Text style={tw`text-sm font-semibold text-white`}>
+                다시 시도
+              </Text>
+            </Pressable>
+          </View>
         </View>
       ) : null}
     </View>
