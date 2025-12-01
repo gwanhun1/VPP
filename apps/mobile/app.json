@@ -12,7 +12,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gwanhun.vpp-mobile"
+      "bundleIdentifier": "com.gwanhun.vpp-mobile",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "softwareKeyboardLayoutMode": "resize",
@@ -21,7 +27,8 @@
         "backgroundColor": "#14287f"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.gwanhun.vppmobile"
+      "package": "com.gwanhun.vppmobile",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",

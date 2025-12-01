@@ -5,6 +5,7 @@ import {
 } from '@vpp/core-logic';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Platform, Text, Pressable } from 'react-native';
+import Constants from 'expo-constants';
 import { Spinner } from '@vpp/shared-ui';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { useLocalSearchParams } from 'expo-router';
@@ -19,10 +20,21 @@ import tw from '../../utils/tailwind';
  */
 type ThemeMode = 'light' | 'dark';
 
+// Expo 개발 서버 호스트에서 IP 자동 추출
+const getDevHost = (): string => {
+  // Expo가 제공하는 hostUri에서 IP 추출 (예: "192.168.0.40:8081")
+  const hostUri = Constants.expoConfig?.hostUri;
+  if (hostUri) {
+    const host = hostUri.split(':')[0];
+    if (host && host !== 'localhost') return host;
+  }
+  // fallback
+  return process.env.EXPO_PUBLIC_DEV_HOST || 'localhost';
+};
+
 const DEV_URL = Platform.select({
-  // 개발 시: 모바일에서 항상 Vite dev 서버에 직접 붙도록 고정
-  ios: 'http://192.168.0.5:5173',
-  android: 'http://10.0.2.2:5173',
+  ios: `http://${getDevHost()}:5173`,
+  android: `http://${getDevHost()}:5173`, // 실제 디바이스용 (에뮬레이터는 10.0.2.2)
   default: 'http://localhost:5173',
 });
 
@@ -192,9 +204,13 @@ export default function ChatScreen() {
         originWhitelist={['*']}
         ref={webViewRef}
         source={{ uri: currentUrl }}
-        // 스크롤 방지
+        // ⚠️ Android에서 필수 설정
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        // 스크롤/터치 관련
         bounces={false}
         overScrollMode="never"
+        nestedScrollEnabled={true}
         // 전체 화면 채움 + iOS 자동 인셋/액세서리 바 비활성화
         style={tw`flex-1`}
         automaticallyAdjustContentInsets={false}
@@ -202,7 +218,11 @@ export default function ChatScreen() {
         hideKeyboardAccessoryView
         // 키보드 올라왔을 때 웹뷰 크기 조정
         keyboardDisplayRequiresUserAction={false}
-        onMessage={handleMessage} // RN <-> WebView 통신 연결
+        // Android 추가 설정
+        mixedContentMode="compatibility"
+        allowsFullscreenVideo={true}
+        mediaPlaybackRequiresUserAction={false}
+        onMessage={handleMessage}
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
         renderError={() => <View style={tw`flex-1 bg-white`} />}
