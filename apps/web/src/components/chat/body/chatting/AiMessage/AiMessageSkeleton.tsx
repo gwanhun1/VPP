@@ -5,7 +5,10 @@ type AiMessageSkeletonProps = {
   isLoading: boolean;
 };
 
-const AiMessageSkeleton = ({ isLoading, children }: PropsWithChildren<AiMessageSkeletonProps>) => {
+const AiMessageSkeleton = ({
+  isLoading,
+  children,
+}: PropsWithChildren<AiMessageSkeletonProps>) => {
   return (
     <Skeleton
       isOverlay
@@ -13,7 +16,7 @@ const AiMessageSkeleton = ({ isLoading, children }: PropsWithChildren<AiMessageS
       isLoading={isLoading}
       className="rounded-tl-sm transition-opacity duration-300 rounded-4xl"
     >
-      {children}
+      {isLoading ? null : children}
     </Skeleton>
   );
 };

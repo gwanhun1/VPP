@@ -12,41 +12,17 @@ import { useLocalSearchParams } from 'expo-router';
 import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 import tw from '../../utils/tailwind';
 
-// Android WebView에서 ReactNativeWebView 브릿지를 확실히 설정하는 스크립트
-// 프로덕션 빌드에서 메시지 통신이 안 되는 문제 해결
+// WebView 브릿지 준비 플래그 설정 (콘텐츠 로드 전)
 const INJECTED_JAVASCRIPT_BEFORE_CONTENT_LOADED = `
-(function() {
-  // ReactNativeWebView가 이미 있으면 스킵
-  if (window.ReactNativeWebView) return;
-  
-  // Android에서는 document.addEventListener도 필요
-  var nativePostMessage = window.ReactNativeWebView?.postMessage;
-  
-  // 메시지 수신 핸들러를 window와 document 양쪽에 등록
-  function setupMessageHandler(handler) {
-    window.addEventListener('message', handler);
-    document.addEventListener('message', handler);
-  }
-  
   window.__RN_WEBVIEW_BRIDGE_READY__ = true;
-})();
-true;
+  true;
 `;
 
-// 콘텐츠 로드 후 실행되는 스크립트 - 브릿지 상태 확인 및 로깅
+// WebView 로드 완료 후 RN에 알림
 const INJECTED_JAVASCRIPT = `
 (function() {
-  // 디버그용 로깅 (프로덕션에서 문제 파악용)
-  var isReady = !!window.ReactNativeWebView;
-  console.log('[RN WebView] Bridge ready:', isReady);
-  
-  // ReactNativeWebView가 있으면 웹에 알림
   if (window.ReactNativeWebView) {
-    try {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'WEBVIEW_READY' }));
-    } catch (e) {
-      console.error('[RN WebView] Failed to post ready message:', e);
-    }
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'WEBVIEW_READY' }));
   }
 })();
 true;
@@ -111,7 +87,7 @@ export default function ChatScreen() {
     }
   }, [webViewReady, openSessionId, openMessageId]);
 
-  // RN → Web AUTH 전송 (필요 시 재시도)
+  // RN → Web AUTH 전송 (postMessage + injectJavaScript 이중 전송)
   const postAuthToWeb = useCallback(
     (authUser: AuthUser | null, attempt = 0): void => {
       const maxAttempts = 3;
@@ -120,7 +96,23 @@ export default function ChatScreen() {
 
       if (!webViewRef.current) return;
       try {
+        // 방법 1: postMessage (일부 환경에서 작동)
         webViewRef.current.postMessage(payload);
+
+        // 방법 2: injectJavaScript로 직접 이벤트 발생 (프로덕션 Android 호환)
+        const injectScript = `
+          (function() {
+            try {
+              var event = new MessageEvent('message', { data: ${JSON.stringify(
+                payload
+              )} });
+              window.dispatchEvent(event);
+              document.dispatchEvent(event);
+            } catch(e) { console.error('Auth inject error:', e); }
+          })();
+          true;
+        `;
+        webViewRef.current.injectJavaScript(injectScript);
       } catch {
         if (attempt < maxAttempts) {
           setTimeout(() => postAuthToWeb(authUser, attempt + 1), delayMs);
@@ -138,6 +130,20 @@ export default function ChatScreen() {
     });
     try {
       webViewRef.current.postMessage(payload);
+
+      // injectJavaScript로도 전송
+      const injectScript = `
+        (function() {
+          try {
+            var event = new MessageEvent('message', { data: ${JSON.stringify(
+              payload
+            )} });
+            window.dispatchEvent(event);
+          } catch(e) {}
+        })();
+        true;
+      `;
+      webViewRef.current.injectJavaScript(injectScript);
     } catch {
       // ignore
     }
@@ -199,7 +205,7 @@ export default function ChatScreen() {
     }
   };
 
-  // Firebase 설정을 웹으로 전송
+  // Firebase 설정을 웹으로 전송 (postMessage + injectJavaScript 이중 전송)
   const postFirebaseConfigToWeb = useCallback(() => {
     const config = getFirebaseConfig();
     if (config && webViewRef.current) {
@@ -208,7 +214,23 @@ export default function ChatScreen() {
         payload: config,
       });
       try {
+        // 방법 1: postMessage
         webViewRef.current.postMessage(payload);
+
+        // 방법 2: injectJavaScript로 직접 이벤트 발생
+        const injectScript = `
+          (function() {
+            try {
+              var event = new MessageEvent('message', { data: ${JSON.stringify(
+                payload
+              )} });
+              window.dispatchEvent(event);
+              document.dispatchEvent(event);
+            } catch(e) { console.error('Firebase config inject error:', e); }
+          })();
+          true;
+        `;
+        webViewRef.current.injectJavaScript(injectScript);
       } catch (error) {
         console.error('Firebase config 전송 실패:', error);
       }

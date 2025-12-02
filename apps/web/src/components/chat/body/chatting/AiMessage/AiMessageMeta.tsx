@@ -16,6 +16,12 @@ const AiMessageMeta = ({
   messageId,
   isBookmarked,
 }: AiMessageMetaProps) => {
+  const isSkeleton = !messageText || messageText.trim().length === 0;
+
+  if (isSkeleton) {
+    return null;
+  }
+
   return (
     <div className="flex gap-6 justify-between items-end">
       <Text

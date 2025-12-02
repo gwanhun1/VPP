@@ -9,7 +9,7 @@
     "scheme": "vpp-mobile",
     "primaryColor": "#14287f",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.gwanhun.vpp-mobile",
