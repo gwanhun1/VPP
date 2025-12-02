@@ -180,12 +180,18 @@ export default function ChatScreen() {
       // WebView 브릿지 준비 완료 시 인증 정보 재전송
       if (data.type === 'WEBVIEW_READY') {
         postFirebaseConfigToWeb();
-        if (user) postAuthToWeb(user);
+        if (user) {
+          postAuthToWeb(user);
+        }
+        postThemeModeToWeb(darkMode ? 'dark' : 'light');
         return;
       }
-      if (data.type === 'REQUEST_AUTH' && user && webViewRef.current) {
-        // 웹뷰에서 로그인 정보 요청 시 다시 전달
-        postAuthToWeb(user);
+      if (data.type === 'REQUEST_AUTH') {
+        // 웹뷰에서 로그인 정보 요청 시 다시 전달 + 현재 테마 동기화
+        if (user && webViewRef.current) {
+          postAuthToWeb(user);
+        }
+        postThemeModeToWeb(darkMode ? 'dark' : 'light');
         return;
       }
       if (data.type === 'REQUEST_FIREBASE_CONFIG') {

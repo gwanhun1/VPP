@@ -73,6 +73,7 @@ const Language = () => {
           style={tw`min-w-28 px-3 py-2 rounded-xl border ${
             darkMode ? 'border-gray-700' : 'border-gray-300'
           } flex-row items-center justify-between`}
+          disabled
         >
           <Text color="primary" weight="medium">
             {selectedLabel}
