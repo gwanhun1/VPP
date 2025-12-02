@@ -242,7 +242,20 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
 
   const handleSendMessage = useCallback(async () => {
     const trimmed = inputText.trim();
-    if (!trimmed || !authUser) return;
+    if (!trimmed) return;
+
+    // 인증 상태 체크 - 프로덕션에서 디버깅용
+    if (!authUser) {
+      console.warn('[handleSendMessage] authUser가 없음 - 인증 대기 중');
+      const errorMsg: Message = {
+        id: Date.now(),
+        text: '로그인 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+      return;
+    }
 
     if (historyMode) setHistoryMode(false);
 

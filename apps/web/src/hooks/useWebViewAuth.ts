@@ -55,6 +55,7 @@ declare global {
       postMessage: (message: string) => void;
     };
     vppSetThemeMode?: (mode: ThemeMode) => void;
+    __RN_WEBVIEW_BRIDGE_READY__?: boolean;
   }
 }
 
@@ -79,13 +80,29 @@ export function useWebViewAuth() {
   const firebaseReadyRef = useRef(false);
 
   useEffect(() => {
-    // 웹뷰 환경 감지
+    // 웹뷰 환경 감지 (EAS 프로덕션 빌드 호환)
     const detectWebView = (): boolean => {
       const userAgent = navigator.userAgent;
-      const isWebViewUA = /wv|WebView|Version.*Chrome/i.test(userAgent);
+      // Android WebView 감지 패턴 강화
+      const isAndroidWebView =
+        /wv|WebView/.test(userAgent) ||
+        (userAgent.includes('Android') && userAgent.includes('Version/'));
+      // iOS WebView 감지
+      const isIOSWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(
+        userAgent
+      );
       const hasReactNativeWebView = !!window.ReactNativeWebView;
+      // injectedJavaScript로 설정된 플래그 확인
+      const hasBridgeFlag = !!(
+        window as { __RN_WEBVIEW_BRIDGE_READY__?: boolean }
+      ).__RN_WEBVIEW_BRIDGE_READY__;
 
-      return isWebViewUA || hasReactNativeWebView;
+      return (
+        isAndroidWebView ||
+        isIOSWebView ||
+        hasReactNativeWebView ||
+        hasBridgeFlag
+      );
     };
 
     const isWebViewEnv = detectWebView();
@@ -194,9 +211,15 @@ export function useWebViewAuth() {
     // 환경변수 기반 초기화/자동 로그인 제거 (모바일 WebView 메시지에만 의존)
 
     if (isWebViewEnv) {
+      // Android WebView는 document.addEventListener도 필요
       window.addEventListener('message', handleMessage);
+      document.addEventListener('message', handleMessage as EventListener);
 
-      const requestAuth = () => {
+      // ReactNativeWebView가 준비될 때까지 재시도하는 요청 함수
+      const requestAuth = (attempt = 0) => {
+        const maxAttempts = 5;
+        const delayMs = 200;
+
         try {
           if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(
@@ -205,16 +228,22 @@ export function useWebViewAuth() {
             window.ReactNativeWebView.postMessage(
               JSON.stringify({ type: 'REQUEST_FIREBASE_CONFIG' })
             );
+          } else if (attempt < maxAttempts) {
+            // ReactNativeWebView가 아직 준비되지 않았으면 재시도
+            setTimeout(() => requestAuth(attempt + 1), delayMs);
           }
         } catch {
-          // no-op
+          if (attempt < maxAttempts) {
+            setTimeout(() => requestAuth(attempt + 1), delayMs);
+          }
         }
       };
 
-      const timer = setTimeout(requestAuth, 100);
+      const timer = setTimeout(() => requestAuth(0), 100);
 
       return () => {
         window.removeEventListener('message', handleMessage);
+        document.removeEventListener('message', handleMessage as EventListener);
         clearTimeout(timer);
       };
     }
@@ -223,6 +252,7 @@ export function useWebViewAuth() {
 
     return () => {
       window.removeEventListener('message', handleMessage);
+      document.removeEventListener('message', handleMessage as EventListener);
     };
   }, [
     setAuthUser,

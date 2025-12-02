@@ -12,6 +12,46 @@ import { useLocalSearchParams } from 'expo-router';
 import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 import tw from '../../utils/tailwind';
 
+// Android WebView에서 ReactNativeWebView 브릿지를 확실히 설정하는 스크립트
+// 프로덕션 빌드에서 메시지 통신이 안 되는 문제 해결
+const INJECTED_JAVASCRIPT_BEFORE_CONTENT_LOADED = `
+(function() {
+  // ReactNativeWebView가 이미 있으면 스킵
+  if (window.ReactNativeWebView) return;
+  
+  // Android에서는 document.addEventListener도 필요
+  var nativePostMessage = window.ReactNativeWebView?.postMessage;
+  
+  // 메시지 수신 핸들러를 window와 document 양쪽에 등록
+  function setupMessageHandler(handler) {
+    window.addEventListener('message', handler);
+    document.addEventListener('message', handler);
+  }
+  
+  window.__RN_WEBVIEW_BRIDGE_READY__ = true;
+})();
+true;
+`;
+
+// 콘텐츠 로드 후 실행되는 스크립트 - 브릿지 상태 확인 및 로깅
+const INJECTED_JAVASCRIPT = `
+(function() {
+  // 디버그용 로깅 (프로덕션에서 문제 파악용)
+  var isReady = !!window.ReactNativeWebView;
+  console.log('[RN WebView] Bridge ready:', isReady);
+  
+  // ReactNativeWebView가 있으면 웹에 알림
+  if (window.ReactNativeWebView) {
+    try {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'WEBVIEW_READY' }));
+    } catch (e) {
+      console.error('[RN WebView] Failed to post ready message:', e);
+    }
+  }
+})();
+true;
+`;
+
 /**
  * AI 채팅 화면
  * - VPP AI 어시스턴트와의 대화 화면
@@ -127,8 +167,16 @@ export default function ChatScreen() {
       const data = JSON.parse(event.nativeEvent.data) as
         | { type: 'REQUEST_AUTH' }
         | { type: 'REQUEST_FIREBASE_CONFIG' }
+        | { type: 'WEBVIEW_READY' }
         | { type: 'WEB_ERROR'; payload?: string }
         | { type: string; payload?: unknown };
+
+      // WebView 브릿지 준비 완료 시 인증 정보 재전송
+      if (data.type === 'WEBVIEW_READY') {
+        postFirebaseConfigToWeb();
+        if (user) postAuthToWeb(user);
+        return;
+      }
       if (data.type === 'REQUEST_AUTH' && user && webViewRef.current) {
         // 웹뷰에서 로그인 정보 요청 시 다시 전달
         postAuthToWeb(user);
@@ -222,6 +270,11 @@ export default function ChatScreen() {
         mixedContentMode="compatibility"
         allowsFullscreenVideo={true}
         mediaPlaybackRequiresUserAction={false}
+        // EAS 프로덕션 빌드에서 WebView 브릿지 설정
+        injectedJavaScriptBeforeContentLoaded={
+          INJECTED_JAVASCRIPT_BEFORE_CONTENT_LOADED
+        }
+        injectedJavaScript={INJECTED_JAVASCRIPT}
         onMessage={handleMessage}
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
