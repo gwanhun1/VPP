@@ -22,7 +22,7 @@ const ChattingMessage = () => {
     consumeFocusMessage,
     isGeneratingResponse,
   } = useChatInput();
-  const authUser = useAuthStore((s) => s.authUser);
+  const authUser = useAuthStore((s: any) => s.authUser);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const touchStartYRef = useRef<number | null>(null);
