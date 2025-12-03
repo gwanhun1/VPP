@@ -16,7 +16,7 @@ type AiChattingBoxProps = {
   layout?: boolean;
 };
 
-const AiChattingBox = ({ message, layout }: AiChattingBoxProps) => {
+const AiChattingBox = ({ message }: AiChattingBoxProps) => {
   const { currentSessionId } = useChatInput();
 
   // 빈 텍스트 메시지만 스켈레톤 표시 (응답 생성 중)
