@@ -17,6 +17,7 @@ import {
   useAuthStore,
 } from '@vpp/core-logic';
 import { callDifyAPI } from './difyApi';
+import { sanitizeProfanity } from '@/utils/profanityFilter';
 
 export type Message = {
   id: number;
@@ -241,7 +242,7 @@ export const ChatInputProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const handleSendMessage = useCallback(async () => {
-    const trimmed = inputText.trim();
+    const trimmed = sanitizeProfanity(inputText).trim();
     if (!trimmed) return;
 
     // 인증 상태 체크 - 프로덕션에서 디버깅용

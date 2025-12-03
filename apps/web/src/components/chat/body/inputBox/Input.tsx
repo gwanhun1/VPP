@@ -1,4 +1,5 @@
 import { useChatInput } from '../../../../utils/inputProvider';
+import { sanitizeProfanity } from '@/utils/profanityFilter';
 
 type ChattingInputProps = {
   onFocus?: () => void;
@@ -16,7 +17,8 @@ const ChattingInput = ({ onFocus, onBlur }: ChattingInputProps) => {
       onBlur={onBlur}
       disabled={isGeneratingResponse}
       onChange={(e) => {
-        setInputText(e.target.value);
+        const sanitized = sanitizeProfanity(e.target.value);
+        setInputText(sanitized);
         e.target.style.height = 'auto';
         const scrollHeight = e.target.scrollHeight;
         e.target.style.height =
