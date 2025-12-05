@@ -4,13 +4,14 @@ import {
   getFirebaseConfig,
 } from '@vpp/core-logic';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Platform, Text, Pressable } from 'react-native';
+import { View, Platform, Text, Pressable, ScrollView } from 'react-native';
 import Constants from 'expo-constants';
 import { Spinner } from '@vpp/shared-ui';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { useLocalSearchParams } from 'expo-router';
 import { useSettingsStore } from '../../components/hooks/useSettingsStore';
 import tw from '../../utils/tailwind';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // WebView 브릿지 준비 플래그 설정 (콘텐츠 로드 전)
 const INJECTED_JAVASCRIPT_BEFORE_CONTENT_LOADED = `
@@ -61,8 +62,11 @@ export default function ChatScreen() {
   const webViewRef = useRef<WebView>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [webViewReady, setWebViewReady] = useState(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [webError, setWebError] = useState<string | null>(null);
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(true);
   const darkMode = useSettingsStore((s) => s.darkMode);
   const { openSessionId, openMessageId } = useLocalSearchParams<{
     openSessionId?: string;
@@ -70,6 +74,32 @@ export default function ChatScreen() {
   }>();
 
   const currentUrl = __DEV__ && DEV_URL ? DEV_URL : PROD_URL;
+
+  useEffect(() => {
+    const loadConsent = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('personalInfoConsent.v1');
+        if (stored === 'true') {
+          setConsentGiven(true);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setConsentLoading(false);
+      }
+    };
+    loadConsent();
+  }, []);
+
+  const handleConsentAgree = async () => {
+    if (!consentChecked) return;
+    try {
+      await AsyncStorage.setItem('personalInfoConsent.v1', 'true');
+    } catch {
+      // ignore
+    }
+    setConsentGiven(true);
+  };
 
   useEffect(() => {
     if (!webViewReady || !openSessionId || !webViewRef.current) return;
@@ -265,6 +295,108 @@ export default function ChatScreen() {
       webViewRef.current.reload();
     }
   };
+
+  if (consentLoading) {
+    return (
+      <View
+        style={[
+          tw`flex-1 items-center justify-center`,
+          { backgroundColor: darkMode ? '#17171B' : '#ffffff' },
+        ]}
+      >
+        <Spinner size={32} message="확인 중..." />
+      </View>
+    );
+  }
+
+  if (!consentGiven) {
+    return (
+      <View
+        style={[
+          tw`flex-1`,
+          { backgroundColor: darkMode ? '#0f172a' : '#f8fafc' },
+        ]}
+      >
+        <View style={tw`flex-1 px-6 pt-14 pb-10`}>
+          <Text style={tw`text-2xl font-bold text-gray-900`}>
+            개인정보 수집·이용 동의
+          </Text>
+          <ScrollView style={tw`mt-4`} showsVerticalScrollIndicator={false}>
+            <View
+              style={tw`bg-white rounded-2xl p-5 shadow-sm border border-gray-100`}
+            >
+              <Text style={tw`text-base font-semibold text-gray-900`}>
+                [필수] 개인정보 수집·이용 동의
+              </Text>
+              <View style={tw`mt-3 gap-2`}>
+                <Text style={tw`text-sm text-gray-700`}>
+                  • 목적: AI 상담/대화 제공 및 서비스 품질 개선
+                </Text>
+                <Text style={tw`text-sm text-gray-700`}>
+                  • 수집 항목: 채팅 내용, 기기 정보, 계정 정보
+                </Text>
+                <Text style={tw`text-sm text-gray-700`}>
+                  • 보유·이용 기간: 서비스 탈퇴 또는 목적 달성 시까지
+                </Text>
+                <Text style={tw`text-sm text-gray-700`}>
+                  • 동의 거부 시: AI 채팅 기능 이용이 제한됩니다.
+                </Text>
+                <Text style={tw`text-sm text-gray-700`}>
+                  • 제3자 제공/국외 이전: 없음
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={tw`mt-6`}>
+            <Pressable
+              onPress={() => setConsentChecked((prev) => !prev)}
+              style={[
+                tw`flex-row items-center rounded-xl px-4 py-3 border`,
+                {
+                  borderColor: consentChecked ? '#2563EB' : '#d1d5db',
+                  backgroundColor: consentChecked ? '#eff6ff' : '#ffffff',
+                },
+              ]}
+            >
+              <View
+                style={[
+                  tw`w-5 h-5 rounded-md mr-3 items-center justify-center`,
+                  {
+                    borderWidth: 1.5,
+                    borderColor: consentChecked ? '#2563EB' : '#9ca3af',
+                    backgroundColor: consentChecked ? '#2563EB' : '#ffffff',
+                  },
+                ]}
+              >
+                {consentChecked ? (
+                  <Text style={tw`text-white text-xs font-bold`}>✓</Text>
+                ) : null}
+              </View>
+              <Text style={tw`text-sm font-semibold text-gray-900`}>
+                위 내용을 읽고 동의합니다.
+              </Text>
+            </Pressable>
+          </View>
+
+          <Pressable
+            onPress={handleConsentAgree}
+            disabled={!consentChecked}
+            style={[
+              tw`mt-6 py-4 rounded-2xl items-center`,
+              {
+                backgroundColor: consentChecked ? '#2563EB' : '#cbd5e1',
+              },
+            ]}
+          >
+            <Text style={tw`text-base font-semibold text-white`}>
+              동의하고 시작
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View
